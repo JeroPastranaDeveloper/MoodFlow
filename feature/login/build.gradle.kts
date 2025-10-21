@@ -13,4 +13,5 @@ dependencies {
     implementation(projects.core.utils)
     implementation(projects.core.domain)
     implementation(projects.core.viewmodel)
+    implementation(libs.androidx.material.icons.extended)
 }

@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-  <string name="app_name">KPass</string>
+  <string name="app_name">MoodFLow</string>
   <string name="accounts_screen_title">Accounts</string>
   <string name="account_detail_screen_title">Account detail</string>
   <string name="action_delete">Delete</string>

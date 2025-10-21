@@ -9,12 +9,16 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import com.google.accompanist.systemuicontroller.rememberSystemUiController
 import com.jero.designsystem.components.MoodFlowAppBar
+import com.jero.designsystem.components.PasswordTextField
+import com.jero.login.LoginViewContract.UiIntent
 import org.koin.androidx.compose.koinViewModel
 
 @Composable
@@ -23,6 +27,8 @@ fun SharedTransitionScope.MoodFlowLogin(
     viewModel: LoginViewModel = koinViewModel()
 ) {
     SetStatusBarIconsColor()
+
+    val state by viewModel.state.collectAsState()
 
     Scaffold(
         topBar = { MoodFlowAppBar() },
@@ -34,22 +40,28 @@ fun SharedTransitionScope.MoodFlowLogin(
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             Text(
-                text = "MoodFlow",
+                text = "Login",
                 modifier = Modifier.padding(vertical = 32.dp)
             )
 
             TextField(
-                value = "",
-                onValueChange = {},
-                label = { Text("Username") },
-                modifier = Modifier.padding(vertical = 16.dp)
+                modifier = Modifier.padding(16.dp),
+                value = state.email,
+                onValueChange = { email ->
+                    viewModel.sendIntent(UiIntent.OnEmailChanged(email))
+                },
+                label = { Text("Email") },
             )
 
-            TextField(
-                value = "",
-                onValueChange = {},
-                label = { Text("Password") },
-                modifier = Modifier.padding(16.dp)
+            PasswordTextField(
+                password = state.password,
+                isPasswordVisible = state.isPasswordVisible,
+                onPasswordChanged = { password ->
+                    viewModel.sendIntent(UiIntent.OnPasswordChanged(password))
+                },
+                onChangePasswordVisibility = {
+                    viewModel.sendIntent(UiIntent.OnChangePasswordVisibility)
+                }
             )
         }
     }
