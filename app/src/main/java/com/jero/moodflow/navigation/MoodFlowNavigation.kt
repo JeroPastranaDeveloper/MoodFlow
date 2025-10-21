@@ -1,0 +1,44 @@
+package com.jero.moodflow.navigation
+
+import androidx.compose.animation.SharedTransitionScope
+import androidx.navigation.NavGraphBuilder
+import androidx.navigation.compose.composable
+import com.jero.home.MoodFlowHome
+import com.jero.login.MoodFlowLogin
+import com.jero.navigation.MoodFLowScreen
+import com.jero.register.MoodFlowRegister
+
+context(SharedTransitionScope)
+fun NavGraphBuilder.moodFlowNavigation() {
+    composable<MoodFLowScreen.Login> {
+        MoodFlowLogin(this)
+    }
+
+    composable<MoodFLowScreen.Register> {
+        MoodFlowRegister(this)
+    }
+
+    composable<MoodFLowScreen.Home> {
+        MoodFlowHome(this)
+    }
+
+    /*composable<MoodFlowScreen.SelectDatabase> {
+        SelectDatabaseScreen(this)
+    }
+
+    composable<MoodFlowScreen.Accounts> {
+        AccountsScreen(this)
+    }
+
+    composable<MoodFlowScreen.AddEditAccount>(
+        typeMap = MoodFlowScreen.AddEditAccount.typeMap
+    ) {
+        AddEditAccountScreen(this)
+    }
+
+    composable<MoodFlowScreen.AccountDetail>(
+        typeMap = MoodFlowScreen.AccountDetail.typeMap
+    ) {
+        AccountDetailScreen(this)
+    }*/
+}
