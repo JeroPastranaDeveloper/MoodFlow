@@ -34,9 +34,9 @@ import com.jero.core.screen.HandleActions
 import com.jero.core.screen.SetStatusBarIconsColor
 import com.jero.designsystem.components.CustomDialog
 import com.jero.designsystem.components.MoodFlowAppBar
-import com.jero.home.AccountsViewContract.UiAction
-import com.jero.home.AccountsViewContract.UiIntent
-import com.jero.home.AccountsViewContract.UiState
+import com.jero.home.HomeViewContract.UiAction
+import com.jero.home.HomeViewContract.UiIntent
+import com.jero.home.HomeViewContract.UiState
 import com.jero.navigation.currentComposeNavigator
 import org.koin.androidx.compose.koinViewModel
 import org.koin.compose.koinInject
@@ -44,7 +44,7 @@ import org.koin.compose.koinInject
 @Composable
 fun SharedTransitionScope.MoodFlowHome(
     animatedVisibilityScope: AnimatedVisibilityScope,
-    viewModel: AccountsViewModel = koinViewModel()
+    viewModel: HomeViewModel = koinViewModel()
 ) {
     SetStatusBarIconsColor()
     val composeNavigator = currentComposeNavigator

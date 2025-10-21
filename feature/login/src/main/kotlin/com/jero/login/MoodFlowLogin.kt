@@ -15,11 +15,12 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import com.google.accompanist.systemuicontroller.rememberSystemUiController
 import com.jero.designsystem.components.MoodFlowAppBar
+import org.koin.androidx.compose.koinViewModel
 
 @Composable
 fun SharedTransitionScope.MoodFlowLogin(
     animatedVisibilityScope: AnimatedVisibilityScope,
-    // viewModel: HomeViewModel = koinViewModel()
+    viewModel: LoginViewModel = koinViewModel()
 ) {
     SetStatusBarIconsColor()
 

@@ -4,9 +4,8 @@ import android.net.Uri
 import com.jero.core.model.Account
 import com.jero.core.utils.emptyPairStrings
 import com.jero.core.utils.emptyString
-import com.jero.core.viewmodel.BaseViewContract
 
-class AccountsViewContract: BaseViewContract() {
+class HomeViewContract {
     data class UiState(
         val isLoading: Boolean = false,
         val accounts: List<Account> = emptyList(),
