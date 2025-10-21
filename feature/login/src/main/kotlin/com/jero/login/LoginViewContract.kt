@@ -7,6 +7,10 @@ class LoginViewContract {
         val isLoading: Boolean = false,
         val email: String = emptyString(),
         val password: String = emptyString(),
+        val emailError: String? = null,
+        val passwordError: String? = null,
+        val hasToValidateEmail: Boolean = false,
+        val hasToValidatePassword: Boolean = false,
         val isPasswordVisible: Boolean = false,
     )
 
@@ -14,7 +18,6 @@ class LoginViewContract {
         data class OnEmailChanged(val email: String) : UiIntent()
         data class OnPasswordChanged(val password: String) : UiIntent()
         data class OnChangePasswordVisibility(val visible: Boolean) : UiIntent()
-        data object OnLoginClicked : UiIntent()
         data object OnEmailLoginClicked : UiIntent()
         data object OnLoginWithGoogleClicked : UiIntent()
         data object OnSignUpClicked : UiIntent()
@@ -23,5 +26,6 @@ class LoginViewContract {
 
     sealed class UiAction {
         data object GoRegister : UiAction()
+        data class ShowToast(val message: String) : UiAction()
     }
 }

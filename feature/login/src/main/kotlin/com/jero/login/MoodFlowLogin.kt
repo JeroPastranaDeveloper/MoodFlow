@@ -1,5 +1,6 @@
 package com.jero.login
 
+import android.widget.Toast
 import androidx.activity.compose.BackHandler
 import androidx.compose.animation.AnimatedVisibilityScope
 import androidx.compose.animation.SharedTransitionScope
@@ -25,6 +26,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
@@ -60,9 +62,12 @@ fun SharedTransitionScope.MoodFlowLogin(
         }
     }
 
+    val context = LocalContext.current
+
     HandleActions(viewModel.actions) { action ->
         when (action) {
             UiAction.GoRegister -> {}
+            is UiAction.ShowToast -> Toast.makeText(context, action.message, Toast.LENGTH_SHORT).show()
         }
     }
 
@@ -102,12 +107,14 @@ fun SharedTransitionScope.MoodFlowLogin(
             ),
             keyboardActions = KeyboardActions(
                 onNext = { passwordFocusRequester.requestFocus() }
-            )
+            ),
+            isError = state.emailError != null,
+            errorMessage = state.emailError,
         ) { email ->
             viewModel.sendIntent(UiIntent.OnEmailChanged(email))
         }
 
-        Spacer(modifier = Modifier.height(16.dp))
+        Spacer(modifier = Modifier.height(8.dp))
 
         PasswordTextField(
             modifier = Modifier.padding(horizontal = 16.dp),
@@ -126,7 +133,9 @@ fun SharedTransitionScope.MoodFlowLogin(
             },
             onChangePasswordVisibility = { visible ->
                 viewModel.sendIntent(UiIntent.OnChangePasswordVisibility(visible))
-            }
+            },
+            isError = state.passwordError != null,
+            errorMessage = state.passwordError,
         )
 
         Spacer(modifier = Modifier.height(16.dp))
@@ -184,5 +193,6 @@ private fun LoginWithGoogleButton(onClick: () -> Unit) {
     MoodFlowButton(
         text = "Login with Google",
         leadingIconRes = R.drawable.ic_google_logo,
+        addBorder = true,
     ) { onClick() }
 }

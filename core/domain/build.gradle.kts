@@ -1,5 +1,6 @@
 plugins {
     id("jero.moodflow.android.library")
+    id("jero.moodflow.android.koin")
 }
 
 android {

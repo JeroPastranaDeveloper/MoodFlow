@@ -2,6 +2,7 @@ plugins {
     id("jero.moodflow.android.application")
     id("jero.moodflow.android.application.compose")
     id("jero.moodflow.android.koin")
+    id("com.google.gms.google-services")
 }
 
 android {
@@ -57,9 +58,13 @@ dependencies {
     implementation(projects.core.designsystem)
     implementation(projects.core.data)
     implementation(projects.core.viewmodel)
+    implementation(projects.core.domain)
 
     // Feature
     implementation(projects.feature.login)
     implementation(projects.feature.register)
     implementation(projects.feature.home)
+
+    // Auth
+    implementation(projects.authentication)
 }

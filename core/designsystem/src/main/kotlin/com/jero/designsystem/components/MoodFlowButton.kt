@@ -1,5 +1,6 @@
 package com.jero.designsystem.components
 
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -39,7 +40,8 @@ fun MoodFlowButton(
     leadingIconRes: Int? = null,
     trailingIconRes: Int? = null,
     textColor: Color = Color.Black,
-    backgroundColor: Color? = null,
+    backgroundColor: Color = Color.White,
+    addBorder: Boolean = false,
     cornerRadius: Dp = 12.dp,
     buttonHeight: Dp = 56.dp,
     onClick: () -> Unit
@@ -50,10 +52,11 @@ fun MoodFlowButton(
             .height(buttonHeight),
         onClick = onClick,
         colors = ButtonDefaults.buttonColors(
-            containerColor = backgroundColor ?: Color.White,
+            containerColor = backgroundColor,
         ),
         contentPadding = PaddingValues(horizontal = 16.dp),
         shape = RoundedCornerShape(cornerRadius),
+        border = if (addBorder) BorderStroke(1.dp, Color.LightGray) else null,
     ) {
         Box(
             modifier = Modifier.fillMaxWidth(),

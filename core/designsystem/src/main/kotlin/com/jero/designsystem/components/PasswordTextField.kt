@@ -29,6 +29,8 @@ import androidx.compose.ui.text.input.VisualTransformation
 fun PasswordTextField(
     modifier: Modifier = Modifier,
     password: String,
+    isError: Boolean = false,
+    errorMessage: String? = null,
     keyboardOptions: KeyboardOptions = KeyboardOptions.Default,
     keyboardActions: KeyboardActions = KeyboardActions.Default,
     focusRequester: FocusRequester = FocusRequester(),
@@ -39,6 +41,8 @@ fun PasswordTextField(
     MoodFlowTextField(
         modifier = modifier,
         text = password,
+        isError = isError,
+        errorMessage = errorMessage,
         placeHolder = "Password",
         keyboardOptions = keyboardOptions,
         keyboardActions = keyboardActions,
