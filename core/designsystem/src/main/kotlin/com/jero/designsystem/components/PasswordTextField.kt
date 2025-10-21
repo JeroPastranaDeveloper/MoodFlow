@@ -12,31 +12,38 @@ import androidx.compose.animation.slideInHorizontally
 import androidx.compose.animation.slideOutHorizontally
 import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.text.KeyboardActions
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.HideSource
 import androidx.compose.material.icons.filled.Visibility
 import androidx.compose.material3.Icon
-import androidx.compose.material3.Text
-import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
-import androidx.compose.ui.unit.dp
 
 @OptIn(ExperimentalAnimationApi::class)
 @Composable
 fun PasswordTextField(
+    modifier: Modifier = Modifier,
     password: String,
+    keyboardOptions: KeyboardOptions = KeyboardOptions.Default,
+    keyboardActions: KeyboardActions = KeyboardActions.Default,
+    focusRequester: FocusRequester = FocusRequester(),
     isPasswordVisible: Boolean = false,
     onPasswordChanged: (String) -> Unit,
     onChangePasswordVisibility: (Boolean) -> Unit,
 ) {
-    TextField(
-        modifier = Modifier.padding(16.dp),
-        value = password,
-        onValueChange = { newPassword ->
+    MoodFlowTextField(
+        modifier = modifier,
+        text = password,
+        placeHolder = "Password",
+        keyboardOptions = keyboardOptions,
+        keyboardActions = keyboardActions,
+        focusRequester = focusRequester,
+        onTextChange = { newPassword ->
             val filteredPassword = newPassword.filter { !it.isWhitespace() }
             if (filteredPassword != password) {
                 onPasswordChanged(filteredPassword)
@@ -45,7 +52,6 @@ fun PasswordTextField(
                 }
             }
         },
-        label = { Text("Password") },
         visualTransformation = if (!isPasswordVisible) PasswordVisualTransformation() else VisualTransformation.None,
         trailingIcon = {
             AnimatedVisibility(

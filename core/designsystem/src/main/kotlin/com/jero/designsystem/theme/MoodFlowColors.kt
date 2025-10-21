@@ -14,9 +14,10 @@ data class MoodFlowColors(
     val orange: Color,
     val green: Color,
     val blue: Color,
-    val grey: Color
+    val pastelBlue: Color,
+    val grey: Color,
+    val backGroundColor: Color,
 ) {
-
     companion object {
         @Composable
         fun defaultDarkColors(): MoodFlowColors = MoodFlowColors(
@@ -26,7 +27,9 @@ data class MoodFlowColors(
             orange = colorResource(id = R.color.orange),
             green = colorResource(id = R.color.green),
             blue = colorResource(id = R.color.blue),
-            grey = colorResource(id = R.color.grey)
+            pastelBlue = colorResource(id = R.color.pastelBlue),
+            grey = colorResource(id = R.color.grey),
+            backGroundColor = colorResource(id = R.color.backGroundColor),
         )
 
         @Composable
@@ -37,7 +40,9 @@ data class MoodFlowColors(
             orange = colorResource(id = R.color.orange),
             green = colorResource(id = R.color.green),
             blue = colorResource(id = R.color.blue),
-            grey = colorResource(id = R.color.grey)
+            pastelBlue = colorResource(id = R.color.pastelBlue),
+            grey = colorResource(id = R.color.grey),
+            backGroundColor = colorResource(id = R.color.backGroundColor),
         )
     }
 }

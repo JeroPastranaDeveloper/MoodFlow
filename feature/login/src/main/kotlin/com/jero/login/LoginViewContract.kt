@@ -15,7 +15,13 @@ class LoginViewContract {
         data class OnPasswordChanged(val password: String) : UiIntent()
         data class OnChangePasswordVisibility(val visible: Boolean) : UiIntent()
         data object OnLoginClicked : UiIntent()
+        data object OnEmailLoginClicked : UiIntent()
+        data object OnLoginWithGoogleClicked : UiIntent()
+        data object OnSignUpClicked : UiIntent()
+        data object OnBack : UiIntent()
     }
 
-    sealed class UiAction {}
+    sealed class UiAction {
+        data object GoRegister : UiAction()
+    }
 }

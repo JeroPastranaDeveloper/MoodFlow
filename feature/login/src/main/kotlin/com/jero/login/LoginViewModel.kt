@@ -16,6 +16,10 @@ class LoginViewModel(
             is UiIntent.OnPasswordChanged -> setPassword(intent.password)
             is UiIntent.OnChangePasswordVisibility -> changePasswordVisibility(intent.visible)
             UiIntent.OnLoginClicked -> {}
+            UiIntent.OnLoginWithGoogleClicked -> {}
+            UiIntent.OnSignUpClicked -> {}
+            UiIntent.OnEmailLoginClicked -> dispatchAction(UiAction.GoRegister)
+            UiIntent.OnBack -> {}
         }
     }
 
