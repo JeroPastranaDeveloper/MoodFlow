@@ -59,8 +59,8 @@ fun SharedTransitionScope.MoodFlowLogin(
                 onPasswordChanged = { password ->
                     viewModel.sendIntent(UiIntent.OnPasswordChanged(password))
                 },
-                onChangePasswordVisibility = {
-                    viewModel.sendIntent(UiIntent.OnChangePasswordVisibility)
+                onChangePasswordVisibility = { visible ->
+                    viewModel.sendIntent(UiIntent.OnChangePasswordVisibility(visible))
                 }
             )
         }

@@ -31,7 +31,7 @@ fun PasswordTextField(
     password: String,
     isPasswordVisible: Boolean = false,
     onPasswordChanged: (String) -> Unit,
-    onChangePasswordVisibility: () -> Unit,
+    onChangePasswordVisibility: (Boolean) -> Unit,
 ) {
     TextField(
         modifier = Modifier.padding(16.dp),
@@ -40,6 +40,9 @@ fun PasswordTextField(
             val filteredPassword = newPassword.filter { !it.isWhitespace() }
             if (filteredPassword != password) {
                 onPasswordChanged(filteredPassword)
+                if (filteredPassword.isBlank()) {
+                    onChangePasswordVisibility(false)
+                }
             }
         },
         label = { Text("Password") },
@@ -66,7 +69,7 @@ fun PasswordTextField(
                 ) { isVisible ->
                     Icon(
                         modifier = Modifier.clickable {
-                            onChangePasswordVisibility()
+                            onChangePasswordVisibility(!isVisible)
                         },
                         imageVector = if (isVisible) Icons.Filled.HideSource else Icons.Filled.Visibility,
                         contentDescription = "Toggle password visibility"

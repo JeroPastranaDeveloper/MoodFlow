@@ -14,8 +14,8 @@ class LoginViewModel(
         when (intent) {
             is UiIntent.OnEmailChanged -> setEmail(intent.email)
             is UiIntent.OnPasswordChanged -> setPassword(intent.password)
+            is UiIntent.OnChangePasswordVisibility -> changePasswordVisibility(intent.visible)
             UiIntent.OnLoginClicked -> {}
-            UiIntent.OnChangePasswordVisibility -> changePasswordVisibility()
         }
     }
 
@@ -27,7 +27,7 @@ class LoginViewModel(
         setState { copy(password = password) }
     }
 
-    private fun changePasswordVisibility() {
-        setState { copy(isPasswordVisible = !isPasswordVisible) }
+    private fun changePasswordVisibility(visible: Boolean) {
+        setState { copy(isPasswordVisible = visible) }
     }
 }
