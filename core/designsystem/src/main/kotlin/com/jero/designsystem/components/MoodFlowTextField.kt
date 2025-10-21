@@ -30,7 +30,7 @@ fun MoodFlowTextField(
     modifier: Modifier = Modifier,
     text: String,
     placeHolder: String,
-    height: Dp = 56.dp,
+    height: Dp = 68.dp,
     isError: Boolean = false,
     keyboardOptions: KeyboardOptions = KeyboardOptions.Default,
     keyboardActions: KeyboardActions = KeyboardActions.Default,
@@ -53,13 +53,13 @@ fun MoodFlowTextField(
 
     val currentBorderColor = when {
         isError -> Color.Red
-        isFocused -> Color.Blue
+        isFocused -> Color.DarkGray
         else -> Color.Gray
     }
 
     val currentLabelColor = when {
         isError -> Color.Red
-        isFocused -> Color.Blue
+        isFocused -> Color.DarkGray
         else -> Color.Gray
     }
 
@@ -89,7 +89,7 @@ fun MoodFlowTextField(
             disabledTextColor = currentLabelColor,
 
             focusedBorderColor = currentBorderColor,
-            unfocusedBorderColor = Color.White,
+            unfocusedBorderColor = Color.LightGray,
             disabledBorderColor = currentBorderColor,
             errorBorderColor = currentBorderColor,
 
