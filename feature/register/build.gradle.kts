@@ -9,10 +9,9 @@ android {
 
 dependencies {
     implementation(libs.accompanist.systemuicontroller)
-
-    /*implementation(projects.utils)
+    implementation(libs.androidx.material.icons.extended)
+    implementation(projects.core.screen)
     implementation(projects.core.domain)
+    implementation(projects.core.utils)
     implementation(projects.core.viewmodel)
-
-    implementation(projects.feature.details)*/
 }
