@@ -15,7 +15,6 @@ import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.LayoutDirection
 
-// Modifier base reutilizable en todos los casos
 context(SharedTransitionScope)
 fun Modifier.moodflowSharedElement(
     isLocalInspectionMode: Boolean,

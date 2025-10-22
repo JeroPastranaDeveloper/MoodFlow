@@ -1,9 +1,9 @@
 package com.jero.moodflow
 
 import android.app.Application
-import com.example.domain.di.authRepositoryModule
 import com.example.domain.di.validatorModule
 import com.jero.authentication.data.di.authDatasourceModule
+import com.jero.data.di.authUseCaseModule
 import com.jero.data.di.preferencesModule
 import com.jero.home.di.homeViewModelModule
 import com.jero.login.di.loginViewModelModule
@@ -21,7 +21,7 @@ class App : Application() {
                 navigationModule,
                 preferencesModule,
                 authDatasourceModule,
-                authRepositoryModule,
+                authUseCaseModule,
                 validatorModule,
                 loginViewModelModule,
                 homeViewModelModule,

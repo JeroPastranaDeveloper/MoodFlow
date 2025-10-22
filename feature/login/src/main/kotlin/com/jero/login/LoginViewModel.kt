@@ -52,7 +52,7 @@ class LoginViewModel(
 
     private fun signUp() {
         viewModelScope.launch {
-            val result = signUpUseCase.signup(state.value.email, state.value.password)
+            val result = signUpUseCase(state.value.email, state.value.password)
 
             result.fold(
                 onSuccess = { user ->
