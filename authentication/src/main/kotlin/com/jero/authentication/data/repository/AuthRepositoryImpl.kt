@@ -52,7 +52,6 @@ class AuthRepositoryImpl(
         Result.failure(mapFirebaseException(e))
     }
 
-
     override suspend fun getCurrentUser(): User? = firebaseDataSource.getCurrentUser()?.toDomain()
 
     override suspend fun sendPasswordResetEmail(email: String): Result<Unit> = try {

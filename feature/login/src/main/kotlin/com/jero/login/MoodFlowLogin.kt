@@ -1,5 +1,6 @@
 package com.jero.login
 
+import android.app.Activity
 import android.widget.Toast
 import androidx.activity.compose.BackHandler
 import androidx.compose.animation.AnimatedVisibilityScope
@@ -43,6 +44,8 @@ import com.jero.designsystem.theme.MoodFlowColors
 import com.jero.designsystem.utils.rememberKeyboardAsState
 import com.jero.login.LoginViewContract.UiAction
 import com.jero.login.LoginViewContract.UiIntent
+import com.jero.navigation.MoodFLowScreen
+import com.jero.navigation.currentComposeNavigator
 import org.koin.androidx.compose.koinViewModel
 
 @Composable
@@ -51,22 +54,23 @@ fun SharedTransitionScope.MoodFlowLogin(
     viewModel: LoginViewModel = koinViewModel(),
 ) {
     SetStatusBarIconsColor(darkIcons = true)
+    val composeNavigator = currentComposeNavigator
     val isKeyboardOpen by rememberKeyboardAsState()
     val focusManager = LocalFocusManager.current
+    val context = LocalContext.current
 
     val state by viewModel.state.collectAsState()
 
     BackHandler {
         if (!isKeyboardOpen) {
-            viewModel.sendIntent(UiIntent.OnBack)
+            (context as? Activity)?.finish()
         }
     }
 
-    val context = LocalContext.current
-
     HandleActions(viewModel.actions) { action ->
         when (action) {
-            UiAction.GoRegister -> {}
+            UiAction.GoHome -> {}
+            UiAction.GoRegister -> composeNavigator.navigate(MoodFLowScreen.Register)
             is UiAction.ShowToast -> Toast.makeText(context, action.message, Toast.LENGTH_SHORT).show()
         }
     }
@@ -146,11 +150,11 @@ fun SharedTransitionScope.MoodFlowLogin(
 
         Spacer(modifier = Modifier.height(16.dp))
 
-        LoginWithGoogleButton {
+        /*LoginWithGoogleButton {
             viewModel.sendIntent(UiIntent.OnLoginWithGoogleClicked)
         }
 
-        Spacer(modifier = Modifier.height(16.dp))
+        Spacer(modifier = Modifier.height(16.dp))*/
 
         NotAccountText {
             viewModel.sendIntent(UiIntent.OnSignUpClicked)

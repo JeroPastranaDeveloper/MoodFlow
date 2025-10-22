@@ -21,10 +21,10 @@ class LoginViewContract {
         data object OnEmailLoginClicked : UiIntent()
         data object OnLoginWithGoogleClicked : UiIntent()
         data object OnSignUpClicked : UiIntent()
-        data object OnBack : UiIntent()
     }
 
     sealed class UiAction {
+        data object GoHome : UiAction()
         data object GoRegister : UiAction()
         data class ShowToast(val message: String) : UiAction()
     }

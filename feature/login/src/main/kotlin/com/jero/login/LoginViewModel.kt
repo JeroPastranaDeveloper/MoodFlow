@@ -1,12 +1,11 @@
 package com.jero.login
 
 import androidx.lifecycle.viewModelScope
+import com.example.domain.handler.AuthErrorHandler
 import com.example.domain.preferences.PreferencesHandler
 import com.example.domain.usecase.SignInWithEmailUseCase
-import com.example.domain.usecase.SignUpWithEmailUseCase
 import com.example.domain.validator.EmailValidator
 import com.example.domain.validator.PasswordValidator
-import com.jero.core.model.AuthError
 import com.jero.core.viewmodel.BaseViewModelWithActions
 import com.jero.login.LoginViewContract.UiAction
 import com.jero.login.LoginViewContract.UiIntent
@@ -16,9 +15,9 @@ import kotlinx.coroutines.launch
 class LoginViewModel(
     private val preferencesHandler: PreferencesHandler,
     private val signInUseCase: SignInWithEmailUseCase,
-    private val signUpUseCase: SignUpWithEmailUseCase,
     private val emailValidator: EmailValidator,
     private val passwordValidator: PasswordValidator,
+    private val authErrorHandler: AuthErrorHandler,
 ) : BaseViewModelWithActions<UiState, UiIntent, UiAction>() {
     override val initialViewState = UiState()
     override suspend fun manageIntent(intent: UiIntent) {
@@ -27,9 +26,8 @@ class LoginViewModel(
             is UiIntent.OnPasswordChanged -> setPassword(intent.password)
             is UiIntent.OnChangePasswordVisibility -> changePasswordVisibility(intent.visible)
             UiIntent.OnLoginWithGoogleClicked -> {}
-            UiIntent.OnSignUpClicked -> {}
+            UiIntent.OnSignUpClicked -> dispatchAction(UiAction.GoRegister)
             UiIntent.OnEmailLoginClicked -> validateParams()
-            UiIntent.OnBack -> {}
         }
     }
 
@@ -38,7 +36,7 @@ class LoginViewModel(
         val passwordError = passwordValidator.validate(state.value.password)
 
         when {
-            emailError == null && passwordError == null -> signUp()
+            emailError == null && passwordError == null -> signIn()
             else -> setState {
                 copy(
                     emailError = emailError?.let { emailValidator.getErrorMessage(it) },
@@ -50,35 +48,21 @@ class LoginViewModel(
         }
     }
 
-    private fun signUp() {
+    private fun signIn() {
         viewModelScope.launch {
-            val result = signUpUseCase(state.value.email, state.value.password)
+            val result = signInUseCase(state.value.email, state.value.password)
 
             result.fold(
                 onSuccess = { user ->
                     preferencesHandler.isLogged = true
-                    dispatchAction(UiAction.ShowToast("logged"))
+                    dispatchAction(UiAction.GoHome)
                 },
                 onFailure = { error ->
-                    handleError(error)
+                    val message = authErrorHandler(error)
+                    dispatchAction(UiAction.ShowToast(message))
                 }
             )
         }
-    }
-
-    private fun handleError(error: Throwable) {
-        val message = when (error) {
-            is AuthError.InvalidEmail -> "Email inválido"
-            is AuthError.InvalidPassword -> "Contraseña debe tener al menos 6 caracteres"
-            is AuthError.UserNotFound -> "Usuario no encontrado"
-            is AuthError.EmailAlreadyInUse -> "El email ya está en uso"
-            is AuthError.WeakPassword -> "La contraseña es muy débil"
-            is AuthError.NetworkError -> "Error de conexión"
-            is AuthError.Unknown -> error.message
-            else -> "Error desconocido"
-        }
-
-        dispatchAction(UiAction.ShowToast(message))
     }
 
     private fun setEmail(email: String) {
