@@ -3,7 +3,7 @@ package com.jero.register
 import androidx.lifecycle.viewModelScope
 import com.example.domain.handler.AuthErrorHandler
 import com.example.domain.preferences.PreferencesHandler
-import com.example.domain.usecase.SignUpWithEmailUseCase
+import com.example.domain.usecase.user.SignUpWithEmailUseCase
 import com.example.domain.validator.EmailValidator
 import com.example.domain.validator.PasswordValidator
 import com.jero.core.viewmodel.BaseViewModelWithActions

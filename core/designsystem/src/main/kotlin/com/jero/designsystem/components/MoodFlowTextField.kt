@@ -31,6 +31,7 @@ import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
 import com.jero.designsystem.theme.MoodFlowColors
 
@@ -39,6 +40,7 @@ fun MoodFlowTextField(
     modifier: Modifier = Modifier,
     text: String,
     placeHolder: String,
+    placeHolderFontSize: TextUnit = TextUnit.Unspecified,
     height: Dp = 68.dp,
     isError: Boolean = false,
     errorMessage: String? = null,
@@ -46,6 +48,7 @@ fun MoodFlowTextField(
     keyboardActions: KeyboardActions = KeyboardActions.Default,
     focusRequester: FocusRequester = FocusRequester(),
     visualTransformation: VisualTransformation = VisualTransformation.None,
+    leadingIcon: @Composable (() -> Unit)? = null,
     trailingIcon: @Composable (() -> Unit)? = null,
     onTextChange: (String) -> Unit,
 ) {
@@ -79,6 +82,7 @@ fun MoodFlowTextField(
         isFocused -> Color.DarkGray
         else -> Color.Gray
     }
+
     Column(modifier = modifier) {
         OutlinedTextField(
             modifier = Modifier
@@ -87,12 +91,19 @@ fun MoodFlowTextField(
                 .fillMaxWidth(),
             value = text,
             onValueChange = onTextChange,
-            label = { Text(placeHolder, color = currentLabelColor) },
+            label = {
+                Text(
+                    placeHolder,
+                    color = currentLabelColor,
+                    fontSize = placeHolderFontSize
+                )
+            },
             isError = isError,
             shape = RoundedCornerShape(12.dp),
             keyboardOptions = keyboardOptions,
             keyboardActions = keyboardActions,
             visualTransformation = visualTransformation,
+            leadingIcon = leadingIcon,
             trailingIcon = trailingIcon,
             colors = OutlinedTextFieldDefaults.colors(
                 focusedContainerColor = Color.White,

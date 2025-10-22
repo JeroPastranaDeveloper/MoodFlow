@@ -1,7 +1,7 @@
-package com.example.domain.usecase
+package com.example.domain.usecase.user
 
 import com.jero.core.model.User
 
-interface SignInWithEmailUseCase {
+interface SignUpWithEmailUseCase {
     suspend operator fun invoke(email: String, password: String): Result<User>
 }

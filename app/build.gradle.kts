@@ -67,4 +67,7 @@ dependencies {
 
     // Auth
     implementation(projects.authentication)
+
+    // Database
+    implementation(projects.core.database)
 }

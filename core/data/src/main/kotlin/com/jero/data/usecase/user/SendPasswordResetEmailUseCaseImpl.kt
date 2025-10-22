@@ -1,7 +1,7 @@
 package com.jero.data.usecase
 
 import com.example.domain.repository.AuthRepository
-import com.example.domain.usecase.SendPasswordResetEmailUseCase
+import com.example.domain.usecase.user.SendPasswordResetEmailUseCase
 
 class SendPasswordResetEmailUseCaseImpl(
     private val authRepository: AuthRepository,
