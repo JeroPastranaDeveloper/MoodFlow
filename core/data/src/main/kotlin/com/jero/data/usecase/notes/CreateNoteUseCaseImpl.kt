@@ -11,18 +11,18 @@ class CreateNoteUseCaseImpl(
     private val auth: FirebaseAuth
 ) : CreateNoteUseCase {
     
-    override suspend fun invoke(title: String, content: String): Result<Note> {
+    override suspend fun invoke(note: Note): Result<Note> {
         val userId = auth.currentUser?.uid 
             ?: return Result.failure(Exception("Usuario no autenticado"))
         
-        if (title.isBlank()) {
+        if (note.title.isBlank()) {
             return Result.failure(Exception("El título no puede estar vacío"))
         }
         
         val note = Note(
             id = UUID.randomUUID().toString(),
-            title = title.trim(),
-            content = content.trim(),
+            title = note.title.trim(),
+            content = note.content.trim(),
             date = System.currentTimeMillis(),
             userId = userId
         )

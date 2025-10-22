@@ -4,6 +4,7 @@ import android.app.Application
 import com.example.domain.di.authErrorHandlerModule
 import com.example.domain.di.validatorModule
 import com.jero.authentication.data.di.authDatasourceModule
+import com.jero.authentication.data.di.firebaseModule
 import com.jero.data.di.authUseCaseModule
 import com.jero.data.di.notesUseCaseModule
 import com.jero.data.di.preferencesModule
@@ -23,6 +24,7 @@ class App : Application() {
         startKoin {
             androidContext(this@App)
             modules(
+                firebaseModule,
                 mainViewModelModule,
                 navigationModule,
                 preferencesModule,
@@ -33,8 +35,8 @@ class App : Application() {
                 authErrorHandlerModule,
                 validatorModule,
                 loginViewModelModule,
-                homeViewModelModule,
                 registerViewModelModule,
+                homeViewModelModule,
             )
         }
     }

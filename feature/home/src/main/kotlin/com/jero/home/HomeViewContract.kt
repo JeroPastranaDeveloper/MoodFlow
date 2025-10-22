@@ -11,9 +11,13 @@ class HomeViewContract {
     )
 
     sealed class UiIntent {
+        data object OnCloseSession : UiIntent()
+        data object OnCreateNote : UiIntent()
         data class OnSearchQueryChanged(val query: String) : UiIntent()
     }
 
     sealed class UiAction {
+        data object GoHome : UiAction()
+        data class ShowToast(val message: String) : UiAction()
     }
 }

@@ -16,7 +16,7 @@ class NotesDataSourceImpl(
     private val database: FirebaseDatabase,
     private val auth: FirebaseAuth
 ) : NotesDataSource {
-    
+
     private fun getUserNotesRef(userId: String): DatabaseReference {
         return database.reference.child("users").child(userId).child("notes")
     }
@@ -46,7 +46,7 @@ class NotesDataSourceImpl(
             Result.failure(e)
         }
     }
-    
+
     override suspend fun deleteNote(noteId: String, userId: String): Result<Unit> {
         return try {
             val noteRef = getUserNotesRef(userId).child(noteId)
@@ -56,7 +56,7 @@ class NotesDataSourceImpl(
             Result.failure(e)
         }
     }
-    
+
     override suspend fun getNote(noteId: String, userId: String): Result<NoteEntity> {
         return try {
             val noteRef = getUserNotesRef(userId).child(noteId)
@@ -72,7 +72,7 @@ class NotesDataSourceImpl(
             Result.failure(e)
         }
     }
-    
+
     override suspend fun getAllNotes(userId: String): Result<List<NoteEntity>> {
         return try {
             val notesRef = getUserNotesRef(userId)
@@ -87,10 +87,10 @@ class NotesDataSourceImpl(
             Result.failure(e)
         }
     }
-    
+
     override fun observeNotes(userId: String): Flow<List<NoteEntity>> = callbackFlow {
         val notesRef = getUserNotesRef(userId).orderByChild("date")
-        
+
         val listener = object : ValueEventListener {
             override fun onDataChange(snapshot: DataSnapshot) {
                 val notes = snapshot.children.mapNotNull { 
@@ -98,14 +98,13 @@ class NotesDataSourceImpl(
                 }
                 trySend(notes)
             }
-            
+
             override fun onCancelled(error: DatabaseError) {
                 close(error.toException())
             }
         }
-        
+
         notesRef.addValueEventListener(listener)
-        
         awaitClose { notesRef.removeEventListener(listener) }
     }
 }

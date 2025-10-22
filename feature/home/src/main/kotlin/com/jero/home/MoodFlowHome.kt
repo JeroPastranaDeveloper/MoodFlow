@@ -1,6 +1,7 @@
 package com.jero.home
 
 import android.app.Activity
+import android.widget.Toast
 import androidx.activity.compose.BackHandler
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.AnimatedVisibilityScope
@@ -11,6 +12,7 @@ import androidx.compose.animation.fadeOut
 import androidx.compose.animation.scaleIn
 import androidx.compose.animation.scaleOut
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
@@ -42,7 +44,9 @@ import com.jero.core.utils.emptyString
 import com.jero.designsystem.components.MoodFlowTextField
 import com.jero.designsystem.theme.MoodFlowColors
 import com.jero.designsystem.utils.rememberKeyboardAsState
+import com.jero.home.HomeViewContract.UiAction
 import com.jero.home.HomeViewContract.UiIntent
+import com.jero.navigation.MoodFLowScreen
 import com.jero.navigation.currentComposeNavigator
 import org.koin.androidx.compose.koinViewModel
 
@@ -68,7 +72,7 @@ fun SharedTransitionScope.MoodFlowHome(
             MoodFlowTextField(
                 modifier = Modifier.padding(start = 16.dp, top = getTopSystemPadding(), end = 16.dp),
                 text = state.query,
-                placeHolder = "Buscar... ",
+                placeHolder = "Buscar...",
                 placeHolderFontSize = 20.sp,
                 leadingIcon = {
                     Icon(
@@ -111,7 +115,17 @@ fun SharedTransitionScope.MoodFlowHome(
                 .padding(horizontal = 16.dp)
         ) {
             Spacer(modifier = Modifier.height(8.dp))
-            Text("Hola")
+
+            Text(modifier = Modifier.clickable {
+                viewModel.sendIntent(UiIntent.OnCreateNote)
+            }, text = "Crear nota")
+
+            Spacer(modifier = Modifier.height(8.dp))
+
+            Text(modifier = Modifier.clickable {
+                viewModel.sendIntent(UiIntent.OnCloseSession)
+            }, text = "Cerrar sesión")
+
             LazyVerticalStaggeredGrid(
                 modifier = Modifier
                     .fillMaxSize()
@@ -133,6 +147,11 @@ fun SharedTransitionScope.MoodFlowHome(
     }
 
     HandleActions(viewModel.actions) { action ->
+        when (action) {
+            is UiAction.ShowToast -> Toast.makeText(context, action.message, Toast.LENGTH_SHORT)
+                .show()
 
+            UiAction.GoHome -> composeNavigator.navigate(MoodFLowScreen.Login)
+        }
     }
 }
