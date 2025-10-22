@@ -1,20 +1,20 @@
-package com.jero.login
+package com.jero.register
 
 import androidx.lifecycle.viewModelScope
 import com.example.domain.handler.AuthErrorHandler
 import com.example.domain.preferences.PreferencesHandler
-import com.example.domain.usecase.SignInWithEmailUseCase
+import com.example.domain.usecase.SignUpWithEmailUseCase
 import com.example.domain.validator.EmailValidator
 import com.example.domain.validator.PasswordValidator
 import com.jero.core.viewmodel.BaseViewModelWithActions
-import com.jero.login.LoginViewContract.UiAction
-import com.jero.login.LoginViewContract.UiIntent
-import com.jero.login.LoginViewContract.UiState
+import com.jero.register.RegisterViewContract.UiAction
+import com.jero.register.RegisterViewContract.UiIntent
+import com.jero.register.RegisterViewContract.UiState
 import kotlinx.coroutines.launch
 
-class LoginViewModel(
+class RegisterViewModel(
+    private val signUpUseCase: SignUpWithEmailUseCase,
     private val preferencesHandler: PreferencesHandler,
-    private val signInUseCase: SignInWithEmailUseCase,
     private val emailValidator: EmailValidator,
     private val passwordValidator: PasswordValidator,
     private val authErrorHandler: AuthErrorHandler,
@@ -24,28 +24,33 @@ class LoginViewModel(
         when (intent) {
             is UiIntent.OnEmailChanged -> setEmail(intent.email)
             is UiIntent.OnPasswordChanged -> setPassword(intent.password)
+            is UiIntent.OnRepeatPasswordChanged -> setRepeatPassword(intent.repeatPassword)
             is UiIntent.OnChangePasswordVisibility -> changePasswordVisibility(intent.visible)
+            is UiIntent.OnChangeRepeatPasswordVisibility -> changeRepeatPasswordVisibility(intent.visible)
             UiIntent.OnLoginWithGoogleClicked -> {}
-            UiIntent.OnSignUpClicked -> goRegister()
-            UiIntent.OnEmailLoginClicked -> validateParams()
+            UiIntent.OnSignUpClicked -> validateParams()
+            UiIntent.OnGoBack -> goBack()
         }
     }
 
-    private fun goRegister() {
-        setState { copy(emailError = null, passwordError = null) }
-        dispatchAction(UiAction.GoRegister)
+    private fun goBack() {
+        setState { copy(emailError = null, passwordError = null, repeatPasswordError = null) }
+        dispatchAction(UiAction.GoBack)
     }
 
     private fun validateParams() {
         val emailError = emailValidator.validate(state.value.email)
         val passwordError = passwordValidator.validate(state.value.password)
+        val repeatPasswordError = if (state.value.password != state.value.repeatPassword) "Passwords don't match"
+        else null
 
         when {
-            emailError == null && passwordError == null -> signIn()
+            emailError == null && passwordError == null && repeatPasswordError == null -> signUp()
             else -> setState {
                 copy(
                     emailError = emailError?.let { emailValidator.getErrorMessage(it) },
                     passwordError = passwordError?.let { passwordValidator.getErrorMessage(it) },
+                    repeatPasswordError = repeatPasswordError,
                     hasToValidateEmail = emailError != null,
                     hasToValidatePassword = passwordError != null,
                 )
@@ -53,9 +58,9 @@ class LoginViewModel(
         }
     }
 
-    private fun signIn() {
+    private fun signUp() {
         viewModelScope.launch {
-            val result = signInUseCase(state.value.email, state.value.password)
+            val result = signUpUseCase(state.value.email, state.value.password)
 
             result.fold(
                 onSuccess = { user ->
@@ -92,9 +97,27 @@ class LoginViewModel(
             } ?: setState { copy(passwordError = null) }
         }
         setState { copy(password = password) }
+        setRepeatPassword(state.value.repeatPassword)
+    }
+
+    private fun setRepeatPassword(repeatPassword: String) {
+        setRepeatPasswordError(repeatPassword = repeatPassword)
+        setState { copy(repeatPassword = repeatPassword) }
+    }
+
+    private fun setRepeatPasswordError(repeatPassword: String) {
+        val password = state.value.password
+        val errorMessage = if (repeatPassword != password) "Passwords don't match"
+        else null
+
+        setState { copy(repeatPasswordError = errorMessage) }
     }
 
     private fun changePasswordVisibility(visible: Boolean) {
         setState { copy(isPasswordVisible = visible) }
+    }
+
+    private fun changeRepeatPasswordVisibility(visible: Boolean) {
+        setState { copy(isRepeatPasswordVisible = visible) }
     }
 }

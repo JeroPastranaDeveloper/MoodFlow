@@ -9,6 +9,7 @@ import com.jero.data.di.preferencesModule
 import com.jero.home.di.homeViewModelModule
 import com.jero.login.di.loginViewModelModule
 import com.jero.navigation.navigationModule
+import com.jero.register.di.registerViewModelModule
 import org.koin.android.ext.koin.androidContext
 import org.koin.core.context.startKoin
 
@@ -27,6 +28,7 @@ class App : Application() {
                 validatorModule,
                 loginViewModelModule,
                 homeViewModelModule,
+                registerViewModelModule,
             )
         }
     }

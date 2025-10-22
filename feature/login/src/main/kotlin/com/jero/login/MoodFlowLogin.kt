@@ -13,6 +13,7 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.text.KeyboardActions
@@ -69,7 +70,7 @@ fun SharedTransitionScope.MoodFlowLogin(
 
     HandleActions(viewModel.actions) { action ->
         when (action) {
-            UiAction.GoHome -> {}
+            UiAction.GoHome -> composeNavigator.navigate(MoodFLowScreen.Home)
             UiAction.GoRegister -> composeNavigator.navigate(MoodFLowScreen.Register)
             is UiAction.ShowToast -> Toast.makeText(context, action.message, Toast.LENGTH_SHORT).show()
         }
@@ -85,7 +86,8 @@ fun SharedTransitionScope.MoodFlowLogin(
         modifier = Modifier
             .fillMaxSize()
             .background(MoodFlowColors.defaultLightColors().backGroundColor)
-            .padding(horizontal = 32.dp),
+            .padding(horizontal = 32.dp)
+            .imePadding(),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center,
     ) {
@@ -123,6 +125,7 @@ fun SharedTransitionScope.MoodFlowLogin(
         PasswordTextField(
             modifier = Modifier.padding(horizontal = 16.dp),
             password = state.password,
+            placeHolder = "Password",
             isPasswordVisible = state.isPasswordVisible,
             focusRequester = passwordFocusRequester,
             keyboardOptions = KeyboardOptions(
@@ -150,11 +153,11 @@ fun SharedTransitionScope.MoodFlowLogin(
 
         Spacer(modifier = Modifier.height(16.dp))
 
-        /*LoginWithGoogleButton {
+        LoginWithGoogleButton {
             viewModel.sendIntent(UiIntent.OnLoginWithGoogleClicked)
         }
 
-        Spacer(modifier = Modifier.height(16.dp))*/
+        Spacer(modifier = Modifier.height(16.dp))
 
         NotAccountText {
             viewModel.sendIntent(UiIntent.OnSignUpClicked)

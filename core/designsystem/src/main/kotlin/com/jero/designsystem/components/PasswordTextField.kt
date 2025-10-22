@@ -29,6 +29,7 @@ import androidx.compose.ui.text.input.VisualTransformation
 fun PasswordTextField(
     modifier: Modifier = Modifier,
     password: String,
+    placeHolder: String,
     isError: Boolean = false,
     errorMessage: String? = null,
     keyboardOptions: KeyboardOptions = KeyboardOptions.Default,
@@ -43,7 +44,7 @@ fun PasswordTextField(
         text = password,
         isError = isError,
         errorMessage = errorMessage,
-        placeHolder = "Password",
+        placeHolder = placeHolder,
         keyboardOptions = keyboardOptions,
         keyboardActions = keyboardActions,
         focusRequester = focusRequester,
