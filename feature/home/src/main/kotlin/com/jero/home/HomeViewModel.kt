@@ -6,11 +6,11 @@ import com.example.domain.preferences.PreferencesHandler
 import com.jero.core.model.Account
 import com.jero.core.utils.emptyPairStrings
 import com.jero.core.viewmodel.BaseViewModelWithActions
-import com.jero.home.AccountsViewContract.UiAction
-import com.jero.home.AccountsViewContract.UiIntent
-import com.jero.home.AccountsViewContract.UiState
+import com.jero.home.HomeViewContract.UiAction
+import com.jero.home.HomeViewContract.UiIntent
+import com.jero.home.HomeViewContract.UiState
 
-class AccountsViewModel(
+class HomeViewModel(
     private val preferencesHandler: PreferencesHandler,
 ) : BaseViewModelWithActions<UiState, UiIntent, UiAction>() {
 
@@ -61,7 +61,7 @@ class AccountsViewModel(
         setState {
             copy(
                 showDeleteAccountDialog = true,
-                selectedAccount = Pair<String, String>(accountId, uri)
+                selectedAccount = Pair(accountId, uri)
             )
         }
     }

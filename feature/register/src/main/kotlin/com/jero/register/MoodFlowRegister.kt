@@ -23,6 +23,25 @@ fun SharedTransitionScope.MoodFlowRegister(
 ) {
     SetStatusBarIconsColor()
 
+
+
+    /*private fun signUp() {
+        viewModelScope.launch {
+            val result = signUpUseCase(state.value.email, state.value.password)
+
+            result.fold(
+                onSuccess = { user ->
+                    preferencesHandler.isLogged = true
+                    dispatchAction(UiAction.ShowToast("logged"))
+                },
+                onFailure = { error ->
+                    val message = authErrorHandler(error)
+                    dispatchAction(UiAction.ShowToast(message))
+                }
+            )
+        }
+    }*/
+
     Scaffold(
         topBar = { MoodFlowAppBar() },
     ) { paddingValues ->

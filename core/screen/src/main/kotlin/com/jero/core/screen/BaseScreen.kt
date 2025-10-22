@@ -2,11 +2,11 @@ package com.jero.core.screen
 
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.graphics.Color
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.compose.LocalLifecycleOwner
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.lifecycle.repeatOnLifecycle
 import com.google.accompanist.systemuicontroller.rememberSystemUiController
 import kotlinx.coroutines.flow.Flow
@@ -34,12 +34,12 @@ fun <A> HandleActions(
 }
 
 @Composable
-fun SetStatusBarIconsColor() {
+fun SetStatusBarIconsColor(darkIcons: Boolean = false) {
 
     val systemUiController = rememberSystemUiController()
 
     systemUiController.setStatusBarColor(
         color = Color.Transparent,
-        darkIcons = false
+        darkIcons = darkIcons
     )
 }
