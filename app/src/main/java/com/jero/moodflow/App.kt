@@ -8,6 +8,7 @@ import com.jero.data.di.authUseCaseModule
 import com.jero.data.di.preferencesModule
 import com.jero.home.di.homeViewModelModule
 import com.jero.login.di.loginViewModelModule
+import com.jero.moodflow.di.mainViewModelModule
 import com.jero.navigation.navigationModule
 import com.jero.register.di.registerViewModelModule
 import org.koin.android.ext.koin.androidContext
@@ -20,6 +21,7 @@ class App : Application() {
         startKoin {
             androidContext(this@App)
             modules(
+                mainViewModelModule,
                 navigationModule,
                 preferencesModule,
                 authDatasourceModule,

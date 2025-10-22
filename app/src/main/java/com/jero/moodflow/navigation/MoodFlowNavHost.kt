@@ -7,11 +7,11 @@ import androidx.navigation.compose.NavHost
 import com.jero.navigation.MoodFLowScreen
 
 @Composable
-fun MoodFlowNavHost(navHostController: NavHostController) {
+fun MoodFlowNavHost(navHostController: NavHostController, isLogged: Boolean) {
     SharedTransitionLayout {
         NavHost(
             navController = navHostController,
-            startDestination = MoodFLowScreen.Login
+            startDestination = if (isLogged) MoodFLowScreen.Home else MoodFLowScreen.Login
         ) {
             moodFlowNavigation()
         }
