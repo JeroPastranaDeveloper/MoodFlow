@@ -6,24 +6,34 @@ import androidx.activity.compose.BackHandler
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.AnimatedVisibilityScope
 import androidx.compose.animation.SharedTransitionScope
+import androidx.compose.animation.core.MutableTransitionState
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.scaleIn
 import androidx.compose.animation.scaleOut
+import androidx.compose.animation.slideInVertically
+import androidx.compose.animation.slideOutVertically
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.staggeredgrid.LazyVerticalStaggeredGrid
 import androidx.compose.foundation.lazy.staggeredgrid.StaggeredGridCells
+import androidx.compose.foundation.lazy.staggeredgrid.StaggeredGridItemSpan
+import androidx.compose.foundation.lazy.staggeredgrid.items
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Search
+import androidx.compose.material3.Button
+import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.Scaffold
@@ -32,15 +42,19 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.window.Dialog
 import com.jero.core.screen.HandleActions
 import com.jero.core.screen.SetStatusBarIconsColor
 import com.jero.core.screen.getTopSystemPadding
 import com.jero.core.utils.emptyString
+import com.jero.designsystem.components.MoodFlowNote
 import com.jero.designsystem.components.MoodFlowTextField
 import com.jero.designsystem.theme.MoodFlowColors
 import com.jero.designsystem.utils.rememberKeyboardAsState
@@ -107,38 +121,172 @@ fun SharedTransitionScope.MoodFlowHome(
             }
         },
     ) { paddingValues ->
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .background(MoodFlowColors.defaultLightColors().backGroundColor)
-                .padding(paddingValues)
-                .padding(horizontal = 16.dp)
-        ) {
-            Spacer(modifier = Modifier.height(8.dp))
-
-            Text(modifier = Modifier.clickable {
-                viewModel.sendIntent(UiIntent.OnCreateNote)
-            }, text = "Crear nota")
-
-            Spacer(modifier = Modifier.height(8.dp))
-
-            Text(modifier = Modifier.clickable {
-                viewModel.sendIntent(UiIntent.OnCloseSession)
-            }, text = "Cerrar sesión")
-
+        Box(modifier = Modifier.fillMaxSize()) {
             LazyVerticalStaggeredGrid(
+                columns = StaggeredGridCells.Fixed(2),
                 modifier = Modifier
                     .fillMaxSize()
-                    .padding(paddingValues),
-                columns = StaggeredGridCells.Fixed(2),
-                verticalItemSpacing = 4.dp,
-                horizontalArrangement = Arrangement.spacedBy(4.dp),
-                content = {
-                    items(state.notes.size) { index ->
-                        Text(text = state.notes[index].title)
+                    .background(MoodFlowColors.defaultLightColors().backGroundColor)
+                    .padding(paddingValues)
+                    .padding(horizontal = 16.dp),
+                verticalItemSpacing = 8.dp,
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
+            ) {
+                item(span = StaggeredGridItemSpan.FullLine) {
+                    Spacer(modifier = Modifier.height(8.dp))
+                }
+
+                item(span = StaggeredGridItemSpan.FullLine) {
+                    Text(
+                        modifier = Modifier.clickable {
+                            viewModel.sendIntent(UiIntent.OnCreateNote)
+                        },
+                        text = "Crear nota"
+                    )
+                }
+
+                item(span = StaggeredGridItemSpan.FullLine) {
+                    Spacer(modifier = Modifier.height(8.dp))
+                }
+
+                item(span = StaggeredGridItemSpan.FullLine) {
+                    Text(
+                        modifier = Modifier.clickable {
+                            viewModel.sendIntent(UiIntent.OnCloseSession)
+                        },
+                        text = "Cerrar sesión"
+                    )
+                }
+
+                if (state.pinnedNotes.isNotEmpty()) {
+                    item(span = StaggeredGridItemSpan.FullLine) {
+                        Spacer(modifier = Modifier.height(16.dp))
+                    }
+
+                    item(span = StaggeredGridItemSpan.FullLine) {
+                        Text("Pinned notes")
+                    }
+
+                    items(
+                        items = state.pinnedNotes,
+                        key = { it.id }
+                    ) { note ->
+                        val visibleState = remember { MutableTransitionState(false) }
+
+                        LaunchedEffect(note.id) {
+                            visibleState.targetState = true
+                        }
+
+                        AnimatedVisibility(
+                            visibleState = visibleState,
+                            enter = slideInVertically(
+                                initialOffsetY = { it / 2 },
+                                animationSpec = tween(durationMillis = 300)
+                            ) + fadeIn(animationSpec = tween(durationMillis = 300)),
+                            exit = slideOutVertically(
+                                targetOffsetY = { it / 2 },
+                                animationSpec = tween(durationMillis = 300)
+                            ) + fadeOut(animationSpec = tween(durationMillis = 300))
+                        ) {
+                            MoodFlowNote(note = note) { noteId ->
+                                viewModel.sendIntent(UiIntent.OnDeleteNote(noteId))
+                            }
+                        }
+                    }
+
+                    item(span = StaggeredGridItemSpan.FullLine) {
+                        Spacer(modifier = Modifier.height(16.dp))
                     }
                 }
-            )
+
+                item(span = StaggeredGridItemSpan.FullLine) {
+                    Text("Notes")
+                }
+
+                items(
+                    items = state.notes,
+                    key = { it.id }
+                ) { note ->
+                    val visibleState = remember { MutableTransitionState(false) }
+
+                    LaunchedEffect(note.id) {
+                        visibleState.targetState = true
+                    }
+
+                    AnimatedVisibility(
+                        visibleState = visibleState,
+                        enter = slideInVertically(
+                            initialOffsetY = { it / 2 },
+                            animationSpec = tween(durationMillis = 300)
+                        ) + fadeIn(animationSpec = tween(durationMillis = 300)),
+                        exit = slideOutVertically(
+                            targetOffsetY = { it / 2 },
+                            animationSpec = tween(durationMillis = 300)
+                        ) + fadeOut(animationSpec = tween(durationMillis = 300))
+                    ) {
+                        MoodFlowNote(note = note) { noteId ->
+                            viewModel.sendIntent(UiIntent.OnDeleteNote(noteId))
+                        }
+                    }
+                }
+
+                item(span = StaggeredGridItemSpan.FullLine) {
+                    Spacer(modifier = Modifier.height(16.dp))
+                }
+            }
+
+            FloatingActionButton(
+                modifier = Modifier.align(Alignment.BottomEnd).padding(16.dp),
+                onClick = {
+                    viewModel.sendIntent(UiIntent.OnChangeNewNoteDialogVisibility)
+                }
+            ) {
+                Icon(imageVector = Icons.Default.Add, null)
+            }
+
+            if (state.showNewNoteDialog) {
+                Dialog(
+                    onDismissRequest = { viewModel.sendIntent(UiIntent.OnChangeNewNoteDialogVisibility) },
+                ) {
+                    Column {
+                        MoodFlowTextField(
+                            text = state.newNoteData.title,
+                            placeHolder = "Título",
+                            placeHolderFontSize = 20.sp,
+                        ) {
+                            viewModel.sendIntent(UiIntent.OnNewNoteTitleChanged(it))
+                        }
+
+                        Spacer(modifier = Modifier.height(8.dp))
+
+                        MoodFlowTextField(
+                            text = state.newNoteData.content,
+                            placeHolder = "Descripción",
+                            placeHolderFontSize = 20.sp,
+                        ) {
+                            viewModel.sendIntent(UiIntent.OnNewNoteDescriptionChanged(it))
+                        }
+
+                        Row {
+                            Button(
+                                onClick = {
+                                    viewModel.sendIntent(UiIntent.OnChangeNewNoteDialogVisibility)
+                                }
+                            ) {
+                                Text("Cancel")
+                            }
+
+                            Button(
+                                onClick = {
+                                    viewModel.sendIntent(UiIntent.OnCreateNote)
+                                }
+                            ) {
+                                Text("Create note")
+                            }
+                        }
+                    }
+                }
+            }
         }
     }
 

@@ -8,6 +8,7 @@ fun NoteEntity.toDomain(): Note = Note(
         title = title,
         content = content,
         date = date,
+        pinned = pinned,
         userId = userId
     )
 
@@ -16,5 +17,6 @@ fun Note.toEntity(): NoteEntity = NoteEntity(
         title = title,
         content = content,
         date = date,
+        pinned = pinned,
         userId = userId
     )

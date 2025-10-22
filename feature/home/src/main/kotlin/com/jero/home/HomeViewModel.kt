@@ -3,6 +3,7 @@ package com.jero.home
 import androidx.lifecycle.viewModelScope
 import com.example.domain.preferences.PreferencesHandler
 import com.example.domain.usecase.notes.CreateNoteUseCase
+import com.example.domain.usecase.notes.DeleteNoteUseCase
 import com.example.domain.usecase.notes.GetAllNotesUseCase
 import com.example.domain.usecase.user.SignOutUseCase
 import com.jero.core.model.Note
@@ -16,6 +17,7 @@ class HomeViewModel(
     private val preferencesHandler: PreferencesHandler,
     private val getAllNotesUseCase: GetAllNotesUseCase,
     private val createNoteUseCase: CreateNoteUseCase,
+    private val deleteNoteUseCase: DeleteNoteUseCase,
     private val closeSessionUseCase: SignOutUseCase,
 ) : BaseViewModelWithActions<UiState, UiIntent, UiAction>() {
 
@@ -23,13 +25,33 @@ class HomeViewModel(
     override suspend fun manageIntent(intent: UiIntent) {
         when (intent) {
             is UiIntent.OnSearchQueryChanged -> searchNotes(intent.query)
+            is UiIntent.OnDeleteNote -> deleteNote(intent.noteId)
+            is UiIntent.OnNewNoteTitleChanged -> setState { copy(newNoteData = newNoteData.copy(title = intent.title)) }
+            is UiIntent.OnNewNoteDescriptionChanged -> setState { copy(newNoteData = newNoteData.copy(content = intent.description)) }
+
             UiIntent.OnCreateNote -> createNote()
             UiIntent.OnCloseSession -> signOut()
+            UiIntent.OnChangeNewNoteDialogVisibility -> setState { copy(showNewNoteDialog = !showNewNoteDialog) }
         }
     }
 
     init {
         getAllNotes()
+    }
+
+    private fun deleteNote(noteId: String) {
+        viewModelScope.launch {
+            val result = deleteNoteUseCase(noteId)
+
+            result.fold(
+                onSuccess = {
+                    getAllNotes()
+                },
+                onFailure = {
+                    dispatchAction(UiAction.ShowToast(it.message.orEmpty()))
+                }
+            )
+        }
     }
 
     private fun signOut() {
@@ -49,22 +71,19 @@ class HomeViewModel(
     }
 
     private fun createNote() {
-        val note = Note(
-            title = "Patatuelas",
-            content = "",
-        )
         viewModelScope.launch {
-            val result = createNoteUseCase(note)
+            val result = createNoteUseCase(state.value.newNoteData)
 
             result.fold(
                 onSuccess = {
-                    dispatchAction(UiAction.ShowToast("Note created"))
                     getAllNotes()
                 },
                 onFailure = {
                     dispatchAction(UiAction.ShowToast(it.message.orEmpty()))
                 }
             )
+
+            setState { copy(showNewNoteDialog = false, newNoteData = Note()) }
         }
     }
 
@@ -73,8 +92,10 @@ class HomeViewModel(
             val result = getAllNotesUseCase()
 
             result.fold(
-                onSuccess = {
-                    setState { copy(notes = it) }
+                onSuccess = { allNotes ->
+                    val pinnedNotes = allNotes.filter { it.pinned }
+                    val otherNotes = allNotes.filter { !it.pinned }
+                    setState { copy(allNotes = allNotes, notes = otherNotes, pinnedNotes = pinnedNotes) }
                 },
                 onFailure = {
                     dispatchAction(UiAction.ShowToast(it.message.orEmpty()))

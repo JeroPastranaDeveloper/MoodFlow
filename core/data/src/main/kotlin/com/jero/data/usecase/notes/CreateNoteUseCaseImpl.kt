@@ -19,11 +19,12 @@ class CreateNoteUseCaseImpl(
             return Result.failure(Exception("El título no puede estar vacío"))
         }
         
-        val note = Note(
+        val note = note.copy(
             id = UUID.randomUUID().toString(),
             title = note.title.trim(),
             content = note.content.trim(),
             date = System.currentTimeMillis(),
+            pinned = note.pinned,
             userId = userId
         )
         
