@@ -325,7 +325,14 @@ fun SharedTransitionScope.MoodFlowHome(
     }
 
     BackHandler {
-        (context as? Activity)?.finish()
+        when {
+            isKeyboardOpen -> focusManager.clearFocus(force = true)
+            state.query.isNotBlank() -> {
+                viewModel.sendIntent(UiIntent.OnSearchQueryChanged(emptyString()))
+                focusManager.clearFocus(force = true)
+            }
+            else -> (context as? Activity)?.finish()
+        }
     }
 
     HandleActions(viewModel.actions) { action ->

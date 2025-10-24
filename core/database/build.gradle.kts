@@ -10,6 +10,8 @@ android {
 dependencies {
     implementation(projects.core.model)
     implementation(projects.core.domain)
+    implementation(projects.core.localdatabase)
+    implementation(projects.core.network)
     implementation(libs.firebase.database)
     implementation(libs.firebase.auth)
 }

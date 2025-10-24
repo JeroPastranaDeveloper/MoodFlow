@@ -6,7 +6,7 @@ import com.google.firebase.database.DatabaseError
 import com.google.firebase.database.DatabaseReference
 import com.google.firebase.database.FirebaseDatabase
 import com.google.firebase.database.ValueEventListener
-import com.jero.database.model.NoteEntity
+import com.jero.database.model.NoteDto
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.callbackFlow
@@ -21,7 +21,7 @@ class NotesDataSourceImpl(
         return database.reference.child("users").child(userId).child("notes")
     }
     
-    override suspend fun createNote(note: NoteEntity): Result<NoteEntity> {
+    override suspend fun createNote(note: NoteDto): Result<NoteDto> {
         return try {
             val userId = auth.currentUser?.uid 
                 ?: return Result.failure(Exception("Usuario no autenticado"))
@@ -34,7 +34,7 @@ class NotesDataSourceImpl(
         }
     }
     
-    override suspend fun updateNote(note: NoteEntity): Result<NoteEntity> {
+    override suspend fun updateNote(note: NoteDto): Result<NoteDto> {
         return try {
             val userId = auth.currentUser?.uid 
                 ?: return Result.failure(Exception("Usuario no autenticado"))
@@ -57,11 +57,11 @@ class NotesDataSourceImpl(
         }
     }
 
-    override suspend fun getNote(noteId: String, userId: String): Result<NoteEntity> {
+    override suspend fun getNote(noteId: String, userId: String): Result<NoteDto> {
         return try {
             val noteRef = getUserNotesRef(userId).child(noteId)
             val snapshot = noteRef.get().await()
-            val note = snapshot.getValue(NoteEntity::class.java)
+            val note = snapshot.getValue(NoteDto::class.java)
             
             if (note != null) {
                 Result.success(note)
@@ -73,14 +73,14 @@ class NotesDataSourceImpl(
         }
     }
 
-    override fun getAllNotes(userId: String): Flow<Result<List<NoteEntity>>> = callbackFlow {
+    override fun getAllNotes(userId: String): Flow<Result<List<NoteDto>>> = callbackFlow {
         val notesRef = getUserNotesRef(userId)
 
         val listener = object : ValueEventListener {
             override fun onDataChange(snapshot: DataSnapshot) {
                 try {
                     val notes = snapshot.children.mapNotNull {
-                        it.getValue(NoteEntity::class.java)
+                        it.getValue(NoteDto::class.java)
                     }.sortedByDescending { it.date }
 
                     trySend(Result.success(notes))
@@ -98,6 +98,15 @@ class NotesDataSourceImpl(
 
         awaitClose {
             notesRef.removeEventListener(listener)
+        }
+    }
+
+    override suspend fun syncNote(userId: String, note: NoteDto): Result<Unit> {
+        return try {
+            getUserNotesRef(userId).child(note.id).setValue(note).await()
+            Result.success(Unit)
+        } catch (e: Exception) {
+            Result.failure(e)
         }
     }
 }

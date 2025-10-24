@@ -5,6 +5,10 @@ plugins {
     id("com.google.gms.google-services")
 }
 
+configurations.all {
+    exclude(group = "com.intellij", module = "annotations")
+}
+
 android {
     namespace = "com.jero.moodflow"
     compileSdk = 36
@@ -32,8 +36,8 @@ android {
         }
     }
     compileOptions {
-        sourceCompatibility = JavaVersion.VERSION_11
-        targetCompatibility = JavaVersion.VERSION_11
+        sourceCompatibility = JavaVersion.VERSION_17
+        targetCompatibility = JavaVersion.VERSION_17
     }
     kotlinOptions {
         freeCompilerArgs += listOf(
@@ -41,7 +45,7 @@ android {
             "-Xno-call-assertions",
             "-Xno-receiver-assertions"
         )
-        jvmTarget = "11"
+        jvmTarget = "17"
     }
 }
 
@@ -59,8 +63,10 @@ dependencies {
     implementation(projects.core.navigation)
     implementation(projects.core.designsystem)
     implementation(projects.core.data)
+    implementation(projects.core.localdatabase)
     implementation(projects.core.viewmodel)
     implementation(projects.core.domain)
+    implementation(projects.core.network)
 
     // Feature
     implementation(projects.feature.login)

@@ -10,6 +10,7 @@ android {
 dependencies {
     // core modules
     api(projects.core.model)
+    implementation(libs.firebase.auth)
 
     // coroutines
     implementation(libs.kotlinx.coroutines.android)

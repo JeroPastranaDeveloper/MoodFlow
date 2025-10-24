@@ -18,6 +18,7 @@ dependencies {
     // implementation(projects.core.network)
     implementation(projects.core.domain)
     implementation(projects.core.utils)
+    implementation(projects.core.localdatabase)
     implementation(libs.firebase.auth)
     // implementation(projects.core.viewmodel)
     // testImplementation(projects.core.test)
