@@ -6,7 +6,7 @@ import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 
 @Composable
-fun CustomDialog(
+fun MoodFlowTwoOptionsDialog(
     titleText: String,
     bodyText: String,
     onAccept: () -> Unit,

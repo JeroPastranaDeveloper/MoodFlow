@@ -5,6 +5,7 @@ import com.example.domain.preferences.PreferencesHandler
 import com.example.domain.usecase.notes.CreateNoteUseCase
 import com.example.domain.usecase.notes.DeleteNoteUseCase
 import com.example.domain.usecase.notes.GetAllNotesUseCase
+import com.example.domain.usecase.notes.UpdateNoteUseCase
 import com.example.domain.usecase.user.SignOutUseCase
 import com.jero.core.model.Note
 import com.jero.core.viewmodel.BaseViewModelWithActions
@@ -19,19 +20,38 @@ class HomeViewModel(
     private val createNoteUseCase: CreateNoteUseCase,
     private val deleteNoteUseCase: DeleteNoteUseCase,
     private val closeSessionUseCase: SignOutUseCase,
+    private val updateNoteUseCase: UpdateNoteUseCase,
 ) : BaseViewModelWithActions<UiState, UiIntent, UiAction>() {
 
     override val initialViewState = UiState()
     override suspend fun manageIntent(intent: UiIntent) {
         when (intent) {
             is UiIntent.OnSearchQueryChanged -> searchNotes(intent.query)
-            is UiIntent.OnDeleteNote -> deleteNote(intent.noteId)
-            is UiIntent.OnNewNoteTitleChanged -> setState { copy(newNoteData = newNoteData.copy(title = intent.title)) }
-            is UiIntent.OnNewNoteDescriptionChanged -> setState { copy(newNoteData = newNoteData.copy(content = intent.description)) }
+            is UiIntent.OnNoteTitleChanged -> setState {
+                copy(
+                    selectedNoteData = selectedNoteData.copy(
+                        title = intent.title
+                    )
+                )
+            }
 
+            is UiIntent.OnNoteDescriptionChanged -> setState {
+                copy(
+                    selectedNoteData = selectedNoteData.copy(
+                        content = intent.description
+                    )
+                )
+            }
+            is UiIntent.OnShowEditNoteDialog -> showEditNoteDialog(intent.noteId)
+            is UiIntent.OnShowDeleteNoteDialog -> showDeleteNoteDialog(intent.noteId)
+            is UiIntent.OnPinChanged -> changePin(intent.pinned)
+
+            UiIntent.OnDeleteNote -> deleteNote()
             UiIntent.OnCreateNote -> createNote()
             UiIntent.OnCloseSession -> signOut()
-            UiIntent.OnChangeNewNoteDialogVisibility -> setState { copy(showNewNoteDialog = !showNewNoteDialog) }
+            UiIntent.OnChangeNoteDialogVisibility -> setState { copy(showNoteDialog = !showNoteDialog, selectedNoteData = Note()) }
+            UiIntent.OnChangeDeleteNoteDialogVisibility -> setState { copy(showDeleteNoteDialog = !showDeleteNoteDialog, selectedNoteData = Note()) }
+            UiIntent.OnEditNote -> editNote()
         }
     }
 
@@ -39,12 +59,44 @@ class HomeViewModel(
         observeNotes()
     }
 
-    private fun deleteNote(noteId: String) {
+    private fun changePin(pinned: Boolean) {
+        setState { copy(selectedNoteData = selectedNoteData.copy(pinned = pinned)) }
+    }
+
+    private fun editNote() {
         viewModelScope.launch {
-            val result = deleteNoteUseCase(noteId)
+            val date = System.currentTimeMillis()
+            val result = updateNoteUseCase(state.value.selectedNoteData.copy(date = date))
 
             result.fold(
-                onSuccess = { /* no-op */ },
+                onSuccess = {
+                    setState { copy(showNoteDialog = false, selectedNoteData = Note()) }
+                },
+                onFailure = {
+                    dispatchAction(UiAction.ShowToast(it.message.orEmpty()))
+                }
+            )
+        }
+    }
+
+    private fun showDeleteNoteDialog(noteId: String) {
+        val note = state.value.allNotes.find { it.id == noteId } ?: Note()
+        setState { copy(showDeleteNoteDialog = true, selectedNoteData = note) }
+    }
+
+    private fun showEditNoteDialog(noteId: String) {
+        val note = state.value.allNotes.find { it.id == noteId } ?: Note()
+        setState { copy(showNoteDialog = true, selectedNoteData = note) }
+    }
+
+    private fun deleteNote() {
+        viewModelScope.launch {
+            val result = deleteNoteUseCase(state.value.selectedNoteData.id)
+
+            result.fold(
+                onSuccess = {
+                    setState { copy(selectedNoteData = Note(), showDeleteNoteDialog = false) }
+                },
                 onFailure = {
                     dispatchAction(UiAction.ShowToast(it.message.orEmpty()))
                 }
@@ -70,16 +122,16 @@ class HomeViewModel(
 
     private fun createNote() {
         viewModelScope.launch {
-            val result = createNoteUseCase(state.value.newNoteData)
+            val result = createNoteUseCase(state.value.selectedNoteData)
 
             result.fold(
-                onSuccess = { /* no-op */ },
+                onSuccess = {
+                    setState { copy(showNoteDialog = false, selectedNoteData = Note()) }
+                },
                 onFailure = {
                     dispatchAction(UiAction.ShowToast(it.message.orEmpty()))
                 }
             )
-
-            setState { copy(showNewNoteDialog = false, newNoteData = Note()) }
         }
     }
 

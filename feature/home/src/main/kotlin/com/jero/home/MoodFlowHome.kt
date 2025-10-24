@@ -18,8 +18,6 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
@@ -32,7 +30,6 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Search
-import androidx.compose.material3.Button
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -49,13 +46,14 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.compose.ui.window.Dialog
 import com.jero.core.screen.HandleActions
 import com.jero.core.screen.SetStatusBarIconsColor
 import com.jero.core.screen.getTopSystemPadding
 import com.jero.core.utils.emptyString
+import com.jero.designsystem.components.MoodFlowDialog
 import com.jero.designsystem.components.MoodFlowNote
 import com.jero.designsystem.components.MoodFlowTextField
+import com.jero.designsystem.components.MoodFlowTwoOptionsDialog
 import com.jero.designsystem.theme.MoodFlowColors
 import com.jero.designsystem.utils.rememberKeyboardAsState
 import com.jero.home.HomeViewContract.UiAction
@@ -181,9 +179,15 @@ fun SharedTransitionScope.MoodFlowHome(
                                 animationSpec = tween(durationMillis = 300)
                             ) + fadeOut(animationSpec = tween(durationMillis = 300))
                         ) {
-                            MoodFlowNote(note = note) { noteId ->
-                                viewModel.sendIntent(UiIntent.OnDeleteNote(noteId))
-                            }
+                            MoodFlowNote(
+                                note = note,
+                                onClick = { noteId ->
+                                    viewModel.sendIntent(UiIntent.OnShowEditNoteDialog(noteId))
+                                },
+                                onLongClick = { noteId ->
+                                    viewModel.sendIntent(UiIntent.OnShowDeleteNoteDialog(noteId))
+                                }
+                            )
                         }
                     }
 
@@ -217,9 +221,15 @@ fun SharedTransitionScope.MoodFlowHome(
                             animationSpec = tween(durationMillis = 300)
                         ) + fadeOut(animationSpec = tween(durationMillis = 300))
                     ) {
-                        MoodFlowNote(note = note) { noteId ->
-                            viewModel.sendIntent(UiIntent.OnDeleteNote(noteId))
-                        }
+                        MoodFlowNote(
+                            note = note,
+                            onClick = { noteId ->
+                                viewModel.sendIntent(UiIntent.OnShowEditNoteDialog(noteId))
+                            },
+                            onLongClick = { noteId ->
+                                viewModel.sendIntent(UiIntent.OnShowDeleteNoteDialog(noteId))
+                            }
+                        )
                     }
                 }
 
@@ -231,56 +241,51 @@ fun SharedTransitionScope.MoodFlowHome(
             FloatingActionButton(
                 modifier = Modifier
                     .align(Alignment.BottomEnd)
-                    .padding(16.dp),
+                    .padding(end = 16.dp, bottom = 32.dp),
                 onClick = {
-                    viewModel.sendIntent(UiIntent.OnChangeNewNoteDialogVisibility)
+                    viewModel.sendIntent(UiIntent.OnChangeNoteDialogVisibility)
                 }
             ) {
                 Icon(imageVector = Icons.Default.Add, null)
             }
 
-            if (state.showNewNoteDialog) {
-                Dialog(
-                    onDismissRequest = { viewModel.sendIntent(UiIntent.OnChangeNewNoteDialogVisibility) },
-                ) {
-                    Column {
-                        MoodFlowTextField(
-                            text = state.newNoteData.title,
-                            placeHolder = "Título",
-                            placeHolderFontSize = 20.sp,
-                        ) {
-                            viewModel.sendIntent(UiIntent.OnNewNoteTitleChanged(it))
+            if (state.showNoteDialog) {
+                MoodFlowDialog(
+                    note = state.selectedNoteData,
+                    onTitleChanged = {
+                        viewModel.sendIntent(UiIntent.OnNoteTitleChanged(it))
+                    },
+                    onDescriptionChanged = {
+                        viewModel.sendIntent(UiIntent.OnNoteDescriptionChanged(it))
+                    },
+                    onPinChanged = {
+                        viewModel.sendIntent(UiIntent.OnPinChanged(it))
+                    },
+                    onConfirm = {
+                        if (state.selectedNoteData.id.isBlank()) {
+                            viewModel.sendIntent(UiIntent.OnCreateNote)
                         }
-
-                        Spacer(modifier = Modifier.height(8.dp))
-
-                        MoodFlowTextField(
-                            text = state.newNoteData.content,
-                            placeHolder = "Descripción",
-                            placeHolderFontSize = 20.sp,
-                        ) {
-                            viewModel.sendIntent(UiIntent.OnNewNoteDescriptionChanged(it))
+                        else {
+                            viewModel.sendIntent(UiIntent.OnEditNote)
                         }
-
-                        Row {
-                            Button(
-                                onClick = {
-                                    viewModel.sendIntent(UiIntent.OnChangeNewNoteDialogVisibility)
-                                }
-                            ) {
-                                Text("Cancel")
-                            }
-
-                            Button(
-                                onClick = {
-                                    viewModel.sendIntent(UiIntent.OnCreateNote)
-                                }
-                            ) {
-                                Text("Create note")
-                            }
-                        }
+                    },
+                    onCancel = {
+                        viewModel.sendIntent(UiIntent.OnChangeNoteDialogVisibility)
                     }
-                }
+                )
+            }
+
+            if (state.showDeleteNoteDialog) {
+                MoodFlowTwoOptionsDialog(
+                    titleText = "Delete note",
+                    bodyText = "Are you sure you want to delete this note?",
+                    onAccept = {
+                        viewModel.sendIntent(UiIntent.OnDeleteNote)
+                    },
+                    onCancel = {
+                        viewModel.sendIntent(UiIntent.OnChangeDeleteNoteDialogVisibility)
+                    }
+                )
             }
         }
     }

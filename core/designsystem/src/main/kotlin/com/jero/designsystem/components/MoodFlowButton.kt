@@ -44,11 +44,12 @@ fun MoodFlowButton(
     addBorder: Boolean = false,
     cornerRadius: Dp = 12.dp,
     buttonHeight: Dp = 56.dp,
+    horizontalPadding: Dp = 16.dp,
     onClick: () -> Unit
 ) {
     Button(
         modifier = modifier
-            .padding(horizontal = 16.dp)
+            .padding(horizontal = horizontalPadding)
             .height(buttonHeight),
         onClick = onClick,
         colors = ButtonDefaults.buttonColors(

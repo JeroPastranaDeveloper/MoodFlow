@@ -9,18 +9,25 @@ class HomeViewContract {
         val notes: List<Note> = emptyList(),
         val pinnedNotes: List<Note> = emptyList(),
         val query: String = emptyString(),
-        val showNewNoteDialog: Boolean = false,
-        val newNoteData: Note = Note(),
+        val showNoteDialog: Boolean = false,
+        val showDeleteNoteDialog: Boolean = false,
+        val selectedNoteData: Note = Note(),
     )
 
     sealed class UiIntent {
         data object OnCloseSession : UiIntent()
         data object OnCreateNote : UiIntent()
-        data object OnChangeNewNoteDialogVisibility : UiIntent()
-        data class OnDeleteNote(val noteId: String) : UiIntent()
-        data class OnNewNoteTitleChanged(val title: String) : UiIntent()
-        data class OnNewNoteDescriptionChanged(val description: String) : UiIntent()
+        data object OnChangeNoteDialogVisibility : UiIntent()
+        data object OnDeleteNote : UiIntent()
+        data object OnChangeDeleteNoteDialogVisibility : UiIntent()
+        data object OnEditNote : UiIntent()
+
+        data class OnShowDeleteNoteDialog(val noteId: String) : UiIntent()
+        data class OnShowEditNoteDialog(val noteId: String) : UiIntent()
+        data class OnNoteTitleChanged(val title: String) : UiIntent()
+        data class OnNoteDescriptionChanged(val description: String) : UiIntent()
         data class OnSearchQueryChanged(val query: String) : UiIntent()
+        data class OnPinChanged(val pinned: Boolean) : UiIntent()
     }
 
     sealed class UiAction {

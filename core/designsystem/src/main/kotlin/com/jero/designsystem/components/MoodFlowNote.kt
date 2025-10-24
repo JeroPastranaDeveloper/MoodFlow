@@ -1,7 +1,8 @@
 package com.jero.designsystem.components
 
 import androidx.compose.foundation.BorderStroke
-import androidx.compose.foundation.clickable
+import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.height
@@ -16,16 +17,20 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.jero.core.model.Note
 
+@OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun MoodFlowNote(
     modifier: Modifier = Modifier,
     note: Note,
     onClick: (String) -> Unit,
+    onLongClick: (String) -> Unit,
 ) {
     Card(
-        modifier = modifier.clickable {
-            onClick(note.id)
-        },
+        modifier = modifier
+            .combinedClickable(
+                onClick = { onClick(note.id) },
+                onLongClick = { onLongClick(note.id) }
+            ),
         colors = CardDefaults.cardColors(
             containerColor = Color.White
         ),
