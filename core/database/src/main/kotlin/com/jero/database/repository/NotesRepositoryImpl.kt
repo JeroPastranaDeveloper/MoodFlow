@@ -16,13 +16,9 @@ class NotesRepositoryImpl(
 
     private fun getCurrentUserId(): String? = auth.currentUser?.uid
 
-    override suspend fun createNote(note: Note): Result<Note> {
-        val userId = getCurrentUserId()
-            ?: return Result.failure(Exception("Usuario no autenticado"))
-
-        return notesDataSource.createNote(note.toEntity())
+    override suspend fun createNote(note: Note): Result<Note> =
+        notesDataSource.createNote(note.toEntity())
             .map { it.toDomain() }
-    }
 
     override suspend fun updateNote(note: Note): Result<Note> =
         notesDataSource.updateNote(note.toEntity())
@@ -43,11 +39,9 @@ class NotesRepositoryImpl(
             .map { it.toDomain() }
     }
 
-    override suspend fun getAllNotes(userId: String): Result<List<Note>> =
+    override fun getAllNotes(userId: String): Flow<Result<List<Note>>> =
         notesDataSource.getAllNotes(userId)
-            .map { notes -> notes.map { it.toDomain() } }
-
-    override fun observeNotes(userId: String): Flow<List<Note>> =
-        notesDataSource.observeNotes(userId)
-            .map { notes -> notes.map { it.toDomain() } }
+            .map { result ->
+                result.map { notes -> notes.map { it.toDomain() } }
+            }
 }

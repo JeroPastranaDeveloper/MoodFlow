@@ -83,6 +83,8 @@ fun MoodFlowTextField(
         else -> Color.Gray
     }
 
+    val placeHolderFontSize = if (!isFocused) placeHolderFontSize else TextUnit.Unspecified
+
     Column(modifier = modifier) {
         OutlinedTextField(
             modifier = Modifier

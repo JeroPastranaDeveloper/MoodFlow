@@ -84,7 +84,12 @@ fun SharedTransitionScope.MoodFlowHome(
     Scaffold(
         topBar = {
             MoodFlowTextField(
-                modifier = Modifier.padding(start = 16.dp, top = getTopSystemPadding(), end = 16.dp),
+                modifier = Modifier.padding(
+                    start = 16.dp,
+                    top = getTopSystemPadding(),
+                    end = 16.dp,
+                    bottom = 16.dp
+                ),
                 text = state.query,
                 placeHolder = "Buscar...",
                 placeHolderFontSize = 20.sp,
@@ -132,18 +137,6 @@ fun SharedTransitionScope.MoodFlowHome(
                 verticalItemSpacing = 8.dp,
                 horizontalArrangement = Arrangement.spacedBy(8.dp),
             ) {
-                item(span = StaggeredGridItemSpan.FullLine) {
-                    Spacer(modifier = Modifier.height(8.dp))
-                }
-
-                item(span = StaggeredGridItemSpan.FullLine) {
-                    Text(
-                        modifier = Modifier.clickable {
-                            viewModel.sendIntent(UiIntent.OnCreateNote)
-                        },
-                        text = "Crear nota"
-                    )
-                }
 
                 item(span = StaggeredGridItemSpan.FullLine) {
                     Spacer(modifier = Modifier.height(8.dp))
@@ -236,7 +229,9 @@ fun SharedTransitionScope.MoodFlowHome(
             }
 
             FloatingActionButton(
-                modifier = Modifier.align(Alignment.BottomEnd).padding(16.dp),
+                modifier = Modifier
+                    .align(Alignment.BottomEnd)
+                    .padding(16.dp),
                 onClick = {
                     viewModel.sendIntent(UiIntent.OnChangeNewNoteDialogVisibility)
                 }

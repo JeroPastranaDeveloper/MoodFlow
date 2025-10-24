@@ -1,7 +1,8 @@
 package com.example.domain.usecase.notes
 
 import com.jero.core.model.Note
+import kotlinx.coroutines.flow.Flow
 
 interface GetAllNotesUseCase {
-    suspend operator fun invoke(): Result<List<Note>>
+    operator fun invoke(): Flow<Result<List<Note>>>
 }

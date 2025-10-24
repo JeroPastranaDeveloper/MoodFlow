@@ -36,7 +36,7 @@ class HomeViewModel(
     }
 
     init {
-        getAllNotes()
+        observeNotes()
     }
 
     private fun deleteNote(noteId: String) {
@@ -44,9 +44,7 @@ class HomeViewModel(
             val result = deleteNoteUseCase(noteId)
 
             result.fold(
-                onSuccess = {
-                    getAllNotes()
-                },
+                onSuccess = { /* no-op */ },
                 onFailure = {
                     dispatchAction(UiAction.ShowToast(it.message.orEmpty()))
                 }
@@ -75,9 +73,7 @@ class HomeViewModel(
             val result = createNoteUseCase(state.value.newNoteData)
 
             result.fold(
-                onSuccess = {
-                    getAllNotes()
-                },
+                onSuccess = { /* no-op */ },
                 onFailure = {
                     dispatchAction(UiAction.ShowToast(it.message.orEmpty()))
                 }
@@ -87,20 +83,26 @@ class HomeViewModel(
         }
     }
 
-    private fun getAllNotes() {
+    private fun observeNotes() {
         viewModelScope.launch {
-            val result = getAllNotesUseCase()
-
-            result.fold(
-                onSuccess = { allNotes ->
-                    val pinnedNotes = allNotes.filter { it.pinned }
-                    val otherNotes = allNotes.filter { !it.pinned }
-                    setState { copy(allNotes = allNotes, notes = otherNotes, pinnedNotes = pinnedNotes) }
-                },
-                onFailure = {
-                    dispatchAction(UiAction.ShowToast(it.message.orEmpty()))
-                }
-            )
+            getAllNotesUseCase().collect { result ->
+                result.fold(
+                    onSuccess = { allNotes ->
+                        val pinnedNotes = allNotes.filter { it.pinned }
+                        val otherNotes = allNotes.filter { !it.pinned }
+                        setState {
+                            copy(
+                                allNotes = allNotes,
+                                notes = otherNotes,
+                                pinnedNotes = pinnedNotes,
+                            )
+                        }
+                    },
+                    onFailure = {
+                        dispatchAction(UiAction.ShowToast(it.message.orEmpty()))
+                    }
+                )
+            }
         }
     }
 

@@ -73,38 +73,31 @@ class NotesDataSourceImpl(
         }
     }
 
-    override suspend fun getAllNotes(userId: String): Result<List<NoteEntity>> {
-        return try {
-            val notesRef = getUserNotesRef(userId)
-            val snapshot = notesRef.orderByChild("date").get().await()
-            
-            val notes = snapshot.children.mapNotNull { 
-                it.getValue(NoteEntity::class.java) 
-            }
-            
-            Result.success(notes)
-        } catch (e: Exception) {
-            Result.failure(e)
-        }
-    }
-
-    override fun observeNotes(userId: String): Flow<List<NoteEntity>> = callbackFlow {
-        val notesRef = getUserNotesRef(userId).orderByChild("date")
+    override fun getAllNotes(userId: String): Flow<Result<List<NoteEntity>>> = callbackFlow {
+        val notesRef = getUserNotesRef(userId)
 
         val listener = object : ValueEventListener {
             override fun onDataChange(snapshot: DataSnapshot) {
-                val notes = snapshot.children.mapNotNull { 
-                    it.getValue(NoteEntity::class.java) 
+                try {
+                    val notes = snapshot.children.mapNotNull {
+                        it.getValue(NoteEntity::class.java)
+                    }.sortedByDescending { it.date }
+
+                    trySend(Result.success(notes))
+                } catch (e: Exception) {
+                    trySend(Result.failure(e))
                 }
-                trySend(notes)
             }
 
             override fun onCancelled(error: DatabaseError) {
-                close(error.toException())
+                trySend(Result.failure(error.toException()))
             }
         }
 
         notesRef.addValueEventListener(listener)
-        awaitClose { notesRef.removeEventListener(listener) }
+
+        awaitClose {
+            notesRef.removeEventListener(listener)
+        }
     }
 }

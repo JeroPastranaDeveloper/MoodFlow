@@ -21,25 +21,4 @@ val notesDatasourceModule = module {
     single<NotesRepository> {
         NotesRepositoryImpl(get(), get())
     }
-    
-    /*// Use Cases
-    factory<CreateNoteUseCase> { 
-        CreateNoteUseCaseImpl(get(), get()) 
-    }
-    
-    factory<UpdateNoteUseCase> { 
-        UpdateNoteUseCaseImpl(get(), get()) 
-    }
-    
-    factory<DeleteNoteUseCase> { 
-        DeleteNoteUseCaseImpl(get()) 
-    }
-    
-    factory<GetAllNotesUseCase> { 
-        GetAllNotesUseCaseImpl(get(), get()) 
-    }
-    
-    factory<ObserveNotesUseCase> { 
-        ObserveNotesUseCaseImpl(get(), get()) 
-    }*/
 }
