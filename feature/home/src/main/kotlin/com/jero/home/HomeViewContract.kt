@@ -6,6 +6,7 @@ import com.jero.core.utils.emptyString
 class HomeViewContract {
     data class UiState(
         val allNotes: List<Note> = emptyList(),
+        val filteredNotes: List<Note> = emptyList(),
         val notes: List<Note> = emptyList(),
         val pinnedNotes: List<Note> = emptyList(),
         val query: String = emptyString(),

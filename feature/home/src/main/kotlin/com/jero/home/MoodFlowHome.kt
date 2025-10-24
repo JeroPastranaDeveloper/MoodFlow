@@ -135,31 +135,106 @@ fun SharedTransitionScope.MoodFlowHome(
                 verticalItemSpacing = 8.dp,
                 horizontalArrangement = Arrangement.spacedBy(8.dp),
             ) {
-
                 item(span = StaggeredGridItemSpan.FullLine) {
                     Spacer(modifier = Modifier.height(8.dp))
                 }
 
-                item(span = StaggeredGridItemSpan.FullLine) {
-                    Text(
-                        modifier = Modifier.clickable {
-                            viewModel.sendIntent(UiIntent.OnCloseSession)
-                        },
-                        text = "Cerrar sesión"
-                    )
-                }
+                if (state.query.isNotBlank()) {
+                    items(
+                        items = state.filteredNotes,
+                        key = { it.id }
+                    ) { note ->
+                        val visibleState = remember { MutableTransitionState(false) }
 
-                if (state.pinnedNotes.isNotEmpty()) {
+                        LaunchedEffect(note.id) {
+                            visibleState.targetState = true
+                        }
+
+                        AnimatedVisibility(
+                            visibleState = visibleState,
+                            enter = slideInVertically(
+                                initialOffsetY = { it / 2 },
+                                animationSpec = tween(durationMillis = 300)
+                            ) + fadeIn(animationSpec = tween(durationMillis = 300)),
+                            exit = slideOutVertically(
+                                targetOffsetY = { it / 2 },
+                                animationSpec = tween(durationMillis = 300)
+                            ) + fadeOut(animationSpec = tween(durationMillis = 300))
+                        ) {
+                            MoodFlowNote(
+                                note = note,
+                                onClick = { noteId ->
+                                    viewModel.sendIntent(UiIntent.OnShowEditNoteDialog(noteId))
+                                },
+                                onLongClick = { noteId ->
+                                    viewModel.sendIntent(UiIntent.OnShowDeleteNoteDialog(noteId))
+                                }
+                            )
+                        }
+                    }
+                } else {
                     item(span = StaggeredGridItemSpan.FullLine) {
-                        Spacer(modifier = Modifier.height(16.dp))
+                        Text(
+                            modifier = Modifier.clickable {
+                                viewModel.sendIntent(UiIntent.OnCloseSession)
+                            },
+                            text = "Cerrar sesión"
+                        )
+                    }
+
+                    if (state.pinnedNotes.isNotEmpty()) {
+                        item(span = StaggeredGridItemSpan.FullLine) {
+                            Spacer(modifier = Modifier.height(16.dp))
+                        }
+
+                        item(span = StaggeredGridItemSpan.FullLine) {
+                            Text("Pinned notes")
+                        }
+
+                        items(
+                            items = state.pinnedNotes,
+                            key = { it.id }
+                        ) { note ->
+                            val visibleState = remember { MutableTransitionState(false) }
+
+                            LaunchedEffect(note.id) {
+                                visibleState.targetState = true
+                            }
+
+                            AnimatedVisibility(
+                                visibleState = visibleState,
+                                enter = slideInVertically(
+                                    initialOffsetY = { it / 2 },
+                                    animationSpec = tween(durationMillis = 300)
+                                ) + fadeIn(animationSpec = tween(durationMillis = 300)),
+                                exit = slideOutVertically(
+                                    targetOffsetY = { it / 2 },
+                                    animationSpec = tween(durationMillis = 300)
+                                ) + fadeOut(animationSpec = tween(durationMillis = 300))
+                            ) {
+                                MoodFlowNote(
+                                    note = note,
+                                    onClick = { noteId ->
+                                        viewModel.sendIntent(UiIntent.OnShowEditNoteDialog(noteId))
+                                    },
+                                    onLongClick = { noteId ->
+                                        viewModel.sendIntent(UiIntent.OnShowDeleteNoteDialog(noteId))
+                                    }
+                                )
+                            }
+                        }
+
+                        item(span = StaggeredGridItemSpan.FullLine) {
+                            Spacer(modifier = Modifier.height(16.dp))
+                        }
                     }
 
                     item(span = StaggeredGridItemSpan.FullLine) {
-                        Text("Pinned notes")
+                        Text(if (state.pinnedNotes.isEmpty()) "Notes" else "Other notes")
                     }
 
                     items(
-                        items = state.pinnedNotes,
+                        items = state.notes,
                         key = { it.id }
                     ) { note ->
                         val visibleState = remember { MutableTransitionState(false) }
@@ -194,47 +269,6 @@ fun SharedTransitionScope.MoodFlowHome(
                     item(span = StaggeredGridItemSpan.FullLine) {
                         Spacer(modifier = Modifier.height(16.dp))
                     }
-                }
-
-                item(span = StaggeredGridItemSpan.FullLine) {
-                    Text("Notes")
-                }
-
-                items(
-                    items = state.notes,
-                    key = { it.id }
-                ) { note ->
-                    val visibleState = remember { MutableTransitionState(false) }
-
-                    LaunchedEffect(note.id) {
-                        visibleState.targetState = true
-                    }
-
-                    AnimatedVisibility(
-                        visibleState = visibleState,
-                        enter = slideInVertically(
-                            initialOffsetY = { it / 2 },
-                            animationSpec = tween(durationMillis = 300)
-                        ) + fadeIn(animationSpec = tween(durationMillis = 300)),
-                        exit = slideOutVertically(
-                            targetOffsetY = { it / 2 },
-                            animationSpec = tween(durationMillis = 300)
-                        ) + fadeOut(animationSpec = tween(durationMillis = 300))
-                    ) {
-                        MoodFlowNote(
-                            note = note,
-                            onClick = { noteId ->
-                                viewModel.sendIntent(UiIntent.OnShowEditNoteDialog(noteId))
-                            },
-                            onLongClick = { noteId ->
-                                viewModel.sendIntent(UiIntent.OnShowDeleteNoteDialog(noteId))
-                            }
-                        )
-                    }
-                }
-
-                item(span = StaggeredGridItemSpan.FullLine) {
-                    Spacer(modifier = Modifier.height(16.dp))
                 }
             }
 

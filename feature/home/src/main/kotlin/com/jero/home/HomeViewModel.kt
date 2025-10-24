@@ -140,8 +140,8 @@ class HomeViewModel(
             getAllNotesUseCase().collect { result ->
                 result.fold(
                     onSuccess = { allNotes ->
-                        val pinnedNotes = allNotes.filter { it.pinned }
                         val otherNotes = allNotes.filter { !it.pinned }
+                        val pinnedNotes = allNotes.filter { it.pinned }
                         setState {
                             copy(
                                 allNotes = allNotes,
@@ -149,6 +149,8 @@ class HomeViewModel(
                                 pinnedNotes = pinnedNotes,
                             )
                         }
+
+                        searchNotes(state.value.query)
                     },
                     onFailure = {
                         dispatchAction(UiAction.ShowToast(it.message.orEmpty()))
@@ -159,7 +161,10 @@ class HomeViewModel(
     }
 
     private fun searchNotes(query: String) {
-        /* meter delay al buscar */
-        setState { copy(query = query) }
+        val notes = state.value.allNotes.filter {
+            it.title.contains(query, true)
+        }
+
+        setState { copy(query = query, filteredNotes = notes) }
     }
 }
