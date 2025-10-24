@@ -1,10 +1,10 @@
 package com.jero.data.di
 
-import com.example.domain.usecase.GetCurrentUserUseCase
-import com.example.domain.usecase.SendPasswordResetEmailUseCase
-import com.example.domain.usecase.SignInWithEmailUseCase
-import com.example.domain.usecase.SignOutUseCase
-import com.example.domain.usecase.SignUpWithEmailUseCase
+import com.example.domain.usecase.user.GetCurrentUserUseCase
+import com.example.domain.usecase.user.SendPasswordResetEmailUseCase
+import com.example.domain.usecase.user.SignInWithEmailUseCase
+import com.example.domain.usecase.user.SignOutUseCase
+import com.example.domain.usecase.user.SignUpWithEmailUseCase
 import com.jero.data.usecase.GetCurrentUserUseCaseImpl
 import com.jero.data.usecase.SendPasswordResetEmailUseCaseImpl
 import com.jero.data.usecase.SignInWithEmailUseCaseImpl

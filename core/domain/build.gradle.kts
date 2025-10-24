@@ -10,7 +10,6 @@ android {
 dependencies {
     // core modules
     api(projects.core.model)
-    // implementation(projects.core.network)
 
     // coroutines
     implementation(libs.kotlinx.coroutines.android)

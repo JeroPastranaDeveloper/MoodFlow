@@ -1,34 +1,37 @@
 package com.jero.home
 
-import android.net.Uri
-import com.jero.core.model.Account
-import com.jero.core.utils.emptyPairStrings
+import com.jero.core.model.Note
 import com.jero.core.utils.emptyString
 
 class HomeViewContract {
     data class UiState(
-        val isLoading: Boolean = false,
-        val accounts: List<Account> = emptyList(),
-        val selectedAccount: Pair<String, String> = emptyPairStrings,
-        val showDeleteAccountDialog: Boolean = false,
+        val allNotes: List<Note> = emptyList(),
+        val notes: List<Note> = emptyList(),
+        val pinnedNotes: List<Note> = emptyList(),
+        val query: String = emptyString(),
+        val showNoteDialog: Boolean = false,
+        val showDeleteNoteDialog: Boolean = false,
+        val selectedNoteData: Note = Note(),
     )
 
     sealed class UiIntent {
-        data object ClearPreferences : UiIntent()
-        data object DeleteAccount : UiIntent()
-        data object HideDeleteAccountDialog : UiIntent()
-        data object LoadAccounts : UiIntent()
-        data class OnAddSeeAccount(val accountId: String = emptyString()) : UiIntent()
-        data class OnDeleteAccount(val accountId: String) : UiIntent()
-        data class OpenExplorer(val index: Int) : UiIntent()
-        data class SetAccounts(val accounts: List<Account>) : UiIntent()
+        data object OnCloseSession : UiIntent()
+        data object OnCreateNote : UiIntent()
+        data object OnChangeNoteDialogVisibility : UiIntent()
+        data object OnDeleteNote : UiIntent()
+        data object OnChangeDeleteNoteDialogVisibility : UiIntent()
+        data object OnEditNote : UiIntent()
+
+        data class OnShowDeleteNoteDialog(val noteId: String) : UiIntent()
+        data class OnShowEditNoteDialog(val noteId: String) : UiIntent()
+        data class OnNoteTitleChanged(val title: String) : UiIntent()
+        data class OnNoteDescriptionChanged(val description: String) : UiIntent()
+        data class OnSearchQueryChanged(val query: String) : UiIntent()
+        data class OnPinChanged(val pinned: Boolean) : UiIntent()
     }
 
     sealed class UiAction {
-        data class DeleteAccount(val accountId: String, val uri: Uri) : UiAction()
-        data object GoDatabaseSelection : UiAction()
-        data class LoadAccounts(val uri: String) : UiAction()
-        data class OnAddSeeAccount(val accountId: String) : UiAction()
-        data class OpenExplorer(val uri: Uri) : UiAction()
+        data object GoHome : UiAction()
+        data class ShowToast(val message: String) : UiAction()
     }
 }

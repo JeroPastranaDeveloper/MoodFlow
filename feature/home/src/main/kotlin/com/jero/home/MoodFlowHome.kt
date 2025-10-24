@@ -1,104 +1,291 @@
 package com.jero.home
 
+import android.app.Activity
+import android.widget.Toast
+import androidx.activity.compose.BackHandler
+import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.AnimatedVisibilityScope
 import androidx.compose.animation.SharedTransitionScope
+import androidx.compose.animation.core.MutableTransitionState
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.scaleIn
+import androidx.compose.animation.scaleOut
+import androidx.compose.animation.slideInVertically
+import androidx.compose.animation.slideOutVertically
+import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.lazy.staggeredgrid.LazyVerticalStaggeredGrid
+import androidx.compose.foundation.lazy.staggeredgrid.StaggeredGridCells
+import androidx.compose.foundation.lazy.staggeredgrid.StaggeredGridItemSpan
+import androidx.compose.foundation.lazy.staggeredgrid.items
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.Close
+import androidx.compose.material.icons.filled.Search
+import androidx.compose.material3.FloatingActionButton
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalFocusManager
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
+import com.jero.core.screen.HandleActions
+import com.jero.core.screen.SetStatusBarIconsColor
+import com.jero.core.screen.getTopSystemPadding
+import com.jero.core.utils.emptyString
+import com.jero.designsystem.components.MoodFlowDialog
+import com.jero.designsystem.components.MoodFlowNote
+import com.jero.designsystem.components.MoodFlowTextField
+import com.jero.designsystem.components.MoodFlowTwoOptionsDialog
+import com.jero.designsystem.theme.MoodFlowColors
+import com.jero.designsystem.utils.rememberKeyboardAsState
+import com.jero.home.HomeViewContract.UiAction
+import com.jero.home.HomeViewContract.UiIntent
+import com.jero.navigation.MoodFLowScreen
+import com.jero.navigation.currentComposeNavigator
 import org.koin.androidx.compose.koinViewModel
 
 @Composable
 fun SharedTransitionScope.MoodFlowHome(
     animatedVisibilityScope: AnimatedVisibilityScope,
-    viewModel: HomeViewModel = koinViewModel()
-) {/*
-    SetStatusBarIconsColor()
+    viewModel: HomeViewModel = koinViewModel(),
+) {
+    SetStatusBarIconsColor(darkIcons = true)
     val composeNavigator = currentComposeNavigator
-    val state by viewModel.state.collectAsState(UiState())
+    val state by viewModel.state.collectAsState()
 
     val context = LocalContext.current
-    val fileManager: FileManager = koinInject()
+    val isKeyboardOpen by rememberKeyboardAsState()
+    val focusManager = LocalFocusManager.current
 
-    LaunchedEffect(Unit) {
-        viewModel.sendIntent(UiIntent.LoadAccounts)
+    LaunchedEffect(isKeyboardOpen) {
+        if (!isKeyboardOpen) focusManager.clearFocus(force = true)
     }
 
     Scaffold(
-        topBar = { MoodFlowAppBar(
-            stringResource(R.string.accounts_screen_title),
-            showAdditionalOptions = true,
-            additionalOptions = listOf(
-                stringResource(R.string.select_another_database),
-                stringResource(R.string.github),
-                stringResource(R.string.linkedin),
-            ),
-        ) {
-            when (it) {
-                0 -> {
-                    viewModel.sendIntent(UiIntent.ClearPreferences)
-                }
-                1 -> {
-                    viewModel.sendIntent(UiIntent.OpenExplorer(it))
-                }
-                2 -> {
-                    viewModel.sendIntent(UiIntent.OpenExplorer(it))
-                }
+        topBar = {
+            MoodFlowTextField(
+                modifier = Modifier.padding(
+                    start = 16.dp,
+                    top = getTopSystemPadding(),
+                    end = 16.dp,
+                    bottom = 16.dp
+                ),
+                text = state.query,
+                placeHolder = "Buscar...",
+                placeHolderFontSize = 20.sp,
+                leadingIcon = {
+                    Icon(
+                        imageVector = Icons.Default.Search,
+                        contentDescription = "Buscar"
+                    )
+                },
+                trailingIcon = {
+                    AnimatedVisibility(
+                        visible = state.query.isNotBlank(),
+                        enter = fadeIn(animationSpec = tween(200)) + scaleIn(
+                            initialScale = 0.8f,
+                            animationSpec = tween(200)
+                        ),
+                        exit = fadeOut(animationSpec = tween(200)) + scaleOut(
+                            targetScale = 0.8f,
+                            animationSpec = tween(200)
+                        )
+                    ) {
+                        IconButton(onClick = {
+                            viewModel.sendIntent(UiIntent.OnSearchQueryChanged(emptyString()))
+                        }) {
+                            Icon(
+                                imageVector = Icons.Default.Close,
+                                contentDescription = "Borrar búsqueda"
+                            )
+                        }
+                    }
+                },
+            ) { query ->
+                viewModel.sendIntent(UiIntent.OnSearchQueryChanged(query))
             }
-        } },
+        },
     ) { paddingValues ->
         Box(modifier = Modifier.fillMaxSize()) {
+            LazyVerticalStaggeredGrid(
+                columns = StaggeredGridCells.Fixed(2),
+                modifier = Modifier
+                    .fillMaxSize()
+                    .background(MoodFlowColors.defaultLightColors().backGroundColor)
+                    .padding(paddingValues)
+                    .padding(horizontal = 16.dp),
+                verticalItemSpacing = 8.dp,
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
+            ) {
+
+                item(span = StaggeredGridItemSpan.FullLine) {
+                    Spacer(modifier = Modifier.height(8.dp))
+                }
+
+                item(span = StaggeredGridItemSpan.FullLine) {
+                    Text(
+                        modifier = Modifier.clickable {
+                            viewModel.sendIntent(UiIntent.OnCloseSession)
+                        },
+                        text = "Cerrar sesión"
+                    )
+                }
+
+                if (state.pinnedNotes.isNotEmpty()) {
+                    item(span = StaggeredGridItemSpan.FullLine) {
+                        Spacer(modifier = Modifier.height(16.dp))
+                    }
+
+                    item(span = StaggeredGridItemSpan.FullLine) {
+                        Text("Pinned notes")
+                    }
+
+                    items(
+                        items = state.pinnedNotes,
+                        key = { it.id }
+                    ) { note ->
+                        val visibleState = remember { MutableTransitionState(false) }
+
+                        LaunchedEffect(note.id) {
+                            visibleState.targetState = true
+                        }
+
+                        AnimatedVisibility(
+                            visibleState = visibleState,
+                            enter = slideInVertically(
+                                initialOffsetY = { it / 2 },
+                                animationSpec = tween(durationMillis = 300)
+                            ) + fadeIn(animationSpec = tween(durationMillis = 300)),
+                            exit = slideOutVertically(
+                                targetOffsetY = { it / 2 },
+                                animationSpec = tween(durationMillis = 300)
+                            ) + fadeOut(animationSpec = tween(durationMillis = 300))
+                        ) {
+                            MoodFlowNote(
+                                note = note,
+                                onClick = { noteId ->
+                                    viewModel.sendIntent(UiIntent.OnShowEditNoteDialog(noteId))
+                                },
+                                onLongClick = { noteId ->
+                                    viewModel.sendIntent(UiIntent.OnShowDeleteNoteDialog(noteId))
+                                }
+                            )
+                        }
+                    }
+
+                    item(span = StaggeredGridItemSpan.FullLine) {
+                        Spacer(modifier = Modifier.height(16.dp))
+                    }
+                }
+
+                item(span = StaggeredGridItemSpan.FullLine) {
+                    Text("Notes")
+                }
+
+                items(
+                    items = state.notes,
+                    key = { it.id }
+                ) { note ->
+                    val visibleState = remember { MutableTransitionState(false) }
+
+                    LaunchedEffect(note.id) {
+                        visibleState.targetState = true
+                    }
+
+                    AnimatedVisibility(
+                        visibleState = visibleState,
+                        enter = slideInVertically(
+                            initialOffsetY = { it / 2 },
+                            animationSpec = tween(durationMillis = 300)
+                        ) + fadeIn(animationSpec = tween(durationMillis = 300)),
+                        exit = slideOutVertically(
+                            targetOffsetY = { it / 2 },
+                            animationSpec = tween(durationMillis = 300)
+                        ) + fadeOut(animationSpec = tween(durationMillis = 300))
+                    ) {
+                        MoodFlowNote(
+                            note = note,
+                            onClick = { noteId ->
+                                viewModel.sendIntent(UiIntent.OnShowEditNoteDialog(noteId))
+                            },
+                            onLongClick = { noteId ->
+                                viewModel.sendIntent(UiIntent.OnShowDeleteNoteDialog(noteId))
+                            }
+                        )
+                    }
+                }
+
+                item(span = StaggeredGridItemSpan.FullLine) {
+                    Spacer(modifier = Modifier.height(16.dp))
+                }
+            }
 
             FloatingActionButton(
                 modifier = Modifier
                     .align(Alignment.BottomEnd)
-                    .padding(32.dp),
-                contentColor = Color.White,
-                containerColor = Color.Black,
-                onClick = { viewModel.sendIntent(UiIntent.OnAddSeeAccount()) }
+                    .padding(end = 16.dp, bottom = 32.dp),
+                onClick = {
+                    viewModel.sendIntent(UiIntent.OnChangeNoteDialogVisibility)
+                }
             ) {
-                Icon(
-                    painter = painterResource(
-                        R.drawable.ic_add
-                    ),
-                    contentDescription = "Add",
+                Icon(imageVector = Icons.Default.Add, null)
+            }
+
+            if (state.showNoteDialog) {
+                MoodFlowDialog(
+                    note = state.selectedNoteData,
+                    onTitleChanged = {
+                        viewModel.sendIntent(UiIntent.OnNoteTitleChanged(it))
+                    },
+                    onDescriptionChanged = {
+                        viewModel.sendIntent(UiIntent.OnNoteDescriptionChanged(it))
+                    },
+                    onPinChanged = {
+                        viewModel.sendIntent(UiIntent.OnPinChanged(it))
+                    },
+                    onConfirm = {
+                        if (state.selectedNoteData.id.isBlank()) {
+                            viewModel.sendIntent(UiIntent.OnCreateNote)
+                        }
+                        else {
+                            viewModel.sendIntent(UiIntent.OnEditNote)
+                        }
+                    },
+                    onCancel = {
+                        viewModel.sendIntent(UiIntent.OnChangeNoteDialogVisibility)
+                    }
                 )
             }
-            Column(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(paddingValues),
-                horizontalAlignment = Alignment.CenterHorizontally,
-            ) {
-                state.accounts.forEachIndexed { index, account ->
-                    Box(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .combinedClickable(
-                                onClick = {
-                                    viewModel.sendIntent(UiIntent.OnAddSeeAccount(account.id))
-                                },
-                                onLongClick = {
-                                    viewModel.sendIntent(UiIntent.OnDeleteAccount(account.id))
-                                }
-                            )
-                            .padding(16.dp)
-                    ) {
-                        Text(text = account.title)
-                    }
-                    if (index != state.accounts.lastIndex) {
-                        HorizontalDivider()
-                    }
-                }
 
-                if (state.showDeleteAccountDialog) {
-                    CustomDialog(
-                        stringResource(R.string.delete_account), stringResource(R.string.can_not_undone_action),
-                        onAccept = {
-                            viewModel.sendIntent(UiIntent.DeleteAccount)
-                        },
-                        onCancel = {
-                            viewModel.sendIntent(UiIntent.HideDeleteAccountDialog)
-                        }
-                    )
-                }
+            if (state.showDeleteNoteDialog) {
+                MoodFlowTwoOptionsDialog(
+                    titleText = "Delete note",
+                    bodyText = "Are you sure you want to delete this note?",
+                    onAccept = {
+                        viewModel.sendIntent(UiIntent.OnDeleteNote)
+                    },
+                    onCancel = {
+                        viewModel.sendIntent(UiIntent.OnChangeDeleteNoteDialogVisibility)
+                    }
+                )
             }
         }
     }
@@ -109,27 +296,10 @@ fun SharedTransitionScope.MoodFlowHome(
 
     HandleActions(viewModel.actions) { action ->
         when (action) {
-            is UiAction.OnAddSeeAccount -> {
+            is UiAction.ShowToast -> Toast.makeText(context, action.message, Toast.LENGTH_SHORT)
+                .show()
 
-            }
-
-            is UiAction.LoadAccounts -> {
-                val accounts = fileManager.readAccounts(context, action.uri.toUri())
-                viewModel.sendIntent(UiIntent.SetAccounts(accounts))
-            }
-
-            is UiAction.DeleteAccount -> {
-                val updatedAccounts =
-                    fileManager.deleteAccount(context, action.uri, action.accountId)
-                viewModel.sendIntent(UiIntent.SetAccounts(updatedAccounts))
-            }
-
-            UiAction.GoDatabaseSelection -> composeNavigator.navigateUp()
-
-            is UiAction.OpenExplorer -> {
-                val intent = Intent(Intent.ACTION_VIEW, action.uri)
-                context.startActivity(intent)
-            }
+            UiAction.GoHome -> composeNavigator.navigate(MoodFLowScreen.Login)
         }
-    }*/
+    }
 }

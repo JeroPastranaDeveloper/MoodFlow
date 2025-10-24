@@ -1,4 +1,4 @@
-package com.example.domain.usecase
+package com.example.domain.usecase.user
 
 import com.jero.core.model.User
 

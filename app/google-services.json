@@ -1,13 +1,13 @@
 {
   "project_info": {
-    "project_number": "663265690547",
-    "project_id": "moodflow-83802",
-    "storage_bucket": "moodflow-83802.firebasestorage.app"
+    "project_number": "962962151425",
+    "project_id": "moodflow-2d508",
+    "storage_bucket": "moodflow-2d508.firebasestorage.app"
   },
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:663265690547:android:ca2d44e30b451d0ef541c6",
+        "mobilesdk_app_id": "1:962962151425:android:5b4f5b2862db45cddd4800",
         "android_client_info": {
           "package_name": "com.jero.moodflow"
         }
@@ -15,7 +15,7 @@
       "oauth_client": [],
       "api_key": [
         {
-          "current_key": "AIzaSyBnFOYfEPbwavqpovt17CzkmeejysKef44"
+          "current_key": "AIzaSyD9_cNHazrCKO8BI0iU7mxwpsRP1BpD2ko"
         }
       ],
       "services": {

@@ -1,7 +1,7 @@
 package com.jero.data.usecase
 
 import com.example.domain.repository.AuthRepository
-import com.example.domain.usecase.SignOutUseCase
+import com.example.domain.usecase.user.SignOutUseCase
 
 class SignOutUseCaseImpl(
     private val authRepository: AuthRepository

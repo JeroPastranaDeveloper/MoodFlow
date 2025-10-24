@@ -53,6 +53,8 @@ dependencies {
     implementation(libs.androidx.compose.foundation)
     implementation(libs.androidx.material3.android)
 
+    implementation(libs.firebase.database)
+
     // Core
     implementation(projects.core.navigation)
     implementation(projects.core.designsystem)
@@ -67,4 +69,7 @@ dependencies {
 
     // Auth
     implementation(projects.authentication)
+
+    // Database
+    implementation(projects.core.database)
 }

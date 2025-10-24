@@ -1,7 +1,7 @@
 package com.jero.data.usecase
 
 import com.example.domain.repository.AuthRepository
-import com.example.domain.usecase.GetCurrentUserUseCase
+import com.example.domain.usecase.user.GetCurrentUserUseCase
 
 class GetCurrentUserUseCaseImpl(
     private val authRepository: AuthRepository
