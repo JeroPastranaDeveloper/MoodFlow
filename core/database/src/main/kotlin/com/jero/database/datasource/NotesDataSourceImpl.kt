@@ -81,7 +81,7 @@ class NotesDataSourceImpl(
                 try {
                     val notes = snapshot.children.mapNotNull {
                         it.getValue(NoteDto::class.java)
-                    }.sortedByDescending { it.date }
+                    }
 
                     trySend(Result.success(notes))
                 } catch (e: Exception) {

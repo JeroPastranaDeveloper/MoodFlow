@@ -6,14 +6,11 @@ import androidx.activity.compose.BackHandler
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.AnimatedVisibilityScope
 import androidx.compose.animation.SharedTransitionScope
-import androidx.compose.animation.core.MutableTransitionState
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.scaleIn
 import androidx.compose.animation.scaleOut
-import androidx.compose.animation.slideInVertically
-import androidx.compose.animation.slideOutVertically
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -39,7 +36,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
@@ -144,33 +140,16 @@ fun SharedTransitionScope.MoodFlowHome(
                         items = state.filteredNotes,
                         key = { it.id }
                     ) { note ->
-                        val visibleState = remember { MutableTransitionState(false) }
-
-                        LaunchedEffect(note.id) {
-                            visibleState.targetState = true
-                        }
-
-                        AnimatedVisibility(
-                            visibleState = visibleState,
-                            enter = slideInVertically(
-                                initialOffsetY = { it / 2 },
-                                animationSpec = tween(durationMillis = 300)
-                            ) + fadeIn(animationSpec = tween(durationMillis = 300)),
-                            exit = slideOutVertically(
-                                targetOffsetY = { it / 2 },
-                                animationSpec = tween(durationMillis = 300)
-                            ) + fadeOut(animationSpec = tween(durationMillis = 300))
-                        ) {
-                            MoodFlowNote(
-                                note = note,
-                                onClick = { noteId ->
-                                    viewModel.sendIntent(UiIntent.OnShowEditNoteDialog(noteId))
-                                },
-                                onLongClick = { noteId ->
-                                    viewModel.sendIntent(UiIntent.OnShowDeleteNoteDialog(noteId))
-                                }
-                            )
-                        }
+                        MoodFlowNote(
+                            modifier = Modifier.animateItem(),
+                            note = note,
+                            onClick = { noteId ->
+                                viewModel.sendIntent(UiIntent.OnShowEditNoteDialog(noteId))
+                            },
+                            onLongClick = { noteId ->
+                                viewModel.sendIntent(UiIntent.OnShowDeleteNoteDialog(noteId))
+                            }
+                        )
                     }
                 } else {
                     item(span = StaggeredGridItemSpan.FullLine) {
@@ -195,33 +174,16 @@ fun SharedTransitionScope.MoodFlowHome(
                             items = state.pinnedNotes,
                             key = { it.id }
                         ) { note ->
-                            val visibleState = remember { MutableTransitionState(false) }
-
-                            LaunchedEffect(note.id) {
-                                visibleState.targetState = true
-                            }
-
-                            AnimatedVisibility(
-                                visibleState = visibleState,
-                                enter = slideInVertically(
-                                    initialOffsetY = { it / 2 },
-                                    animationSpec = tween(durationMillis = 300)
-                                ) + fadeIn(animationSpec = tween(durationMillis = 300)),
-                                exit = slideOutVertically(
-                                    targetOffsetY = { it / 2 },
-                                    animationSpec = tween(durationMillis = 300)
-                                ) + fadeOut(animationSpec = tween(durationMillis = 300))
-                            ) {
-                                MoodFlowNote(
-                                    note = note,
-                                    onClick = { noteId ->
-                                        viewModel.sendIntent(UiIntent.OnShowEditNoteDialog(noteId))
-                                    },
-                                    onLongClick = { noteId ->
-                                        viewModel.sendIntent(UiIntent.OnShowDeleteNoteDialog(noteId))
-                                    }
-                                )
-                            }
+                            MoodFlowNote(
+                                modifier = Modifier.animateItem(),
+                                note = note,
+                                onClick = { noteId ->
+                                    viewModel.sendIntent(UiIntent.OnShowEditNoteDialog(noteId))
+                                },
+                                onLongClick = { noteId ->
+                                    viewModel.sendIntent(UiIntent.OnShowDeleteNoteDialog(noteId))
+                                }
+                            )
                         }
 
                         item(span = StaggeredGridItemSpan.FullLine) {
@@ -237,33 +199,16 @@ fun SharedTransitionScope.MoodFlowHome(
                         items = state.notes,
                         key = { it.id }
                     ) { note ->
-                        val visibleState = remember { MutableTransitionState(false) }
-
-                        LaunchedEffect(note.id) {
-                            visibleState.targetState = true
-                        }
-
-                        AnimatedVisibility(
-                            visibleState = visibleState,
-                            enter = slideInVertically(
-                                initialOffsetY = { it / 2 },
-                                animationSpec = tween(durationMillis = 300)
-                            ) + fadeIn(animationSpec = tween(durationMillis = 300)),
-                            exit = slideOutVertically(
-                                targetOffsetY = { it / 2 },
-                                animationSpec = tween(durationMillis = 300)
-                            ) + fadeOut(animationSpec = tween(durationMillis = 300))
-                        ) {
-                            MoodFlowNote(
-                                note = note,
-                                onClick = { noteId ->
-                                    viewModel.sendIntent(UiIntent.OnShowEditNoteDialog(noteId))
-                                },
-                                onLongClick = { noteId ->
-                                    viewModel.sendIntent(UiIntent.OnShowDeleteNoteDialog(noteId))
-                                }
-                            )
-                        }
+                        MoodFlowNote(
+                            modifier = Modifier.animateItem(),
+                            note = note,
+                            onClick = { noteId ->
+                                viewModel.sendIntent(UiIntent.OnShowEditNoteDialog(noteId))
+                            },
+                            onLongClick = { noteId ->
+                                viewModel.sendIntent(UiIntent.OnShowDeleteNoteDialog(noteId))
+                            }
+                        )
                     }
 
                     item(span = StaggeredGridItemSpan.FullLine) {

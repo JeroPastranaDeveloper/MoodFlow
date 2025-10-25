@@ -9,6 +9,7 @@ import com.jero.database.mapper.toDomain
 import com.jero.database.mapper.toDto
 import com.jero.database.mapper.toEntity
 import com.jero.localdatabase.dao.NoteDao
+import com.jero.localdatabase.model.PendingDeletionEntity
 import com.jero.network.NetworkMonitor
 import kotlinx.coroutines.flow.channelFlow
 import kotlinx.coroutines.flow.filter
@@ -23,40 +24,47 @@ class NotesRepositoryImpl(
 
     private fun getCurrentUserId(): String? = auth.currentUser?.uid
 
-    // Observar notas con sincronización bidireccional
-     override suspend fun getAllNotes(userId: String) = channelFlow {
+    override suspend fun getAllNotes(userId: String) = channelFlow {
         val userId = getCurrentUserId()
             ?: throw Exception("Usuario no autenticado")
 
-        // 1. Observar cambios en Room (fuente única de verdad local)
         launch {
-            notesDao.getNotesFlow().collect { entities ->
+            notesDao.getNotesFlow(userId).collect { entities ->
                 send(entities.map { it.toDomain() })
             }
         }
 
-        // 2. Sincronizar cambios pendientes cuando hay conexión
         launch {
             networkMonitor.observeConnectivity()
-                .filter { it } // Solo cuando hay conexión
+                .filter { it }
                 .collect {
                     syncPendingChanges(userId)
                 }
         }
 
-        // 3. Recibir actualizaciones de Firebase
         launch {
             notesDataSource.getAllNotes(userId).collect { result ->
                 result.onSuccess { notesDto ->
-                    // Merge inteligente: no sobrescribir cambios pendientes
-                    val pendingIds = notesDao.getPendingNotes().map { it.id }.toSet()
+                    val pendingIds = notesDao.getPendingNotes(userId).map { it.id }.toSet()
+                    val pendingDeletionIds = notesDao.getPendingDeletions(userId).map { it.noteId }.toSet()
+
+                    val firebaseIds = notesDto.map { it.id }.toSet()
+
+                    val localNotes = notesDao.getNotes(userId).filter { !it.pendingSync }
+
+                    localNotes.forEach { localNote ->
+                        if (localNote.id !in firebaseIds &&
+                            localNote.id !in pendingIds &&
+                            localNote.id !in pendingDeletionIds) {
+                            notesDao.deleteNote(localNote.id)
+                        }
+                    }
 
                     val notesToInsert = notesDto
-                        .filter { it.id !in pendingIds }
+                        .filter { it.id !in pendingIds && it.id !in pendingDeletionIds }
                         .map { dto ->
                             dto.toEntity().copy(
                                 pendingSync = false,
-                                date = System.currentTimeMillis()
                             )
                         }
 
@@ -73,14 +81,12 @@ class NotesRepositoryImpl(
             val userId = getCurrentUserId()
                 ?: return Result.failure(Exception("Usuario no autenticado"))
 
-            // Guardar en Room inmediatamente con pendingSync = true
             val entity = note.toEntity().copy(
                 userId = userId,
                 pendingSync = true
             )
             notesDao.insertNote(entity)
 
-            // Intentar sincronizar con Firebase si hay conexión
             if (networkMonitor.isConnected()) {
                 val syncResult = notesDataSource.syncNote(userId, entity.toDto())
                 syncResult.onSuccess {
@@ -99,7 +105,6 @@ class NotesRepositoryImpl(
             val userId = getCurrentUserId()
                 ?: return Result.failure(Exception("Usuario no autenticado"))
 
-            // Actualizar en Room con pendingSync = true
             val entity = note.toEntity().copy(
                 userId = userId,
                 pendingSync = true,
@@ -107,7 +112,6 @@ class NotesRepositoryImpl(
             )
             notesDao.insertNote(entity)
 
-            // Intentar sincronizar con Firebase si hay conexión
             if (networkMonitor.isConnected()) {
                 val syncResult = notesDataSource.syncNote(userId, entity.toDto())
                 syncResult.onSuccess {
@@ -126,14 +130,18 @@ class NotesRepositoryImpl(
             val userId = getCurrentUserId()
                 ?: return Result.failure(Exception("Usuario no autenticado"))
 
-            // Eliminar de Room inmediatamente
             notesDao.deleteNote(noteId)
 
-            // Intentar eliminar de Firebase si hay conexión
             if (networkMonitor.isConnected()) {
                 notesDataSource.deleteNote(noteId, userId)
+            } else {
+                notesDao.insertPendingDeletion(
+                    PendingDeletionEntity(
+                        noteId = noteId,
+                        userId = userId
+                    )
+                )
             }
-            // TODO: Guardar operación de eliminación pendiente para sincronizar después
 
             Result.success(Unit)
         } catch (e: Exception) {
@@ -143,13 +151,11 @@ class NotesRepositoryImpl(
 
     override suspend fun getNote(noteId: String): Result<Note> {
         return try {
-            // Primero intentar desde Room
             val entity = notesDao.getNoteById(noteId)
             if (entity != null) {
                 return Result.success(entity.toDomain())
             }
 
-            // Si no está en Room, buscar en Firebase
             val userId = getCurrentUserId()
                 ?: return Result.failure(Exception("Usuario no autenticado"))
 
@@ -160,18 +166,25 @@ class NotesRepositoryImpl(
         }
     }
 
-    // Sincronizar notas pendientes con Firebase
     private suspend fun syncPendingChanges(userId: String) {
         try {
-            val pendingNotes = notesDao.getPendingNotes()
-
+            val pendingNotes = notesDao.getPendingNotes(userId)
             pendingNotes.forEach { noteEntity ->
                 val result = notesDataSource.syncNote(userId, noteEntity.toDto())
-
                 result.onSuccess {
                     notesDao.markAsSynced(noteEntity.id)
                 }.onFailure {
                     Log.e("NotesRepository", "Failed to sync note ${noteEntity.id}", it)
+                }
+            }
+
+            val pendingDeletions = notesDao.getPendingDeletions(userId)
+            pendingDeletions.forEach { deletion ->
+                val result = notesDataSource.deleteNote(deletion.noteId, userId)
+                result.onSuccess {
+                    notesDao.removePendingDeletion(deletion.noteId)
+                }.onFailure {
+                    Log.e("NotesRepository", "Failed to delete note ${deletion.noteId}", it)
                 }
             }
         } catch (e: Exception) {

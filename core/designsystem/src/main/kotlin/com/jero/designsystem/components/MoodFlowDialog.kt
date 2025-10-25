@@ -66,7 +66,7 @@ fun MoodFlowDialog(
                     horizontalArrangement = Arrangement.Start,
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-                    Text("Pin note?")
+                    Text("Pin note")
 
                     Checkbox(checked = note.pinned, onCheckedChange = {
                         onPinChanged(it)

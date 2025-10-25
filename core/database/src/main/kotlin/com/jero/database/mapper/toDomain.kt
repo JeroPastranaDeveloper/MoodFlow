@@ -4,7 +4,6 @@ import com.jero.core.model.Note
 import com.jero.database.model.NoteDto
 import com.jero.localdatabase.model.NoteEntity
 
-// TODO: BORRAR TO DOMAIN Y NOTE TODTO
 fun NoteDto.toDomain(): Note = Note(
     id = id,
     title = title,
@@ -14,6 +13,7 @@ fun NoteDto.toDomain(): Note = Note(
     userId = userId,
     pendingSync = pendingSync,
 )
+
 fun NoteEntity.toDto(): NoteDto = NoteDto(
     id = id,
     title = title,
@@ -25,16 +25,6 @@ fun NoteEntity.toDto(): NoteDto = NoteDto(
 )
 
 fun NoteDto.toEntity(): NoteEntity = NoteEntity(
-    id = id,
-    title = title,
-    content = content,
-    date = date,
-    pinned = pinned,
-    userId = userId,
-    pendingSync = pendingSync,
-)
-
-fun Note.toDto(): NoteDto = NoteDto(
     id = id,
     title = title,
     content = content,

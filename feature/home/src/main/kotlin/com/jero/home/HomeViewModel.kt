@@ -151,11 +151,12 @@ class HomeViewModel(
     private fun observeNotes() {
         viewModelScope.launch {
             getAllNotesUseCase().collect { allNotes ->
-                val otherNotes = allNotes.filter { !it.pinned }
-                val pinnedNotes = allNotes.filter { it.pinned }
+                val sortedNotes = allNotes.sortedByDescending { it.date }
+                val otherNotes = sortedNotes.filter { !it.pinned }
+                val pinnedNotes = sortedNotes.filter { it.pinned }
                 setState {
                     copy(
-                        allNotes = allNotes,
+                        allNotes = sortedNotes,
                         notes = otherNotes,
                         pinnedNotes = pinnedNotes,
                     )

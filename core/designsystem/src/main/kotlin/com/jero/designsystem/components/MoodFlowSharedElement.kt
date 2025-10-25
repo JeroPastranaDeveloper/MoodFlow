@@ -16,7 +16,7 @@ import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.LayoutDirection
 
 context(SharedTransitionScope)
-fun Modifier.moodflowSharedElement(
+fun Modifier.moodFlowSharedElement(
     isLocalInspectionMode: Boolean,
     state: SharedContentState,
     animatedVisibilityScope: AnimatedVisibilityScope,
@@ -46,7 +46,7 @@ fun Modifier.moodflowSharedElementForText(
     isLocalInspectionMode: Boolean,
     state: SharedContentState,
     animatedVisibilityScope: AnimatedVisibilityScope,
-): Modifier = this.moodflowSharedElement(
+): Modifier = this.moodFlowSharedElement(
     isLocalInspectionMode = isLocalInspectionMode,
     state = state,
     animatedVisibilityScope = animatedVisibilityScope,

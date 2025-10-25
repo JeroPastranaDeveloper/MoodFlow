@@ -10,29 +10,28 @@ class CreateNoteUseCaseImpl(
     private val notesRepository: NotesRepository,
     private val auth: FirebaseAuth
 ) : CreateNoteUseCase {
-    
+
     override suspend fun invoke(note: Note): Result<Note> {
-        val userId = auth.currentUser?.uid 
+        val userId = auth.currentUser?.uid
             ?: return Result.failure(Exception("Usuario no autenticado"))
-        
+
         if (note.title.isBlank()) {
             return Result.failure(Exception("El título no puede estar vacío"))
         }
 
-        val id = UUID.randomUUID().toString()
+        val randomId = UUID.randomUUID().toString()
+        val date = System.currentTimeMillis()
+        val finalId = "${randomId}_${date}"
 
-        // TODO: HACER QUE GENERE UN NUEVO ID SI LA NOTA NO ES NOTE() (CREO QUE DEVOLVÍA ESO), PERO CREO QUE DEVUELVE UN FAILURE, MÍRALO BIEN. AL EDITAR SIN INTERNET, SE PONEN DEBAJO DEL TODO EN LA UI, REVISAR
-        notesRepository.getNote(id)
-        
-        val note = note.copy(
-            id = UUID.randomUUID().toString(),
+        val noteWithId = note.copy(
+            id = finalId,
             title = note.title.trim(),
             content = note.content.trim(),
-            date = System.currentTimeMillis(),
+            date = date,
             pinned = note.pinned,
             userId = userId
         )
-        
-        return notesRepository.createNote(note)
+
+        return notesRepository.createNote(noteWithId)
     }
 }
