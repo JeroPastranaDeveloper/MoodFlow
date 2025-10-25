@@ -1,19 +1,14 @@
-package com.jero.data.usecase.notes
+package com.example.domain.usecase.notes.implementations
 
 import com.example.domain.repository.NotesRepository
-import com.example.domain.usecase.notes.UpdateNoteUseCase
-import com.google.firebase.auth.FirebaseAuth
+import com.example.domain.usecase.notes.interfaces.UpdateNoteUseCase
 import com.jero.core.model.Note
 
 class UpdateNoteUseCaseImpl(
     private val notesRepository: NotesRepository,
-    private val auth: FirebaseAuth
 ) : UpdateNoteUseCase {
     
     override suspend fun invoke(note: Note): Result<Note> {
-        val userId = auth.currentUser?.uid 
-            ?: return Result.failure(Exception("Usuario no autenticado"))
-        
         if (note.title.isBlank()) {
             return Result.failure(Exception("El título no puede estar vacío"))
         }

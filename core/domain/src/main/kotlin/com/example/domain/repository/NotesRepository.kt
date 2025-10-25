@@ -8,5 +8,5 @@ interface NotesRepository {
     suspend fun updateNote(note: Note): Result<Note>
     suspend fun deleteNote(noteId: String): Result<Unit>
     suspend fun getNote(noteId: String): Result<Note>
-    fun getAllNotes(userId: String): Flow<Result<List<Note>>>
+    suspend fun getAllNotes(userId: String): Flow<List<Note>>
 }

@@ -1,4 +1,4 @@
-package com.example.domain.usecase.notes
+package com.example.domain.usecase.notes.interfaces
 
 import com.jero.core.model.Note
 

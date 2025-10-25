@@ -7,4 +7,5 @@ data class Note(
     val date: Long = 0,
     val pinned: Boolean = false,
     val userId: String = "",
+    val pendingSync: Boolean = false,
 )

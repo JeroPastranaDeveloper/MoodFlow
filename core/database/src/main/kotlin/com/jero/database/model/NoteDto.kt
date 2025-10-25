@@ -1,10 +1,11 @@
 package com.jero.database.model
 
-data class NoteEntity(
+data class NoteDto(
     val id: String = "",
     val title: String = "",
     val content: String = "",
     val date: Long = 0,
     val pinned: Boolean = false,
     val userId: String = "",
+    val pendingSync: Boolean = false,
 )

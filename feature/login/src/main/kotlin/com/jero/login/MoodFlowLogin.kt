@@ -148,12 +148,14 @@ fun SharedTransitionScope.MoodFlowLogin(
         Spacer(modifier = Modifier.height(16.dp))
 
         LoginButton {
+            focusManager.clearFocus(force = true)
             viewModel.sendIntent(UiIntent.OnEmailLoginClicked)
         }
 
         Spacer(modifier = Modifier.height(16.dp))
 
         LoginWithGoogleButton {
+            focusManager.clearFocus(force = true)
             viewModel.sendIntent(UiIntent.OnLoginWithGoogleClicked)
         }
 
