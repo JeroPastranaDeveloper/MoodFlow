@@ -1,6 +1,8 @@
 package com.jero.navigation
 
+import com.jero.core.model.Note
 import kotlinx.serialization.Serializable
+import kotlin.reflect.typeOf
 
 sealed interface MoodFLowScreen {
     @Serializable
@@ -11,6 +13,15 @@ sealed interface MoodFLowScreen {
 
     @Serializable
     data object Register : MoodFLowScreen
+
+    @Serializable
+    data class EditNote(val note: Note) : MoodFLowScreen {
+        companion object {
+            val typeMap = mapOf(
+                typeOf<Note>() to NoteType
+            )
+        }
+    }
 
     /*@Serializable
     data object SelectDatabase : MoodFLowScreen

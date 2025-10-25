@@ -8,6 +8,7 @@ import com.jero.authentication.data.di.authDatasourceModule
 import com.jero.data.di.authUseCaseModule
 import com.jero.data.di.preferencesModule
 import com.jero.database.di.notesDatasourceModule
+import com.jero.editnote.di.editNoteViewModelModule
 import com.jero.home.di.homeViewModelModule
 import com.jero.localdatabase.di.localDatabaseModule
 import com.jero.login.di.loginViewModelModule
@@ -38,6 +39,7 @@ class App : Application() {
                 validatorModule,
                 loginViewModelModule,
                 registerViewModelModule,
+                editNoteViewModelModule,
                 homeViewModelModule,
             )
         }

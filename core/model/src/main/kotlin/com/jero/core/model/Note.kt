@@ -1,5 +1,13 @@
 package com.jero.core.model
 
+import android.os.Parcelable
+import androidx.compose.runtime.Immutable
+import kotlinx.parcelize.Parcelize
+import kotlinx.serialization.Serializable
+
+@Immutable
+@Parcelize
+@Serializable
 data class Note(
     val id: String = "",
     val title: String = "",
@@ -8,4 +16,6 @@ data class Note(
     val pinned: Boolean = false,
     val userId: String = "",
     val pendingSync: Boolean = false,
-)
+) : Parcelable
+
+fun Note.hasContentWithoutId(): Boolean = (title.isNotEmpty() || content.isNotEmpty()) && id.isBlank()

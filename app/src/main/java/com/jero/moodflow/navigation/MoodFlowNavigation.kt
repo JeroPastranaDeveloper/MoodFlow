@@ -3,6 +3,7 @@ package com.jero.moodflow.navigation
 import androidx.compose.animation.SharedTransitionScope
 import androidx.navigation.NavGraphBuilder
 import androidx.navigation.compose.composable
+import com.jero.editnote.MoodFlowEditNote
 import com.jero.home.MoodFlowHome
 import com.jero.login.MoodFlowLogin
 import com.jero.navigation.MoodFLowScreen
@@ -20,6 +21,12 @@ fun NavGraphBuilder.moodFlowNavigation() {
 
     composable<MoodFLowScreen.Home> {
         MoodFlowHome(this)
+    }
+
+    composable<MoodFLowScreen.EditNote>(
+        typeMap = MoodFLowScreen.EditNote.typeMap
+    ) {
+        MoodFlowEditNote(this)
     }
 
     /*composable<MoodFlowScreen.SelectDatabase> {

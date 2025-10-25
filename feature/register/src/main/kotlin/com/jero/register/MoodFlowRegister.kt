@@ -59,7 +59,7 @@ fun SharedTransitionScope.MoodFlowRegister(
     animatedVisibilityScope: AnimatedVisibilityScope,
     viewModel: RegisterViewModel = koinViewModel()
 ) {
-    SetStatusBarIconsColor(darkIcons = true)
+    SetStatusBarIconsColor()
     val composeNavigator = currentComposeNavigator
     val isKeyboardOpen by rememberKeyboardAsState()
     val focusManager = LocalFocusManager.current

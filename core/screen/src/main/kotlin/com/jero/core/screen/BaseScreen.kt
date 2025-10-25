@@ -42,7 +42,7 @@ fun <A> HandleActions(
 }
 
 @Composable
-fun SetStatusBarIconsColor(darkIcons: Boolean = false) {
+fun SetStatusBarIconsColor(darkIcons: Boolean = true) {
 
     val systemUiController = rememberSystemUiController()
 

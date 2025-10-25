@@ -46,7 +46,6 @@ import com.jero.core.screen.HandleActions
 import com.jero.core.screen.SetStatusBarIconsColor
 import com.jero.core.screen.getTopSystemPadding
 import com.jero.core.utils.emptyString
-import com.jero.designsystem.components.MoodFlowDialog
 import com.jero.designsystem.components.MoodFlowNote
 import com.jero.designsystem.components.MoodFlowTextField
 import com.jero.designsystem.components.MoodFlowTwoOptionsDialog
@@ -63,7 +62,7 @@ fun SharedTransitionScope.MoodFlowHome(
     animatedVisibilityScope: AnimatedVisibilityScope,
     viewModel: HomeViewModel = koinViewModel(),
 ) {
-    SetStatusBarIconsColor(darkIcons = true)
+    SetStatusBarIconsColor()
     val composeNavigator = currentComposeNavigator
     val state by viewModel.state.collectAsState()
 
@@ -144,7 +143,7 @@ fun SharedTransitionScope.MoodFlowHome(
                             modifier = Modifier.animateItem(),
                             note = note,
                             onClick = { noteId ->
-                                viewModel.sendIntent(UiIntent.OnShowEditNoteDialog(noteId))
+                                viewModel.sendIntent(UiIntent.OnGoEditNoteScreen(noteId))
                             },
                             onLongClick = { noteId ->
                                 viewModel.sendIntent(UiIntent.OnShowDeleteNoteDialog(noteId))
@@ -178,7 +177,7 @@ fun SharedTransitionScope.MoodFlowHome(
                                 modifier = Modifier.animateItem(),
                                 note = note,
                                 onClick = { noteId ->
-                                    viewModel.sendIntent(UiIntent.OnShowEditNoteDialog(noteId))
+                                    viewModel.sendIntent(UiIntent.OnGoEditNoteScreen(noteId))
                                 },
                                 onLongClick = { noteId ->
                                     viewModel.sendIntent(UiIntent.OnShowDeleteNoteDialog(noteId))
@@ -203,7 +202,7 @@ fun SharedTransitionScope.MoodFlowHome(
                             modifier = Modifier.animateItem(),
                             note = note,
                             onClick = { noteId ->
-                                viewModel.sendIntent(UiIntent.OnShowEditNoteDialog(noteId))
+                                viewModel.sendIntent(UiIntent.OnGoEditNoteScreen(noteId))
                             },
                             onLongClick = { noteId ->
                                 viewModel.sendIntent(UiIntent.OnShowDeleteNoteDialog(noteId))
@@ -222,36 +221,10 @@ fun SharedTransitionScope.MoodFlowHome(
                     .align(Alignment.BottomEnd)
                     .padding(end = 16.dp, bottom = 32.dp),
                 onClick = {
-                    viewModel.sendIntent(UiIntent.OnChangeNoteDialogVisibility)
+                    viewModel.sendIntent(UiIntent.OnGoEditNoteScreen(null))
                 }
             ) {
                 Icon(imageVector = Icons.Default.Add, null)
-            }
-
-            if (state.showNoteDialog) {
-                MoodFlowDialog(
-                    note = state.selectedNoteData,
-                    onTitleChanged = {
-                        viewModel.sendIntent(UiIntent.OnNoteTitleChanged(it))
-                    },
-                    onDescriptionChanged = {
-                        viewModel.sendIntent(UiIntent.OnNoteDescriptionChanged(it))
-                    },
-                    onPinChanged = {
-                        viewModel.sendIntent(UiIntent.OnPinChanged(it))
-                    },
-                    onConfirm = {
-                        if (state.selectedNoteData.id.isBlank()) {
-                            viewModel.sendIntent(UiIntent.OnCreateNote)
-                        }
-                        else {
-                            viewModel.sendIntent(UiIntent.OnEditNote)
-                        }
-                    },
-                    onCancel = {
-                        viewModel.sendIntent(UiIntent.OnChangeNoteDialogVisibility)
-                    }
-                )
             }
 
             if (state.showDeleteNoteDialog) {
@@ -282,10 +255,11 @@ fun SharedTransitionScope.MoodFlowHome(
 
     HandleActions(viewModel.actions) { action ->
         when (action) {
+            UiAction.GoHome -> composeNavigator.navigate(MoodFLowScreen.Login)
+
             is UiAction.ShowToast -> Toast.makeText(context, action.message, Toast.LENGTH_SHORT)
                 .show()
-
-            UiAction.GoHome -> composeNavigator.navigate(MoodFLowScreen.Login)
+            is UiAction.GoEditNoteScreen -> composeNavigator.navigate(MoodFLowScreen.EditNote(action.note))
         }
     }
 }
