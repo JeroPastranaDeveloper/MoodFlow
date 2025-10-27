@@ -15,9 +15,11 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
+import com.jero.core.designsystem.R
 import com.jero.core.model.Note
 import com.jero.designsystem.theme.MoodFlowColors
 
@@ -81,7 +83,7 @@ fun MoodFlowDialog(
                 ) {
                     MoodFlowButton(
                         modifier = Modifier.weight(1f),
-                        text = "Cancel",
+                        text = stringResource(R.string.cancel_button),
                         addBorder = true,
                         horizontalPadding = 0.dp,
                     ) {

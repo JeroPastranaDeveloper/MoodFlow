@@ -3,9 +3,11 @@ package com.jero.register
 import androidx.lifecycle.viewModelScope
 import com.example.domain.handler.AuthErrorHandler
 import com.example.domain.preferences.PreferencesHandler
+import com.example.domain.providers.StringsProvider
 import com.example.domain.usecase.user.SignUpWithEmailUseCase
 import com.example.domain.validator.EmailValidator
 import com.example.domain.validator.PasswordValidator
+import com.jero.core.designsystem.R
 import com.jero.core.viewmodel.BaseViewModelWithActions
 import com.jero.register.RegisterViewContract.UiAction
 import com.jero.register.RegisterViewContract.UiIntent
@@ -18,6 +20,7 @@ class RegisterViewModel(
     private val emailValidator: EmailValidator,
     private val passwordValidator: PasswordValidator,
     private val authErrorHandler: AuthErrorHandler,
+    private val stringsProvider: StringsProvider,
 ) : BaseViewModelWithActions<UiState, UiIntent, UiAction>() {
     override val initialViewState = UiState()
     override suspend fun manageIntent(intent: UiIntent) {
@@ -41,7 +44,7 @@ class RegisterViewModel(
     private fun validateParams() {
         val emailError = emailValidator.validate(state.value.email)
         val passwordError = passwordValidator.validate(state.value.password)
-        val repeatPasswordError = if (state.value.password != state.value.repeatPassword) "Passwords don't match"
+        val repeatPasswordError = if (state.value.password != state.value.repeatPassword) stringsProvider(R.string.validation_error_password_do_not_match)
         else null
 
         when {
@@ -107,7 +110,7 @@ class RegisterViewModel(
 
     private fun setRepeatPasswordError(repeatPassword: String) {
         val password = state.value.password
-        val errorMessage = if (repeatPassword != password) "Passwords don't match"
+        val errorMessage = if (repeatPassword != password) stringsProvider(R.string.validation_error_password_do_not_match)
         else null
 
         setState { copy(repeatPasswordError = errorMessage) }

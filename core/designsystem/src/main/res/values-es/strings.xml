@@ -23,6 +23,8 @@
     <string name="other_notes">Otras notas</string>
     <string name="settings">Ajustes</string>
     <string name="title">Título</string>
+    <string name="accept_button">Aceptar</string>
+    <string name="cancel_button">Cancelar</string>
 
     <string name="delete_note">Eliminar nota</string>
     <string name="delete_note_question">¿Estás seguro de que quieres eliminar esta nota?</string>
@@ -34,8 +36,9 @@
     <string name="validation_error_password_no_uppercase">Debe incluir al menos una mayúscula</string>
     <string name="validation_error_password_no_lowercase">Debe incluir al menos una minúscula</string>
     <string name="validation_error_password_no_digit">Debe incluir al menos un número</string>
-    <string name="validation_error_password_no_special_char">Debe incluir al menos un caracter especial (!@\#$\%…)</string>
+    <string name="validation_error_password_no_special_char">Debe incluir al menos un caracter especial (!@#\$%%...)</string>
     <string name="validation_error_password_contains_whitespace">La contraseña no puede contener espacios</string>
+    <string name="validation_error_password_do_not_match">Las contraseñas no coinciden</string>
     <string name="validation_error_email_empty">El correo no puede estar vacío</string>
     <string name="validation_error_email_too_short">El correo no puede superar los %s caracteres</string>
     <string name="validation_error_email_invalid_format">Formato de correo inválido</string>
