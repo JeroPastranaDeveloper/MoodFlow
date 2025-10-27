@@ -23,6 +23,7 @@ import androidx.compose.foundation.lazy.staggeredgrid.LazyVerticalStaggeredGrid
 import androidx.compose.foundation.lazy.staggeredgrid.StaggeredGridCells
 import androidx.compose.foundation.lazy.staggeredgrid.StaggeredGridItemSpan
 import androidx.compose.foundation.lazy.staggeredgrid.items
+import androidx.compose.foundation.lazy.staggeredgrid.rememberLazyStaggeredGridState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Close
@@ -34,19 +35,21 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalFocusManager
+import androidx.compose.ui.platform.LocalInspectionMode
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.jero.core.screen.HandleActions
 import com.jero.core.screen.SetStatusBarIconsColor
 import com.jero.core.screen.getTopSystemPadding
 import com.jero.core.utils.emptyString
-import com.jero.designsystem.components.MoodFlowDialog
 import com.jero.designsystem.components.MoodFlowNote
 import com.jero.designsystem.components.MoodFlowTextField
 import com.jero.designsystem.components.MoodFlowTwoOptionsDialog
@@ -55,6 +58,7 @@ import com.jero.designsystem.utils.rememberKeyboardAsState
 import com.jero.home.HomeViewContract.UiAction
 import com.jero.home.HomeViewContract.UiIntent
 import com.jero.navigation.MoodFLowScreen
+import com.jero.navigation.boundsTransform
 import com.jero.navigation.currentComposeNavigator
 import org.koin.androidx.compose.koinViewModel
 
@@ -63,9 +67,9 @@ fun SharedTransitionScope.MoodFlowHome(
     animatedVisibilityScope: AnimatedVisibilityScope,
     viewModel: HomeViewModel = koinViewModel(),
 ) {
-    SetStatusBarIconsColor(darkIcons = true)
+    SetStatusBarIconsColor()
     val composeNavigator = currentComposeNavigator
-    val state by viewModel.state.collectAsState()
+    val state by viewModel.state.collectAsStateWithLifecycle()
 
     val context = LocalContext.current
     val isKeyboardOpen by rememberKeyboardAsState()
@@ -74,6 +78,10 @@ fun SharedTransitionScope.MoodFlowHome(
     LaunchedEffect(isKeyboardOpen) {
         if (!isKeyboardOpen) focusManager.clearFocus(force = true)
     }
+
+    val localInspectionMode = LocalInspectionMode.current
+    val gridState = rememberLazyStaggeredGridState()
+    val query = remember(state.query) { state.query }
 
     Scaffold(
         topBar = {
@@ -84,7 +92,7 @@ fun SharedTransitionScope.MoodFlowHome(
                     end = 16.dp,
                     bottom = 16.dp
                 ),
-                text = state.query,
+                text = query,
                 placeHolder = "Buscar...",
                 placeHolderFontSize = 20.sp,
                 leadingIcon = {
@@ -95,7 +103,7 @@ fun SharedTransitionScope.MoodFlowHome(
                 },
                 trailingIcon = {
                     AnimatedVisibility(
-                        visible = state.query.isNotBlank(),
+                        visible = query.isNotBlank(),
                         enter = fadeIn(animationSpec = tween(200)) + scaleIn(
                             initialScale = 0.8f,
                             animationSpec = tween(200)
@@ -123,11 +131,16 @@ fun SharedTransitionScope.MoodFlowHome(
         Box(modifier = Modifier.fillMaxSize()) {
             LazyVerticalStaggeredGrid(
                 columns = StaggeredGridCells.Fixed(2),
+                state = gridState,
                 modifier = Modifier
                     .fillMaxSize()
+                    .graphicsLayer {
+                        renderEffect = null
+                    }
                     .background(MoodFlowColors.defaultLightColors().backGroundColor)
                     .padding(paddingValues)
                     .padding(horizontal = 16.dp),
+
                 verticalItemSpacing = 8.dp,
                 horizontalArrangement = Arrangement.spacedBy(8.dp),
             ) {
@@ -135,7 +148,8 @@ fun SharedTransitionScope.MoodFlowHome(
                     Spacer(modifier = Modifier.height(8.dp))
                 }
 
-                if (state.query.isNotBlank()) {
+
+                if (query.isNotBlank()) {
                     items(
                         items = state.filteredNotes,
                         key = { it.id }
@@ -143,8 +157,13 @@ fun SharedTransitionScope.MoodFlowHome(
                         MoodFlowNote(
                             modifier = Modifier.animateItem(),
                             note = note,
+                            titleState = rememberSharedContentState(key = "title-${note.id}"),
+                            contentState = rememberSharedContentState(key = "content-${note.id}"),
+                            localInspectionMode = localInspectionMode,
+                            animatedVisibilityScope = animatedVisibilityScope,
+                            boundsTransform = boundsTransform,
                             onClick = { noteId ->
-                                viewModel.sendIntent(UiIntent.OnShowEditNoteDialog(noteId))
+                                viewModel.sendIntent(UiIntent.OnGoEditNoteScreen(noteId))
                             },
                             onLongClick = { noteId ->
                                 viewModel.sendIntent(UiIntent.OnShowDeleteNoteDialog(noteId))
@@ -177,8 +196,13 @@ fun SharedTransitionScope.MoodFlowHome(
                             MoodFlowNote(
                                 modifier = Modifier.animateItem(),
                                 note = note,
+                                titleState = rememberSharedContentState(key = "title-${note.id}"),
+                                contentState = rememberSharedContentState(key = "content-${note.id}"),
+                                localInspectionMode = localInspectionMode,
+                                animatedVisibilityScope = animatedVisibilityScope,
+                                boundsTransform = boundsTransform,
                                 onClick = { noteId ->
-                                    viewModel.sendIntent(UiIntent.OnShowEditNoteDialog(noteId))
+                                    viewModel.sendIntent(UiIntent.OnGoEditNoteScreen(noteId))
                                 },
                                 onLongClick = { noteId ->
                                     viewModel.sendIntent(UiIntent.OnShowDeleteNoteDialog(noteId))
@@ -202,8 +226,13 @@ fun SharedTransitionScope.MoodFlowHome(
                         MoodFlowNote(
                             modifier = Modifier.animateItem(),
                             note = note,
+                            titleState = rememberSharedContentState(key = "title-${note.id}"),
+                            contentState = rememberSharedContentState(key = "content-${note.id}"),
+                            localInspectionMode = localInspectionMode,
+                            animatedVisibilityScope = animatedVisibilityScope,
+                            boundsTransform = boundsTransform,
                             onClick = { noteId ->
-                                viewModel.sendIntent(UiIntent.OnShowEditNoteDialog(noteId))
+                                viewModel.sendIntent(UiIntent.OnGoEditNoteScreen(noteId))
                             },
                             onLongClick = { noteId ->
                                 viewModel.sendIntent(UiIntent.OnShowDeleteNoteDialog(noteId))
@@ -222,36 +251,10 @@ fun SharedTransitionScope.MoodFlowHome(
                     .align(Alignment.BottomEnd)
                     .padding(end = 16.dp, bottom = 32.dp),
                 onClick = {
-                    viewModel.sendIntent(UiIntent.OnChangeNoteDialogVisibility)
+                    viewModel.sendIntent(UiIntent.OnGoEditNoteScreen(null))
                 }
             ) {
                 Icon(imageVector = Icons.Default.Add, null)
-            }
-
-            if (state.showNoteDialog) {
-                MoodFlowDialog(
-                    note = state.selectedNoteData,
-                    onTitleChanged = {
-                        viewModel.sendIntent(UiIntent.OnNoteTitleChanged(it))
-                    },
-                    onDescriptionChanged = {
-                        viewModel.sendIntent(UiIntent.OnNoteDescriptionChanged(it))
-                    },
-                    onPinChanged = {
-                        viewModel.sendIntent(UiIntent.OnPinChanged(it))
-                    },
-                    onConfirm = {
-                        if (state.selectedNoteData.id.isBlank()) {
-                            viewModel.sendIntent(UiIntent.OnCreateNote)
-                        }
-                        else {
-                            viewModel.sendIntent(UiIntent.OnEditNote)
-                        }
-                    },
-                    onCancel = {
-                        viewModel.sendIntent(UiIntent.OnChangeNoteDialogVisibility)
-                    }
-                )
             }
 
             if (state.showDeleteNoteDialog) {
@@ -272,20 +275,23 @@ fun SharedTransitionScope.MoodFlowHome(
     BackHandler {
         when {
             isKeyboardOpen -> focusManager.clearFocus(force = true)
-            state.query.isNotBlank() -> {
+            query.isNotBlank() -> {
                 viewModel.sendIntent(UiIntent.OnSearchQueryChanged(emptyString()))
                 focusManager.clearFocus(force = true)
             }
+
             else -> (context as? Activity)?.finish()
         }
     }
 
     HandleActions(viewModel.actions) { action ->
         when (action) {
+            UiAction.GoHome -> composeNavigator.navigate(MoodFLowScreen.Login)
+
             is UiAction.ShowToast -> Toast.makeText(context, action.message, Toast.LENGTH_SHORT)
                 .show()
 
-            UiAction.GoHome -> composeNavigator.navigate(MoodFLowScreen.Login)
+            is UiAction.GoEditNoteScreen -> composeNavigator.navigate(MoodFLowScreen.EditNote(action.note))
         }
     }
 }

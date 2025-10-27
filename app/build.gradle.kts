@@ -56,6 +56,7 @@ dependencies {
     implementation(libs.androidx.compose.runtime)
     implementation(libs.androidx.compose.foundation)
     implementation(libs.androidx.material3.android)
+    implementation(libs.accompanist.systemuicontroller)
 
     implementation(libs.firebase.database)
 
@@ -72,6 +73,7 @@ dependencies {
     implementation(projects.feature.login)
     implementation(projects.feature.register)
     implementation(projects.feature.home)
+    implementation(projects.feature.editnote)
 
     // Auth
     implementation(projects.authentication)

@@ -2,10 +2,8 @@ package com.jero.home
 
 import androidx.lifecycle.viewModelScope
 import com.example.domain.preferences.PreferencesHandler
-import com.example.domain.usecase.notes.interfaces.CreateNoteUseCase
 import com.example.domain.usecase.notes.interfaces.DeleteNoteUseCase
 import com.example.domain.usecase.notes.interfaces.GetAllNotesUseCase
-import com.example.domain.usecase.notes.interfaces.UpdateNoteUseCase
 import com.example.domain.usecase.user.SignOutUseCase
 import com.jero.core.model.Note
 import com.jero.core.viewmodel.BaseViewModelWithActions
@@ -17,9 +15,7 @@ import kotlinx.coroutines.launch
 class HomeViewModel(
     private val preferencesHandler: PreferencesHandler,
     private val getAllNotesUseCase: GetAllNotesUseCase,
-    private val createNoteUseCase: CreateNoteUseCase,
     private val deleteNoteUseCase: DeleteNoteUseCase,
-    private val updateNoteUseCase: UpdateNoteUseCase,
     private val closeSessionUseCase: SignOutUseCase,
 ) : BaseViewModelWithActions<UiState, UiIntent, UiAction>() {
 
@@ -27,35 +23,12 @@ class HomeViewModel(
     override suspend fun manageIntent(intent: UiIntent) {
         when (intent) {
             is UiIntent.OnSearchQueryChanged -> searchNotes(intent.query)
-            is UiIntent.OnNoteTitleChanged -> setState {
-                copy(
-                    selectedNoteData = selectedNoteData.copy(
-                        title = intent.title
-                    )
-                )
-            }
 
-            is UiIntent.OnNoteDescriptionChanged -> setState {
-                copy(
-                    selectedNoteData = selectedNoteData.copy(
-                        content = intent.description
-                    )
-                )
-            }
-
-            is UiIntent.OnShowEditNoteDialog -> showEditNoteDialog(intent.noteId)
+            is UiIntent.OnGoEditNoteScreen -> showEditNoteDialog(intent.noteId)
             is UiIntent.OnShowDeleteNoteDialog -> showDeleteNoteDialog(intent.noteId)
-            is UiIntent.OnPinChanged -> changePin(intent.pinned)
 
             UiIntent.OnDeleteNote -> deleteNote()
-            UiIntent.OnCreateNote -> createNote()
             UiIntent.OnCloseSession -> signOut()
-            UiIntent.OnChangeNoteDialogVisibility -> setState {
-                copy(
-                    showNoteDialog = !showNoteDialog,
-                    selectedNoteData = Note()
-                )
-            }
 
             UiIntent.OnChangeDeleteNoteDialogVisibility -> setState {
                 copy(
@@ -63,8 +36,6 @@ class HomeViewModel(
                     selectedNoteData = Note()
                 )
             }
-
-            UiIntent.OnEditNote -> editNote()
         }
     }
 
@@ -72,34 +43,14 @@ class HomeViewModel(
         observeNotes()
     }
 
-    private fun changePin(pinned: Boolean) {
-        setState { copy(selectedNoteData = selectedNoteData.copy(pinned = pinned)) }
-    }
-
-    private fun editNote() {
-        viewModelScope.launch {
-            val date = System.currentTimeMillis()
-            val result = updateNoteUseCase(state.value.selectedNoteData.copy(date = date))
-
-            result.fold(
-                onSuccess = {
-                    setState { copy(showNoteDialog = false, selectedNoteData = Note()) }
-                },
-                onFailure = {
-                    dispatchAction(UiAction.ShowToast(it.message.orEmpty()))
-                }
-            )
-        }
-    }
-
     private fun showDeleteNoteDialog(noteId: String) {
         val note = state.value.allNotes.find { it.id == noteId } ?: Note()
         setState { copy(showDeleteNoteDialog = true, selectedNoteData = note) }
     }
 
-    private fun showEditNoteDialog(noteId: String) {
+    private fun showEditNoteDialog(noteId: String?) {
         val note = state.value.allNotes.find { it.id == noteId } ?: Note()
-        setState { copy(showNoteDialog = true, selectedNoteData = note) }
+        dispatchAction(UiAction.GoEditNoteScreen(note))
     }
 
     private fun deleteNote() {
@@ -125,21 +76,6 @@ class HomeViewModel(
                 onSuccess = {
                     preferencesHandler.isLogged = false
                     dispatchAction(UiAction.GoHome)
-                },
-                onFailure = {
-                    dispatchAction(UiAction.ShowToast(it.message.orEmpty()))
-                }
-            )
-        }
-    }
-
-    private fun createNote() {
-        viewModelScope.launch {
-            val result = createNoteUseCase(state.value.selectedNoteData)
-
-            result.fold(
-                onSuccess = {
-                    setState { copy(showNoteDialog = false, selectedNoteData = Note()) }
                 },
                 onFailure = {
                     dispatchAction(UiAction.ShowToast(it.message.orEmpty()))
