@@ -1,6 +1,9 @@
 package com.jero.moodflow.navigation
 
+import androidx.compose.animation.AnimatedContentTransitionScope
 import androidx.compose.animation.SharedTransitionScope
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
 import androidx.navigation.NavGraphBuilder
 import androidx.navigation.compose.composable
 import com.jero.editnote.MoodFlowEditNote
@@ -24,7 +27,15 @@ fun NavGraphBuilder.moodFlowNavigation() {
     }
 
     composable<MoodFLowScreen.EditNote>(
-        typeMap = MoodFLowScreen.EditNote.typeMap
+        typeMap = MoodFLowScreen.EditNote.typeMap,
+        enterTransition = {
+            slideIntoContainer(AnimatedContentTransitionScope.SlideDirection.Up) +
+                    fadeIn()
+        },
+        exitTransition = {
+            slideOutOfContainer(AnimatedContentTransitionScope.SlideDirection.Down) +
+                    fadeOut()
+        }
     ) {
         MoodFlowEditNote(this)
     }

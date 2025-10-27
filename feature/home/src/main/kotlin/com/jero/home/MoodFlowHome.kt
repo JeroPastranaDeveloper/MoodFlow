@@ -40,6 +40,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalFocusManager
+import androidx.compose.ui.platform.LocalInspectionMode
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.jero.core.screen.HandleActions
@@ -54,6 +55,7 @@ import com.jero.designsystem.utils.rememberKeyboardAsState
 import com.jero.home.HomeViewContract.UiAction
 import com.jero.home.HomeViewContract.UiIntent
 import com.jero.navigation.MoodFLowScreen
+import com.jero.navigation.boundsTransform
 import com.jero.navigation.currentComposeNavigator
 import org.koin.androidx.compose.koinViewModel
 
@@ -73,6 +75,8 @@ fun SharedTransitionScope.MoodFlowHome(
     LaunchedEffect(isKeyboardOpen) {
         if (!isKeyboardOpen) focusManager.clearFocus(force = true)
     }
+
+    val localInspectionMode = LocalInspectionMode.current
 
     Scaffold(
         topBar = {
@@ -142,6 +146,11 @@ fun SharedTransitionScope.MoodFlowHome(
                         MoodFlowNote(
                             modifier = Modifier.animateItem(),
                             note = note,
+                            titleState = rememberSharedContentState(key = "title-${note.id}"),
+                            contentState = rememberSharedContentState(key = "content-${note.id}"),
+                            localInspectionMode = localInspectionMode,
+                            animatedVisibilityScope = animatedVisibilityScope,
+                            boundsTransform = boundsTransform,
                             onClick = { noteId ->
                                 viewModel.sendIntent(UiIntent.OnGoEditNoteScreen(noteId))
                             },
@@ -176,6 +185,11 @@ fun SharedTransitionScope.MoodFlowHome(
                             MoodFlowNote(
                                 modifier = Modifier.animateItem(),
                                 note = note,
+                                titleState = rememberSharedContentState(key = "title-${note.id}"),
+                                contentState = rememberSharedContentState(key = "content-${note.id}"),
+                                localInspectionMode = localInspectionMode,
+                                animatedVisibilityScope = animatedVisibilityScope,
+                                boundsTransform = boundsTransform,
                                 onClick = { noteId ->
                                     viewModel.sendIntent(UiIntent.OnGoEditNoteScreen(noteId))
                                 },
@@ -201,6 +215,11 @@ fun SharedTransitionScope.MoodFlowHome(
                         MoodFlowNote(
                             modifier = Modifier.animateItem(),
                             note = note,
+                            titleState = rememberSharedContentState(key = "title-${note.id}"),
+                            contentState = rememberSharedContentState(key = "content-${note.id}"),
+                            localInspectionMode = localInspectionMode,
+                            animatedVisibilityScope = animatedVisibilityScope,
+                            boundsTransform = boundsTransform,
                             onClick = { noteId ->
                                 viewModel.sendIntent(UiIntent.OnGoEditNoteScreen(noteId))
                             },

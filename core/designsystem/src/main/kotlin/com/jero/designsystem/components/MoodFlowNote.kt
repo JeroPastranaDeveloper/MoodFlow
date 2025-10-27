@@ -1,5 +1,9 @@
 package com.jero.designsystem.components
 
+import androidx.compose.animation.AnimatedVisibilityScope
+import androidx.compose.animation.BoundsTransform
+import androidx.compose.animation.SharedTransitionScope
+import androidx.compose.animation.SharedTransitionScope.SharedContentState
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.combinedClickable
@@ -17,11 +21,17 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.jero.core.model.Note
 
+context(SharedTransitionScope)
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun MoodFlowNote(
     modifier: Modifier = Modifier,
     note: Note,
+    titleState: SharedContentState,
+    contentState: SharedContentState,
+    localInspectionMode: Boolean,
+    animatedVisibilityScope: AnimatedVisibilityScope,
+    boundsTransform: BoundsTransform,
     onClick: (String) -> Unit,
     onLongClick: (String) -> Unit,
 ) {
@@ -39,10 +49,28 @@ fun MoodFlowNote(
         Column(
             modifier = Modifier.padding(16.dp)
         ) {
-            Text(text = note.title, fontWeight = FontWeight.Bold)
+            Text(
+                modifier = Modifier.moodFlowSharedElement(
+                    isLocalInspectionMode = localInspectionMode,
+                    state = titleState,
+                    animatedVisibilityScope = animatedVisibilityScope,
+                    boundsTransform = boundsTransform,
+                ),
+                text = note.title,
+                fontWeight = FontWeight.Bold
+            )
             if (note.content.isNotEmpty()) {
                 Spacer(modifier = Modifier.height(8.dp))
-                Text(text = note.content, color = Color.Gray)
+                Text(
+                    modifier = Modifier.moodFlowSharedElement(
+                        isLocalInspectionMode = localInspectionMode,
+                        state = contentState,
+                        animatedVisibilityScope = animatedVisibilityScope,
+                        boundsTransform = boundsTransform,
+                    ),
+                    text = note.content,
+                    color = Color.Gray
+                )
             }
         }
     }
