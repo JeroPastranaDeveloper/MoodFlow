@@ -15,8 +15,8 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.HideSource
 import androidx.compose.material.icons.filled.Visibility
+import androidx.compose.material.icons.filled.VisibilityOff
 import androidx.compose.material3.Icon
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
@@ -26,7 +26,7 @@ import androidx.compose.ui.text.input.VisualTransformation
 
 @OptIn(ExperimentalAnimationApi::class)
 @Composable
-fun PasswordTextField(
+fun MoodFlowPasswordTextField(
     modifier: Modifier = Modifier,
     password: String,
     placeHolder: String,
@@ -82,7 +82,7 @@ fun PasswordTextField(
                         modifier = Modifier.clickable {
                             onChangePasswordVisibility(!isVisible)
                         },
-                        imageVector = if (isVisible) Icons.Filled.HideSource else Icons.Filled.Visibility,
+                        imageVector = if (isVisible) Icons.Filled.VisibilityOff else Icons.Filled.Visibility,
                         contentDescription = "Toggle password visibility"
                     )
                 }

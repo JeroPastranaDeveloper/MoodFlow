@@ -45,8 +45,8 @@ import com.jero.core.screen.HandleActions
 import com.jero.core.screen.SetStatusBarIconsColor
 import com.jero.core.screen.getTopSystemPadding
 import com.jero.designsystem.components.MoodFlowButton
+import com.jero.designsystem.components.MoodFlowPasswordTextField
 import com.jero.designsystem.components.MoodFlowTextField
-import com.jero.designsystem.components.PasswordTextField
 import com.jero.designsystem.theme.MoodFlowColors
 import com.jero.designsystem.utils.rememberKeyboardAsState
 import com.jero.navigation.MoodFLowScreen
@@ -142,7 +142,7 @@ fun SharedTransitionScope.MoodFlowRegister(
 
             Spacer(modifier = Modifier.height(8.dp))
 
-            PasswordTextField(
+            MoodFlowPasswordTextField(
                 modifier = Modifier.padding(horizontal = 16.dp),
                 password = state.password,
                 placeHolder = stringResource(R.string.password),
@@ -167,7 +167,7 @@ fun SharedTransitionScope.MoodFlowRegister(
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            PasswordTextField(
+            MoodFlowPasswordTextField(
                 modifier = Modifier.padding(horizontal = 16.dp),
                 password = state.repeatPassword,
                 placeHolder = stringResource(R.string.confirm_password),
