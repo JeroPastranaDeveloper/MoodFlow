@@ -1,19 +1,46 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-  <string name="app_name">MoodFLow</string>
-  <string name="accounts_screen_title">Accounts</string>
-  <string name="account_detail_screen_title">Account detail</string>
-  <string name="action_delete">Delete</string>
-  <string name="action_edit">Edit</string>
-  <string name="github">GitHub</string>
-  <string name="linkedin">LinkedIn</string>
-  <string name="select_another_database">Select another database</string>
-  <string name="title">Title</string>
+  <string name="app_name" translatable="false">MoodFLow</string>
+  <string name="login" translatable="false">Login</string>
+  <string name="register">Register</string>
   <string name="email">Email</string>
   <string name="password">Password</string>
-  <string name="description">Description</string>
-  <string name="delete_account">Delete this account?</string>
-  <string name="can_not_undone_action">This action can \'t be undoned</string>
-  <string name="fingerprint_access_title">Fingerprint access</string>
-  <string name="fingerprint_access_body">Enter your fingerprint</string>
+  <string name="confirm_password">Confirm password</string>
+  <string name="not_account_question">Don\'t have an account?</string>
+  <string name="have_account_question">Have an account?</string>
+  <string name="sign_up">Sign up</string>
+  <string name="sign_in">Sign in</string>
+  <string name="login_with_google">Login with Google</string>
+  <string name="invalid_email">Invalid email</string>
+  <string name="password_min_size">Password must be at least 6 characters</string>
+  <string name="user_not_found">User not found</string>
+  <string name="used_email">This email is already in use</string>
+  <string name="weak_password">Weak password</string>
+  <string name="connection_error">Connection error</string>
+  <string name="unknown_error">Unknown error</string>
+  <string name="search_placeholder">Search…</string>
+  <string name="note">Note</string>
+  <string name="notes">Notes</string>
+  <string name="pinned_notes">Pinned notes</string>
+  <string name="other_notes">Other notes</string>
+  <string name="title">Title</string>
+  <string name="settings">Settings</string>
+
+  <string name="delete_note">Delete note</string>
+  <string name="delete_note_question">Are you sure you want to delete this note?</string>
+  <string name="sign_out">Close session</string>
+  <string name="sign_out_question">Are you sure you want to close session?</string>
+
+  <string name="validation_error_password_empty">Password cannot be empty</string>
+  <string name="validation_error_password_too_short">Password must be at least 8 characters long</string>
+  <string name="validation_error_password_no_uppercase">Must include at least one uppercase letter</string>
+  <string name="validation_error_password_no_lowercase">Must include at least one lowercase letter</string>
+  <string name="validation_error_password_no_digit">Must include at least one digit</string>
+  <string name="validation_error_password_no_special_char">Must include at least one special character (!@\#$\%…)</string>
+  <string name="validation_error_password_contains_whitespace">Password cannot contain spaces</string>
+  <string name="validation_error_email_empty">Email cannot be empty</string>
+  <string name="validation_error_email_too_short">Email cannot be longer than %s characters</string>
+  <string name="validation_error_email_invalid_format">Invalid email format</string>
+  <string name="user_not_authenticated">User not authenticated</string>
+  <string name="title_cannot_be_empty">Title can\'t be empty</string>
 </resources>

@@ -26,7 +26,7 @@ class NotesRepositoryImpl(
 
     override suspend fun getAllNotes(userId: String) = channelFlow {
         val userId = getCurrentUserId()
-            ?: throw Exception("Usuario no autenticado")
+            ?: throw Exception("User not authenticated")
 
         launch {
             notesDao.getNotesFlow(userId).collect { entities ->
@@ -79,7 +79,7 @@ class NotesRepositoryImpl(
     override suspend fun createNote(note: Note): Result<Note> {
         return try {
             val userId = getCurrentUserId()
-                ?: return Result.failure(Exception("Usuario no autenticado"))
+                ?: return Result.failure(Exception("User not authenticated"))
 
             val entity = note.toEntity().copy(
                 userId = userId,
@@ -103,7 +103,7 @@ class NotesRepositoryImpl(
     override suspend fun updateNote(note: Note): Result<Note> {
         return try {
             val userId = getCurrentUserId()
-                ?: return Result.failure(Exception("Usuario no autenticado"))
+                ?: return Result.failure(Exception("User not authenticated"))
 
             val entity = note.toEntity().copy(
                 userId = userId,
@@ -128,7 +128,7 @@ class NotesRepositoryImpl(
     override suspend fun deleteNote(noteId: String): Result<Unit> {
         return try {
             val userId = getCurrentUserId()
-                ?: return Result.failure(Exception("Usuario no autenticado"))
+                ?: return Result.failure(Exception("User not authenticated"))
 
             notesDao.deleteNote(noteId)
 
@@ -157,7 +157,7 @@ class NotesRepositoryImpl(
             }
 
             val userId = getCurrentUserId()
-                ?: return Result.failure(Exception("Usuario no autenticado"))
+                ?: return Result.failure(Exception("User not authenticated"))
 
             notesDataSource.getNote(noteId, userId)
                 .map { it.toDomain() }

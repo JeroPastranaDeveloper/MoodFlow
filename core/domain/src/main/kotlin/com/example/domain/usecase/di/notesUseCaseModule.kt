@@ -14,11 +14,11 @@ import org.koin.dsl.module
 
 val notesUseCaseModule = module {
     factory<CreateNoteUseCase> {
-        CreateNoteUseCaseImpl(get(), get())
+        CreateNoteUseCaseImpl(get(), get(), get())
     }
 
     factory<UpdateNoteUseCase> {
-        UpdateNoteUseCaseImpl(get())
+        UpdateNoteUseCaseImpl(get(), get())
     }
 
     factory<DeleteNoteUseCase> {

@@ -7,7 +7,7 @@ import com.example.domain.validator.PasswordValidatorImpl
 import org.koin.dsl.module
 
 val validatorModule = module {
-    single<EmailValidator> { EmailValidatorImpl() }
+    single<EmailValidator> { EmailValidatorImpl(get()) }
 
-    single<PasswordValidator> { PasswordValidatorImpl() }
+    single<PasswordValidator> { PasswordValidatorImpl(get()) }
 }

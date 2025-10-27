@@ -56,6 +56,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.platform.LocalInspectionMode
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -130,7 +131,7 @@ fun SharedTransitionScope.MoodFlowHome(
                     MoodFlowTextField(
                         modifier = Modifier.weight(1f),
                         text = query,
-                        placeHolder = "Buscar...",
+                        placeHolder = stringResource(R.string.search_placeholder),
                         placeHolderFontSize = 20.sp,
                         leadingIcon = {
                             Icon(
@@ -151,7 +152,7 @@ fun SharedTransitionScope.MoodFlowHome(
                                 )
                             ) {
                                 IconButton(onClick = {
-                                    viewModel.sendIntent(UiIntent.OnSearchQueryChanged(""))
+                                    viewModel.sendIntent(UiIntent.OnSearchQueryChanged(emptyString()))
                                 }) {
                                     Icon(
                                         imageVector = Icons.Default.Close,
@@ -207,7 +208,7 @@ fun SharedTransitionScope.MoodFlowHome(
 
                         if (state.pinnedNotes.isNotEmpty()) {
                             item(span = StaggeredGridItemSpan.FullLine) {
-                                Text("Pinned notes")
+                                Text(stringResource(R.string.pinned_notes))
                             }
 
                             items(
@@ -237,7 +238,7 @@ fun SharedTransitionScope.MoodFlowHome(
                         }
 
                         item(span = StaggeredGridItemSpan.FullLine) {
-                            Text(if (state.pinnedNotes.isEmpty()) "Notes" else "Other notes")
+                            Text(stringResource(if (state.pinnedNotes.isEmpty()) R.string.notes else R.string.other_notes))
                         }
 
                         items(
@@ -280,8 +281,8 @@ fun SharedTransitionScope.MoodFlowHome(
 
                 if (state.showDeleteNoteDialog) {
                     MoodFlowTwoOptionsDialog(
-                        titleText = "Delete note",
-                        bodyText = "Are you sure you want to delete this note?",
+                        titleText = stringResource(R.string.delete_note),
+                        bodyText = stringResource(R.string.delete_note_question),
                         onAccept = {
                             viewModel.sendIntent(UiIntent.OnDeleteNote)
                         },
@@ -352,7 +353,7 @@ fun SharedTransitionScope.MoodFlowHome(
 
                         Spacer(modifier = Modifier.width(4.dp))
 
-                        Text("Settings")
+                        Text(stringResource(R.string.settings))
                     }
                 }
 

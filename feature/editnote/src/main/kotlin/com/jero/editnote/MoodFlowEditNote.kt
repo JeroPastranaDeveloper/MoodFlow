@@ -34,6 +34,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.platform.LocalInspectionMode
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
@@ -128,7 +129,7 @@ fun SharedTransitionScope.MoodFlowEditNote(
                     text = state.editedNote.title,
                     textFontSize = 22.sp,
                     textFontWeight = FontWeight.Bold,
-                    placeholder = "Title",
+                    placeholder = stringResource(R.string.title),
                     placeholderFontSize = 20.sp,
                     focusRequester = titleFocusRequester,
                     keyboardOptions = KeyboardOptions(
@@ -153,7 +154,7 @@ fun SharedTransitionScope.MoodFlowEditNote(
                     ),
                     text = state.editedNote.content,
                     textFontSize = 16.sp,
-                    placeholder = "Note",
+                    placeholder = stringResource(R.string.note),
                     placeholderFontSize = 16.sp,
                     focusRequester = contentFocusRequester,
                     keyboardOptions = KeyboardOptions(
@@ -169,8 +170,8 @@ fun SharedTransitionScope.MoodFlowEditNote(
             }
             if (state.showDeleteNoteDialog) {
                 MoodFlowTwoOptionsDialog(
-                    titleText = "Delete note",
-                    bodyText = "Are you sure you want to delete this note?",
+                    titleText = stringResource(R.string.delete_note),
+                    bodyText = stringResource(R.string.delete_note_question),
                     onAccept = {
                         viewModel.sendIntent(UiIntent.OnDeleteNote)
                     },
