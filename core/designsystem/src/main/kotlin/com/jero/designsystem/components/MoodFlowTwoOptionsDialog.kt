@@ -4,6 +4,8 @@ import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.res.stringResource
+import com.jero.core.designsystem.R
 
 @Composable
 fun MoodFlowTwoOptionsDialog(
@@ -22,7 +24,7 @@ fun MoodFlowTwoOptionsDialog(
                     onAccept()
                 }
             ) {
-                Text("Accept")
+                Text(text = stringResource(R.string.accept_button))
             }
         },
         dismissButton = {
@@ -31,7 +33,7 @@ fun MoodFlowTwoOptionsDialog(
                     onCancel()
                 }
             ) {
-                Text("Cancel")
+                Text(text = stringResource(R.string.cancel_button))
             }
         }
     )
