@@ -10,6 +10,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -53,7 +54,7 @@ fun SharedTransitionScope.MoodFlowEditNote(
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(start = 16.dp, top = getTopSystemPadding(), end = 16.dp)
+                    .padding(start = 16.dp, top = getTopSystemPadding(true), end = 16.dp)
             ) {
                 Icon(
                     modifier = Modifier
@@ -80,7 +81,6 @@ fun SharedTransitionScope.MoodFlowEditNote(
                     )
                 }
 
-
                 if (state.editedNote.id.isNotBlank()) {
                     Spacer(modifier = Modifier.width(16.dp))
                     Icon(
@@ -98,7 +98,7 @@ fun SharedTransitionScope.MoodFlowEditNote(
                 Spacer(modifier = Modifier.height(16.dp))
                 MoodFlowTransparentTextField(
                     text = state.editedNote.title,
-                    textFontSize = 20.sp,
+                    textFontSize = 22.sp,
                     textFontWeight = FontWeight.Bold,
                     placeholder = "Title",
                     placeholderFontSize = 20.sp
@@ -109,8 +109,11 @@ fun SharedTransitionScope.MoodFlowEditNote(
                 Spacer(modifier = Modifier.height(4.dp))
 
                 MoodFlowTransparentTextField(
+                    modifier = Modifier.fillMaxSize(),
                     text = state.editedNote.content,
+                    textFontSize = 16.sp,
                     placeholder = "Note",
+                    placeholderFontSize = 16.sp
                 ) { description ->
                     viewModel.sendIntent(UiIntent.OnDescriptionChanged(description))
                 }

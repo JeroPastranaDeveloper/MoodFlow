@@ -13,6 +13,7 @@ import androidx.compose.ui.unit.TextUnit
 
 @Composable
 fun MoodFlowTransparentTextField(
+    modifier: Modifier = Modifier,
     text: String,
     textFontSize: TextUnit = TextUnit.Unspecified,
     textFontWeight: FontWeight = FontWeight.Normal,
@@ -21,6 +22,7 @@ fun MoodFlowTransparentTextField(
     onTextChange: (String) -> Unit,
 ) {
     TextField(
+        modifier = modifier.fillMaxWidth(),
         value = text,
         onValueChange = onTextChange,
         textStyle = TextStyle(
@@ -46,7 +48,6 @@ fun MoodFlowTransparentTextField(
             unfocusedIndicatorColor = Color.Transparent,
             disabledIndicatorColor = Color.Transparent,
             cursorColor = Color.Gray
-        ),
-        modifier = Modifier.fillMaxWidth()
+        )
     )
 }

@@ -77,4 +77,4 @@ fun getTopSystemPadding(addExtraPadding: Boolean = false): Dp = when {
             24.dp
         }
     }
-} + if (addExtraPadding) 16.dp else 0.dp
+} + if (addExtraPadding) 8.dp else 0.dp
