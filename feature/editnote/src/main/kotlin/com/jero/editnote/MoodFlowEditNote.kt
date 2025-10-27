@@ -13,13 +13,12 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.AirplaneTicket
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material.icons.automirrored.filled.BatteryUnknown
-import androidx.compose.material.icons.automirrored.filled._360
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
@@ -28,9 +27,11 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.rememberVectorPainter
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.jero.core.designsystem.R
 import com.jero.core.screen.HandleActions
 import com.jero.core.screen.getTopSystemPadding
 import com.jero.designsystem.components.MoodFlowTransparentTextField
@@ -65,17 +66,18 @@ fun SharedTransitionScope.MoodFlowEditNote(
 
                 Spacer(modifier = Modifier.weight(1f))
 
-                // TODO: CAMBIAR ICONOS Y HACER ANIMACIÓN PARA PASAR DE LA HOME A LA EDIT NOTE
                 Crossfade(
                     targetState = state.editedNote.pinned,
                     label = "Icon change"
                 ) { pinned ->
                     Icon(
                         modifier = Modifier
+                            .size(22.dp)
+                            .offset(y = 2.dp)
                             .clickable { viewModel.sendIntent(UiIntent.OnPinChanged) },
-                        painter = rememberVectorPainter(
-                            image = if (pinned) Icons.AutoMirrored.Filled._360
-                            else Icons.AutoMirrored.Filled.AirplaneTicket
+                        painter = painterResource(
+                            id = if (pinned) R.drawable.ic_pinned
+                            else R.drawable.ic_not_pinned
                         ),
                         contentDescription = null
                     )
@@ -86,7 +88,7 @@ fun SharedTransitionScope.MoodFlowEditNote(
                     Icon(
                         modifier = Modifier
                             .clickable { viewModel.sendIntent(UiIntent.OnChangeDeleteDialogVisibility) },
-                        painter = rememberVectorPainter(image = Icons.AutoMirrored.Filled.BatteryUnknown),
+                        painter = painterResource(id = R.drawable.ic_trash),
                         contentDescription = null,
                     )
                 }
