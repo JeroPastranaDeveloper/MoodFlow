@@ -62,7 +62,6 @@ fun NavGraphBuilder.moodFlowNavigation() {
         MoodFlowEditNote(this)
     }
 
-
     /*composable<MoodFlowScreen.SelectDatabase> {
         SelectDatabaseScreen(this)
     }

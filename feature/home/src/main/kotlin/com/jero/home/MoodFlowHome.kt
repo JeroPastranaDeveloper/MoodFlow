@@ -69,7 +69,7 @@ fun SharedTransitionScope.MoodFlowHome(
 ) {
     SetStatusBarIconsColor()
     val composeNavigator = currentComposeNavigator
-    val state by viewModel.state.collectAsStateWithLifecycle() //usa siemrpe WithLifecycle
+    val state by viewModel.state.collectAsStateWithLifecycle()
 
     val context = LocalContext.current
     val isKeyboardOpen by rememberKeyboardAsState()
@@ -80,9 +80,9 @@ fun SharedTransitionScope.MoodFlowHome(
     }
 
     val localInspectionMode = LocalInspectionMode.current
-//usa val aqui con remenber de state.query,state.filteredNotes,state.pinnedNotes,state.notes
-     val query = remember(state.query) { state.query }
- 
+    val gridState = rememberLazyStaggeredGridState()
+    val query = remember(state.query) { state.query }
+
     Scaffold(
         topBar = {
             MoodFlowTextField(
@@ -128,16 +128,15 @@ fun SharedTransitionScope.MoodFlowHome(
             }
         },
     ) { paddingValues ->
-        val gridState = rememberLazyStaggeredGridState()
         Box(modifier = Modifier.fillMaxSize()) {
             LazyVerticalStaggeredGrid(
-                columns = StaggeredGridCells.Fixed(2),//tamaño fijo de dps igual mejor
+                columns = StaggeredGridCells.Fixed(2),
                 state = gridState,
                 modifier = Modifier
                     .fillMaxSize()
                     .graphicsLayer {
                         renderEffect = null
-                    } //para evitar q haga compos extra a lo loco
+                    }
                     .background(MoodFlowColors.defaultLightColors().backGroundColor)
                     .padding(paddingValues)
                     .padding(horizontal = 16.dp),
@@ -153,7 +152,7 @@ fun SharedTransitionScope.MoodFlowHome(
                 if (query.isNotBlank()) {
                     items(
                         items = state.filteredNotes,
-                        key = { it.id } //cool, esto te iba a meter
+                        key = { it.id }
                     ) { note ->
                         MoodFlowNote(
                             modifier = Modifier.animateItem(),
