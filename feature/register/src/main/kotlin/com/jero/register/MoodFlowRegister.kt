@@ -33,6 +33,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.rememberVectorPainter
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalFocusManager
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
@@ -115,7 +116,7 @@ fun SharedTransitionScope.MoodFlowRegister(
 
             Text(
                 modifier = Modifier.padding(top = 32.dp),
-                text = "Register",
+                text = stringResource(R.string.register),
                 fontSize = 40.sp,
             )
 
@@ -124,7 +125,7 @@ fun SharedTransitionScope.MoodFlowRegister(
             MoodFlowTextField(
                 modifier = Modifier.padding(horizontal = 16.dp),
                 text = state.email,
-                placeHolder = "Email",
+                placeHolder = stringResource(R.string.email),
                 focusRequester = emailFocusRequester,
                 keyboardOptions = KeyboardOptions(
                     keyboardType = KeyboardType.Email,
@@ -144,7 +145,7 @@ fun SharedTransitionScope.MoodFlowRegister(
             PasswordTextField(
                 modifier = Modifier.padding(horizontal = 16.dp),
                 password = state.password,
-                placeHolder = "Password",
+                placeHolder = stringResource(R.string.password),
                 isPasswordVisible = state.isPasswordVisible,
                 focusRequester = passwordFocusRequester,
                 keyboardOptions = KeyboardOptions(
@@ -169,7 +170,7 @@ fun SharedTransitionScope.MoodFlowRegister(
             PasswordTextField(
                 modifier = Modifier.padding(horizontal = 16.dp),
                 password = state.repeatPassword,
-                placeHolder = "Confirm Password",
+                placeHolder = stringResource(R.string.confirm_password),
                 isPasswordVisible = state.isRepeatPasswordVisible,
                 focusRequester = repeatPasswordFocusRequester,
                 keyboardOptions = KeyboardOptions(
@@ -195,11 +196,11 @@ fun SharedTransitionScope.MoodFlowRegister(
                 viewModel.sendIntent(UiIntent.OnSignUpClicked)
             }
 
-            Spacer(modifier = Modifier.height(16.dp))
+            /*Spacer(modifier = Modifier.height(16.dp))
 
             LoginWithGoogleButton {
                 viewModel.sendIntent(UiIntent.OnLoginWithGoogleClicked)
-            }
+            }*/
 
             Spacer(modifier = Modifier.height(16.dp))
 
@@ -214,7 +215,7 @@ fun SharedTransitionScope.MoodFlowRegister(
 private fun NotAccountText(onClick: () -> Unit) {
     Row {
         Text(
-            text = "Have an account?",
+            text = stringResource(R.string.have_account_question),
             fontSize = 14.sp,
         )
 
@@ -224,7 +225,7 @@ private fun NotAccountText(onClick: () -> Unit) {
             modifier = Modifier.clickable {
                 onClick()
             },
-            text = "Sign in",
+            text = stringResource(R.string.sign_in),
             fontWeight = FontWeight.Bold,
             fontSize = 14.sp,
         )
@@ -234,7 +235,7 @@ private fun NotAccountText(onClick: () -> Unit) {
 @Composable
 private fun LoginButton(onClick: () -> Unit) {
     MoodFlowButton(
-        text = "Register",
+        text = stringResource(R.string.sign_up),
         backgroundColor = MoodFlowColors.defaultLightColors().pastelBlue,
         textColor = Color.White
     ) { onClick() }
@@ -243,7 +244,7 @@ private fun LoginButton(onClick: () -> Unit) {
 @Composable
 private fun LoginWithGoogleButton(onClick: () -> Unit) {
     MoodFlowButton(
-        text = "Login with Google",
+        text = stringResource(R.string.login_with_google),
         leadingIconRes = R.drawable.ic_google_logo,
         addBorder = true,
     ) { onClick() }

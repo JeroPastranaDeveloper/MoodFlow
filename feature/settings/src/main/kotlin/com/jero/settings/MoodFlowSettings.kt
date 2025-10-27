@@ -20,8 +20,10 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.rememberVectorPainter
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.jero.core.designsystem.R
 import com.jero.core.screen.HandleActions
 import com.jero.core.screen.SetStatusBarIconsColor
 import com.jero.core.screen.getTopSystemPadding
@@ -65,7 +67,7 @@ fun SharedTransitionScope.MoodFlowSettings(
                 Spacer(modifier = Modifier.weight(1f))
 
                 MoodFlowButton(
-                    text = "Close session",
+                    text = stringResource(R.string.sign_out),
                     addBorder = true,
                     textColor = Color.White,
                     backgroundColor = MoodFlowColors.defaultLightColors().primary,
@@ -78,8 +80,8 @@ fun SharedTransitionScope.MoodFlowSettings(
 
             if (state.isCloseSessionDialogVisible) {
                 MoodFlowTwoOptionsDialog(
-                    titleText = "Close session",
-                    bodyText = "Are you sure you want to close session?",
+                    titleText = stringResource(R.string.sign_out),
+                    bodyText = stringResource(R.string.sign_out_question),
                     onAccept = { viewModel.sendIntent(UiIntent.OnCloseSession) },
                     onCancel = { viewModel.sendIntent(UiIntent.OnChangeCloseSessionDialogVisibility) }
                 )

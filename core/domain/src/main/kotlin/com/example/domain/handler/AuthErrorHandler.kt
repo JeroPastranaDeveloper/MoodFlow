@@ -1,22 +1,24 @@
 package com.example.domain.handler
 
+import com.example.domain.providers.StringsProvider
+import com.jero.core.designsystem.R
 import com.jero.core.model.AuthError
 
 interface AuthErrorHandler {
     operator fun invoke(error: Throwable): String
 }
 
-class AuthErrorHandlerImpl : AuthErrorHandler {
+class AuthErrorHandlerImpl(private val stringsProvider: StringsProvider) : AuthErrorHandler {
     override fun invoke(error: Throwable): String {
         val message = when (error) {
-            is AuthError.InvalidEmail -> "Email inválido"
-            is AuthError.InvalidPassword -> "Contraseña debe tener al menos 6 caracteres"
-            is AuthError.UserNotFound -> "Usuario no encontrado"
-            is AuthError.EmailAlreadyInUse -> "El email ya está en uso"
-            is AuthError.WeakPassword -> "La contraseña es muy débil"
-            is AuthError.NetworkError -> "Error de conexión"
+            is AuthError.InvalidEmail -> stringsProvider(R.string.invalid_email)
+            is AuthError.InvalidPassword -> stringsProvider(R.string.password_min_size)
+            is AuthError.UserNotFound -> stringsProvider(R.string.user_not_found)
+            is AuthError.EmailAlreadyInUse -> stringsProvider(R.string.used_email)
+            is AuthError.WeakPassword -> stringsProvider(R.string.weak_password)
+            is AuthError.NetworkError -> stringsProvider(R.string.connection_error)
             is AuthError.Unknown -> error.message
-            else -> "Error desconocido"
+            else -> stringsProvider(R.string.unknown_error)
         }
 
         return message

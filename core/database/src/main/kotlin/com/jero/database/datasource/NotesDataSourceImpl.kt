@@ -24,7 +24,7 @@ class NotesDataSourceImpl(
     override suspend fun createNote(note: NoteDto): Result<NoteDto> {
         return try {
             val userId = auth.currentUser?.uid 
-                ?: return Result.failure(Exception("Usuario no autenticado"))
+                ?: return Result.failure(Exception("User not authenticated"))
             
             val noteRef = getUserNotesRef(userId).child(note.id)
             noteRef.setValue(note).await()
@@ -37,7 +37,7 @@ class NotesDataSourceImpl(
     override suspend fun updateNote(note: NoteDto): Result<NoteDto> {
         return try {
             val userId = auth.currentUser?.uid 
-                ?: return Result.failure(Exception("Usuario no autenticado"))
+                ?: return Result.failure(Exception("User not authenticated"))
             
             val noteRef = getUserNotesRef(userId).child(note.id)
             noteRef.setValue(note).await()
@@ -66,7 +66,7 @@ class NotesDataSourceImpl(
             if (note != null) {
                 Result.success(note)
             } else {
-                Result.failure(Exception("Nota no encontrada"))
+                Result.failure(Exception("Note not found"))
             }
         } catch (e: Exception) {
             Result.failure(e)

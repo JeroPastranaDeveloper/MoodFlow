@@ -6,6 +6,6 @@ import org.koin.dsl.module
 
 val authErrorHandlerModule = module {
     single<AuthErrorHandler> {
-        AuthErrorHandlerImpl()
+        AuthErrorHandlerImpl(get())
     }
 }

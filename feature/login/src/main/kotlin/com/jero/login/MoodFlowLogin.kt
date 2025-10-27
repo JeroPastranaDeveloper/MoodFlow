@@ -29,6 +29,7 @@ import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalFocusManager
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
@@ -96,7 +97,7 @@ fun SharedTransitionScope.MoodFlowLogin(
 
         Text(
             modifier = Modifier.padding(top = 32.dp),
-            text = "Login",
+            text = stringResource(R.string.login),
             fontSize = 40.sp,
         )
 
@@ -105,7 +106,7 @@ fun SharedTransitionScope.MoodFlowLogin(
         MoodFlowTextField(
             modifier = Modifier.padding(horizontal = 16.dp),
             text = state.email,
-            placeHolder = "Email",
+            placeHolder = stringResource(R.string.email),
             focusRequester = emailFocusRequester,
             keyboardOptions = KeyboardOptions(
                 keyboardType = KeyboardType.Email,
@@ -125,7 +126,7 @@ fun SharedTransitionScope.MoodFlowLogin(
         PasswordTextField(
             modifier = Modifier.padding(horizontal = 16.dp),
             password = state.password,
-            placeHolder = "Password",
+            placeHolder = stringResource(R.string.password),
             isPasswordVisible = state.isPasswordVisible,
             focusRequester = passwordFocusRequester,
             keyboardOptions = KeyboardOptions(
@@ -152,12 +153,12 @@ fun SharedTransitionScope.MoodFlowLogin(
             viewModel.sendIntent(UiIntent.OnEmailLoginClicked)
         }
 
-        Spacer(modifier = Modifier.height(16.dp))
+        /*Spacer(modifier = Modifier.height(16.dp))
 
         LoginWithGoogleButton {
             focusManager.clearFocus(force = true)
             viewModel.sendIntent(UiIntent.OnLoginWithGoogleClicked)
-        }
+        }*/
 
         Spacer(modifier = Modifier.height(16.dp))
 
@@ -171,7 +172,7 @@ fun SharedTransitionScope.MoodFlowLogin(
 private fun NotAccountText(onClick: () -> Unit) {
     Row {
         Text(
-            text = "Don't have an account?",
+            text = stringResource(R.string.not_account_question),
             fontSize = 14.sp,
         )
 
@@ -181,7 +182,7 @@ private fun NotAccountText(onClick: () -> Unit) {
             modifier = Modifier.clickable {
                 onClick()
             },
-            text = "Sign up",
+            text = stringResource(R.string.sign_up),
             fontWeight = FontWeight.Bold,
             fontSize = 14.sp,
         )
@@ -191,7 +192,7 @@ private fun NotAccountText(onClick: () -> Unit) {
 @Composable
 private fun LoginButton(onClick: () -> Unit) {
     MoodFlowButton(
-        text = "Login",
+        text = stringResource(R.string.login),
         backgroundColor = MoodFlowColors.defaultLightColors().pastelBlue,
         textColor = Color.White
     ) { onClick() }
@@ -200,7 +201,7 @@ private fun LoginButton(onClick: () -> Unit) {
 @Composable
 private fun LoginWithGoogleButton(onClick: () -> Unit) {
     MoodFlowButton(
-        text = "Login with Google",
+        text = stringResource(R.string.login_with_google),
         leadingIconRes = R.drawable.ic_google_logo,
         addBorder = true,
     ) { onClick() }

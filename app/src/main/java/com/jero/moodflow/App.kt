@@ -7,6 +7,7 @@ import com.example.domain.usecase.di.notesUseCaseModule
 import com.jero.authentication.data.di.authDatasourceModule
 import com.jero.data.di.authUseCaseModule
 import com.jero.data.di.preferencesModule
+import com.jero.data.di.stringsProviderModule
 import com.jero.database.di.notesDatasourceModule
 import com.jero.editnote.di.editNoteViewModelModule
 import com.jero.home.di.homeViewModelModule
@@ -30,6 +31,7 @@ class App : Application() {
                 mainViewModelModule,
                 navigationModule,
                 preferencesModule,
+                stringsProviderModule,
                 networkMonitorModule,
                 localDatabaseModule,
                 notesUseCaseModule,

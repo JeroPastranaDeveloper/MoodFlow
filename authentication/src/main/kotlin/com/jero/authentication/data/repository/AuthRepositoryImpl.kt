@@ -20,7 +20,7 @@ class AuthRepositoryImpl(
         if (firebaseUser != null) {
             Result.success(firebaseUser.toDomain())
         } else {
-            Result.failure(AuthError.Unknown("Usuario no encontrado"))
+            Result.failure(AuthError.Unknown("User not authenticated"))
         }
     } catch (_: FirebaseAuthInvalidCredentialsException) {
         Result.failure(AuthError.InvalidPassword)
@@ -35,7 +35,7 @@ class AuthRepositoryImpl(
         if (firebaseUser != null) {
             Result.success(firebaseUser.toDomain())
         } else {
-            Result.failure(AuthError.Unknown("Error al crear usuario"))
+            Result.failure(AuthError.Unknown("Error creating user"))
         }
     } catch (_: FirebaseAuthUserCollisionException) {
         Result.failure(AuthError.EmailAlreadyInUse)
@@ -70,6 +70,6 @@ class AuthRepositoryImpl(
 
     private fun mapFirebaseException(exception: Exception): AuthError = when (exception) {
         is FirebaseNetworkException -> AuthError.NetworkError
-        else -> AuthError.Unknown(exception.message ?: "Error desconocido")
+        else -> AuthError.Unknown(exception.message ?: "Unknown error")
     }
 }

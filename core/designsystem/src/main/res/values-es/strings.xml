@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="register">Registro</string>
+    <string name="email">Correo electrónico</string>
+    <string name="password">Contraseña</string>
+    <string name="confirm_password">Confirmar contraseña</string>
+    <string name="not_account_question">¿No tienes una cuenta?</string>
+    <string name="have_account_question">¿Ya tienes una cuenta?</string>
+    <string name="sign_up">Regístrate</string>
+    <string name="sign_in">Inicia sesión</string>
+    <string name="login_with_google">Inicia sesión con Google</string>
+    <string name="invalid_email">Correo no válido</string>
+    <string name="password_min_size">Contraseña debe tener al menos 6 caracteres</string>
+    <string name="user_not_found">Usuario no encontrado</string>
+    <string name="used_email">El email ya está en uso</string>
+    <string name="weak_password">La contraseña es muy débil</string>
+    <string name="connection_error">Error de conexión</string>
+    <string name="unknown_error">Error desconocido</string>
+    <string name="search_placeholder">Buscar…</string>
+    <string name="note">Nota</string>
+    <string name="notes">Notas</string>
+    <string name="pinned_notes">Notas fijadas</string>
+    <string name="other_notes">Otras notas</string>
+    <string name="settings">Ajustes</string>
+    <string name="title">Título</string>
+
+    <string name="delete_note">Eliminar nota</string>
+    <string name="delete_note_question">¿Estás seguro de que quieres eliminar esta nota?</string>
+    <string name="sign_out">Cerrar sesión</string>
+    <string name="sign_out_question">¿Estás seguro de que quieres cerrar sesión?</string>
+
+    <string name="validation_error_password_empty">La contraseña no puede estar vacía</string>
+    <string name="validation_error_password_too_short">La contraseña debe tener al menos 8 caracteres</string>
+    <string name="validation_error_password_no_uppercase">Debe incluir al menos una mayúscula</string>
+    <string name="validation_error_password_no_lowercase">Debe incluir al menos una minúscula</string>
+    <string name="validation_error_password_no_digit">Debe incluir al menos un número</string>
+    <string name="validation_error_password_no_special_char">Debe incluir al menos un caracter especial (!@\#$\%…)</string>
+    <string name="validation_error_password_contains_whitespace">La contraseña no puede contener espacios</string>
+    <string name="validation_error_email_empty">El correo no puede estar vacío</string>
+    <string name="validation_error_email_too_short">El correo no puede superar los %s caracteres</string>
+    <string name="validation_error_email_invalid_format">Formato de correo inválido</string>
+    <string name="user_not_authenticated">Usuario no autenticado</string>
+    <string name="title_cannot_be_empty">El título no puede estar vacío</string>
+</resources>
