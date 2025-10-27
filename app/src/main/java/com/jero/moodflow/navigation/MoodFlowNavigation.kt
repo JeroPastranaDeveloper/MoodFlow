@@ -6,6 +6,8 @@ import androidx.compose.animation.core.FastOutSlowInEasing
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
+import androidx.compose.animation.slideInHorizontally
+import androidx.compose.animation.slideOutHorizontally
 import androidx.navigation.NavGraphBuilder
 import androidx.navigation.compose.composable
 import com.jero.editnote.MoodFlowEditNote
@@ -13,14 +15,41 @@ import com.jero.home.MoodFlowHome
 import com.jero.login.MoodFlowLogin
 import com.jero.navigation.MoodFLowScreen
 import com.jero.register.MoodFlowRegister
+import com.jero.settings.MoodFlowSettings
 
 context(SharedTransitionScope)
 fun NavGraphBuilder.moodFlowNavigation() {
-    composable<MoodFLowScreen.Login> {
+    composable<MoodFLowScreen.Login>(
+        enterTransition = {
+            slideInHorizontally(
+                initialOffsetX = { fullWidth -> -fullWidth },
+                animationSpec = tween(durationMillis = 400)
+            )
+        },
+        exitTransition = {
+            slideOutHorizontally(
+                targetOffsetX = { fullWidth -> -fullWidth },
+                animationSpec = tween(durationMillis = 400)
+            )
+        }
+    ) {
         MoodFlowLogin(this)
     }
 
-    composable<MoodFLowScreen.Register> {
+    composable<MoodFLowScreen.Register>(
+        enterTransition = {
+            slideInHorizontally(
+                initialOffsetX = { fullWidth -> fullWidth },
+                animationSpec = tween(durationMillis = 400)
+            )
+        },
+        exitTransition = {
+            slideOutHorizontally(
+                targetOffsetX = { fullWidth -> fullWidth },
+                animationSpec = tween(durationMillis = 400)
+            )
+        }
+    ) {
         MoodFlowRegister(this)
     }
 
@@ -60,6 +89,23 @@ fun NavGraphBuilder.moodFlowNavigation() {
         }
     ) {
         MoodFlowEditNote(this)
+    }
+
+    composable<MoodFLowScreen.Settings>(
+        enterTransition = {
+            slideInHorizontally(
+                initialOffsetX = { fullWidth -> fullWidth },
+                animationSpec = tween(durationMillis = 400)
+            )
+        },
+        exitTransition = {
+            slideOutHorizontally(
+                targetOffsetX = { fullWidth -> fullWidth },
+                animationSpec = tween(durationMillis = 400)
+            )
+        }
+    ) {
+        MoodFlowSettings(this)
     }
 
     /*composable<MoodFlowScreen.SelectDatabase> {

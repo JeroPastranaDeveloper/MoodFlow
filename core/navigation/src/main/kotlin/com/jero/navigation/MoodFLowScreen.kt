@@ -23,6 +23,9 @@ sealed interface MoodFLowScreen {
         }
     }
 
+    @Serializable
+    data object Settings : MoodFLowScreen
+
     /*@Serializable
     data object SelectDatabase : MoodFLowScreen
 

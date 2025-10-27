@@ -11,13 +11,15 @@ class HomeViewContract {
         val pinnedNotes: List<Note> = emptyList(),
         val query: String = emptyString(),
         val showDeleteNoteDialog: Boolean = false,
+        val showMoreMenu: Boolean = false,
         val selectedNoteData: Note = Note(),
     )
 
     sealed class UiIntent {
-        data object OnCloseSession : UiIntent() // Irá fuera
-        data object OnDeleteNote : UiIntent()
         data object OnChangeDeleteNoteDialogVisibility : UiIntent()
+        data object OnChangeMoreMenuVisibility : UiIntent()
+        data object OnDeleteNote : UiIntent()
+        data object OnGoSettingsScreen : UiIntent()
 
         data class OnShowDeleteNoteDialog(val noteId: String) : UiIntent()
         data class OnGoEditNoteScreen(val noteId: String?) : UiIntent()
@@ -26,6 +28,7 @@ class HomeViewContract {
 
     sealed class UiAction {
         data object GoHome : UiAction()
+        data object GoSettingsScreen : UiAction()
 
         data class GoEditNoteScreen(val note: Note) : UiAction()
         data class ShowToast(val message: String) : UiAction()
