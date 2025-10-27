@@ -16,6 +16,7 @@ import com.jero.moodflow.di.mainViewModelModule
 import com.jero.navigation.navigationModule
 import com.jero.network.di.networkMonitorModule
 import com.jero.register.di.registerViewModelModule
+import com.jero.settings.di.settingsViewModelModule
 import org.koin.android.ext.koin.androidContext
 import org.koin.core.context.startKoin
 
@@ -39,8 +40,9 @@ class App : Application() {
                 validatorModule,
                 loginViewModelModule,
                 registerViewModelModule,
-                editNoteViewModelModule,
                 homeViewModelModule,
+                editNoteViewModelModule,
+                settingsViewModelModule,
             )
         }
     }

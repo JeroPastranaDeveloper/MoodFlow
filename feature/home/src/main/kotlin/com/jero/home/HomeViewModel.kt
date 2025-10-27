@@ -1,10 +1,8 @@
 package com.jero.home
 
 import androidx.lifecycle.viewModelScope
-import com.example.domain.preferences.PreferencesHandler
 import com.example.domain.usecase.notes.interfaces.DeleteNoteUseCase
 import com.example.domain.usecase.notes.interfaces.GetAllNotesUseCase
-import com.example.domain.usecase.user.SignOutUseCase
 import com.jero.core.model.Note
 import com.jero.core.viewmodel.BaseViewModelWithActions
 import com.jero.home.HomeViewContract.UiAction
@@ -13,10 +11,8 @@ import com.jero.home.HomeViewContract.UiState
 import kotlinx.coroutines.launch
 
 class HomeViewModel(
-    private val preferencesHandler: PreferencesHandler,
     private val getAllNotesUseCase: GetAllNotesUseCase,
     private val deleteNoteUseCase: DeleteNoteUseCase,
-    private val closeSessionUseCase: SignOutUseCase,
 ) : BaseViewModelWithActions<UiState, UiIntent, UiAction>() {
 
     override val initialViewState = UiState()
@@ -28,14 +24,14 @@ class HomeViewModel(
             is UiIntent.OnShowDeleteNoteDialog -> showDeleteNoteDialog(intent.noteId)
 
             UiIntent.OnDeleteNote -> deleteNote()
-            UiIntent.OnCloseSession -> signOut()
-
+            UiIntent.OnGoSettingsScreen -> goSettings()
             UiIntent.OnChangeDeleteNoteDialogVisibility -> setState {
                 copy(
                     showDeleteNoteDialog = !showDeleteNoteDialog,
                     selectedNoteData = Note()
                 )
             }
+            UiIntent.OnChangeMoreMenuVisibility -> setState { copy(showMoreMenu = !showMoreMenu) }
         }
     }
 
@@ -68,20 +64,9 @@ class HomeViewModel(
         }
     }
 
-    private fun signOut() {
-        viewModelScope.launch {
-            val result = closeSessionUseCase()
-
-            result.fold(
-                onSuccess = {
-                    preferencesHandler.isLogged = false
-                    dispatchAction(UiAction.GoHome)
-                },
-                onFailure = {
-                    dispatchAction(UiAction.ShowToast(it.message.orEmpty()))
-                }
-            )
-        }
+    private fun goSettings() {
+        setState { copy(showMoreMenu = false) }
+        dispatchAction(UiAction.GoSettingsScreen)
     }
 
     private fun observeNotes() {
