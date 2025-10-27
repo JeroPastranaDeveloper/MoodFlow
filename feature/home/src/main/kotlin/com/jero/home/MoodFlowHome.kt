@@ -23,6 +23,7 @@ import androidx.compose.foundation.lazy.staggeredgrid.LazyVerticalStaggeredGrid
 import androidx.compose.foundation.lazy.staggeredgrid.StaggeredGridCells
 import androidx.compose.foundation.lazy.staggeredgrid.StaggeredGridItemSpan
 import androidx.compose.foundation.lazy.staggeredgrid.items
+import androidx.compose.foundation.lazy.staggeredgrid.rememberLazyStaggeredGridState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Close
@@ -34,15 +35,17 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.platform.LocalInspectionMode
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.jero.core.screen.HandleActions
 import com.jero.core.screen.SetStatusBarIconsColor
 import com.jero.core.screen.getTopSystemPadding
@@ -66,7 +69,7 @@ fun SharedTransitionScope.MoodFlowHome(
 ) {
     SetStatusBarIconsColor()
     val composeNavigator = currentComposeNavigator
-    val state by viewModel.state.collectAsState()
+    val state by viewModel.state.collectAsStateWithLifecycle() //usa siemrpe WithLifecycle
 
     val context = LocalContext.current
     val isKeyboardOpen by rememberKeyboardAsState()
@@ -77,7 +80,9 @@ fun SharedTransitionScope.MoodFlowHome(
     }
 
     val localInspectionMode = LocalInspectionMode.current
-
+//usa val aqui con remenber de state.query,state.filteredNotes,state.pinnedNotes,state.notes
+     val query = remember(state.query) { state.query }
+ 
     Scaffold(
         topBar = {
             MoodFlowTextField(
@@ -87,7 +92,7 @@ fun SharedTransitionScope.MoodFlowHome(
                     end = 16.dp,
                     bottom = 16.dp
                 ),
-                text = state.query,
+                text = query,
                 placeHolder = "Buscar...",
                 placeHolderFontSize = 20.sp,
                 leadingIcon = {
@@ -98,7 +103,7 @@ fun SharedTransitionScope.MoodFlowHome(
                 },
                 trailingIcon = {
                     AnimatedVisibility(
-                        visible = state.query.isNotBlank(),
+                        visible = query.isNotBlank(),
                         enter = fadeIn(animationSpec = tween(200)) + scaleIn(
                             initialScale = 0.8f,
                             animationSpec = tween(200)
@@ -123,14 +128,20 @@ fun SharedTransitionScope.MoodFlowHome(
             }
         },
     ) { paddingValues ->
+        val gridState = rememberLazyStaggeredGridState()
         Box(modifier = Modifier.fillMaxSize()) {
             LazyVerticalStaggeredGrid(
-                columns = StaggeredGridCells.Fixed(2),
+                columns = StaggeredGridCells.Fixed(2),//tamaño fijo de dps igual mejor
+                state = gridState,
                 modifier = Modifier
                     .fillMaxSize()
+                    .graphicsLayer {
+                        renderEffect = null
+                    } //para evitar q haga compos extra a lo loco
                     .background(MoodFlowColors.defaultLightColors().backGroundColor)
                     .padding(paddingValues)
                     .padding(horizontal = 16.dp),
+
                 verticalItemSpacing = 8.dp,
                 horizontalArrangement = Arrangement.spacedBy(8.dp),
             ) {
@@ -138,10 +149,11 @@ fun SharedTransitionScope.MoodFlowHome(
                     Spacer(modifier = Modifier.height(8.dp))
                 }
 
-                if (state.query.isNotBlank()) {
+
+                if (query.isNotBlank()) {
                     items(
                         items = state.filteredNotes,
-                        key = { it.id }
+                        key = { it.id } //cool, esto te iba a meter
                     ) { note ->
                         MoodFlowNote(
                             modifier = Modifier.animateItem(),
@@ -264,10 +276,11 @@ fun SharedTransitionScope.MoodFlowHome(
     BackHandler {
         when {
             isKeyboardOpen -> focusManager.clearFocus(force = true)
-            state.query.isNotBlank() -> {
+            query.isNotBlank() -> {
                 viewModel.sendIntent(UiIntent.OnSearchQueryChanged(emptyString()))
                 focusManager.clearFocus(force = true)
             }
+
             else -> (context as? Activity)?.finish()
         }
     }
@@ -278,6 +291,7 @@ fun SharedTransitionScope.MoodFlowHome(
 
             is UiAction.ShowToast -> Toast.makeText(context, action.message, Toast.LENGTH_SHORT)
                 .show()
+
             is UiAction.GoEditNoteScreen -> composeNavigator.navigate(MoodFLowScreen.EditNote(action.note))
         }
     }

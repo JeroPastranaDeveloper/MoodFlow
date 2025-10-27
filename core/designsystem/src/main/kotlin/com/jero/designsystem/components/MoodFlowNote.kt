@@ -15,6 +15,7 @@ import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
@@ -35,6 +36,10 @@ fun MoodFlowNote(
     onClick: (String) -> Unit,
     onLongClick: (String) -> Unit,
 ) {
+    //en el item lo mejor sería q lo memorizases
+     val noteTitle = remember(note.id) { note.title }
+    val noteContent = remember(note.id) { note.content }
+
     Card(
         modifier = modifier
             .combinedClickable(
@@ -56,7 +61,7 @@ fun MoodFlowNote(
                     animatedVisibilityScope = animatedVisibilityScope,
                     boundsTransform = boundsTransform,
                 ),
-                text = note.title,
+                text = noteTitle,
                 fontWeight = FontWeight.Bold
             )
             if (note.content.isNotEmpty()) {
@@ -68,7 +73,7 @@ fun MoodFlowNote(
                         animatedVisibilityScope = animatedVisibilityScope,
                         boundsTransform = boundsTransform,
                     ),
-                    text = note.content,
+                    text = noteContent,
                     color = Color.Gray
                 )
             }
