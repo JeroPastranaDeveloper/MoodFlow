@@ -17,5 +17,7 @@
 .cxx
 local.properties
 
+/core/localdatabase/schemas/com.jero.localdatabase.NoteDatabase
+
 # Project exclude paths
 /core/designsystem/build/

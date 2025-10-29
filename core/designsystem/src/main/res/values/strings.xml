@@ -11,8 +11,7 @@
   <string name="sign_up">Sign up</string>
   <string name="sign_in">Sign in</string>
   <string name="login_with_google">Login with Google</string>
-  <string name="invalid_email">Invalid email</string>
-  <string name="password_min_size">Password must be at least 6 characters</string>
+  <string name="invalid_credentials">Invalid email or passwords</string>
   <string name="user_not_found">User not found</string>
   <string name="used_email">This email is already in use</string>
   <string name="weak_password">Weak password</string>
