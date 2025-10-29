@@ -11,8 +11,7 @@ interface AuthErrorHandler {
 class AuthErrorHandlerImpl(private val stringsProvider: StringsProvider) : AuthErrorHandler {
     override fun invoke(error: Throwable): String {
         val message = when (error) {
-            is AuthError.InvalidEmail -> stringsProvider(R.string.invalid_email)
-            is AuthError.InvalidPassword -> stringsProvider(R.string.password_min_size)
+            is AuthError.InvalidCredentials -> stringsProvider(R.string.invalid_credentials)
             is AuthError.UserNotFound -> stringsProvider(R.string.user_not_found)
             is AuthError.EmailAlreadyInUse -> stringsProvider(R.string.used_email)
             is AuthError.WeakPassword -> stringsProvider(R.string.weak_password)

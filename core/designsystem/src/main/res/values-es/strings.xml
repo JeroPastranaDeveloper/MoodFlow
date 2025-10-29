@@ -9,8 +9,7 @@
     <string name="sign_up">Regístrate</string>
     <string name="sign_in">Inicia sesión</string>
     <string name="login_with_google">Inicia sesión con Google</string>
-    <string name="invalid_email">Correo no válido</string>
-    <string name="password_min_size">Contraseña debe tener al menos 6 caracteres</string>
+    <string name="invalid_credentials">Correo o contraseñas no válidos</string>
     <string name="user_not_found">Usuario no encontrado</string>
     <string name="used_email">El email ya está en uso</string>
     <string name="weak_password">La contraseña es muy débil</string>

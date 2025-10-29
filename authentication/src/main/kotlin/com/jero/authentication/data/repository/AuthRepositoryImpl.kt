@@ -23,7 +23,7 @@ class AuthRepositoryImpl(
             Result.failure(AuthError.Unknown("User not authenticated"))
         }
     } catch (_: FirebaseAuthInvalidCredentialsException) {
-        Result.failure(AuthError.InvalidPassword)
+        Result.failure(AuthError.InvalidCredentials)
     } catch (_: FirebaseAuthInvalidUserException) {
         Result.failure(AuthError.UserNotFound)
     } catch (e: Exception) {

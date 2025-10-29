@@ -1,8 +1,7 @@
 package com.jero.core.model
 
 sealed class AuthError : Exception() {
-    object InvalidEmail : AuthError()
-    object InvalidPassword : AuthError()
+    object InvalidCredentials : AuthError()
     object UserNotFound : AuthError()
     object EmailAlreadyInUse : AuthError()
     object WeakPassword : AuthError()
