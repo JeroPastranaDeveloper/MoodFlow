@@ -7,9 +7,7 @@ import org.koin.androidx.workmanager.dsl.worker
 import org.koin.dsl.module
 
 val workManagerModule = module {
-    // WorkManager instance
     single { WorkManager.getInstance(androidContext()) }
 
-    // Worker
     worker { SyncNotesWorker(get(), get(), get()) }
 }

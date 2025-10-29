@@ -21,6 +21,7 @@ import com.jero.network.di.networkMonitorModule
 import com.jero.register.di.registerViewModelModule
 import com.jero.settings.di.settingsViewModelModule
 import org.koin.android.ext.koin.androidContext
+import org.koin.androidx.workmanager.factory.KoinWorkerFactory
 import org.koin.androidx.workmanager.koin.workManagerFactory
 import org.koin.core.component.KoinComponent
 import org.koin.core.context.startKoin
@@ -59,6 +60,7 @@ class App : Application(), Configuration.Provider, KoinComponent {
 
     override val workManagerConfiguration: Configuration
         get() = Configuration.Builder()
+            .setWorkerFactory(KoinWorkerFactory())
             .setMinimumLoggingLevel(android.util.Log.INFO)
             .build()
 }

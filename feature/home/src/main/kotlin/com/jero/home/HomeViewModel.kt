@@ -21,17 +21,17 @@ class HomeViewModel(
             is UiIntent.OnSearchQueryChanged -> searchNotes(intent.query)
 
             is UiIntent.OnGoEditNoteScreen -> showEditNoteDialog(intent.noteId)
-            is UiIntent.OnShowDeleteNoteDialog -> showDeleteNoteDialog(intent.noteId)
+            is UiIntent.OnSelectNote -> updateNoteSelection(intent.noteId, intent.isChecked)
 
-            UiIntent.OnDeleteNote -> deleteNote()
+            UiIntent.OnShowDeleteNoteDialog -> showDeleteNoteDialog()
             UiIntent.OnGoSettingsScreen -> goSettings()
-            UiIntent.OnChangeDeleteNoteDialogVisibility -> setState {
+            UiIntent.OnChangeDeleteNotesDialogVisibility -> setState {
                 copy(
-                    showDeleteNoteDialog = !showDeleteNoteDialog,
-                    selectedNoteData = Note()
-                )
+                    showDeleteNotesDialog = !showDeleteNotesDialog)
             }
             UiIntent.OnChangeMoreMenuVisibility -> setState { copy(showMoreMenu = !showMoreMenu) }
+            UiIntent.OnChangeMultipleSelectorUIVisibility -> changeMultipleSelectorUIVisibility()
+            UiIntent.OnDeleteMultipleNotes -> deleteMultipleNotes()
         }
     }
 
@@ -39,29 +39,59 @@ class HomeViewModel(
         observeNotes()
     }
 
-    private fun showDeleteNoteDialog(noteId: String) {
-        val note = state.value.allNotes.find { it.id == noteId } ?: Note()
-        setState { copy(showDeleteNoteDialog = true, selectedNoteData = note) }
+    private fun changeMultipleSelectorUIVisibility() {
+        setState {
+            copy(
+                canBeSelected = !canBeSelected,
+                showDeleteNotesDialog = false,
+                selectedNotes = emptyList()
+            )
+        }
+    }
+
+    private fun deleteMultipleNotes() {
+        viewModelScope.launch {
+            val selectedNotes = state.value.selectedNotes
+            selectedNotes.forEach { noteId ->
+                val result = deleteNoteUseCase(noteId)
+                result.fold(
+                    onSuccess = { /* no-op */ },
+                    onFailure = {
+                        dispatchAction(UiAction.ShowToast(it.message.orEmpty()))
+                    }
+                )
+            }
+
+            changeMultipleSelectorUIVisibility()
+        }
+    }
+
+    private fun updateNoteSelection(noteId: String, isSelected: Boolean) {
+        val selectedNotes = state.value.selectedNotes.toMutableSet()
+
+        if (isSelected) {
+            selectedNotes.add(noteId)
+        } else {
+            selectedNotes.remove(noteId)
+        }
+
+        val canBeSelected = selectedNotes.isNotEmpty()
+
+        setState {
+            copy(
+                selectedNotes = selectedNotes.toList(),
+                canBeSelected = canBeSelected
+            )
+        }
+    }
+
+    private fun showDeleteNoteDialog() {
+        setState { copy(showDeleteNotesDialog = true) }
     }
 
     private fun showEditNoteDialog(noteId: String?) {
         val note = state.value.allNotes.find { it.id == noteId } ?: Note()
         dispatchAction(UiAction.GoEditNoteScreen(note))
-    }
-
-    private fun deleteNote() {
-        viewModelScope.launch {
-            val result = deleteNoteUseCase(state.value.selectedNoteData.id)
-
-            result.fold(
-                onSuccess = {
-                    setState { copy(selectedNoteData = Note(), showDeleteNoteDialog = false) }
-                },
-                onFailure = {
-                    dispatchAction(UiAction.ShowToast(it.message.orEmpty()))
-                }
-            )
-        }
     }
 
     private fun goSettings() {

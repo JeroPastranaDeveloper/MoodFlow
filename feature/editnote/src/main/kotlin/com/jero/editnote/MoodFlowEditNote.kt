@@ -170,8 +170,8 @@ fun SharedTransitionScope.MoodFlowEditNote(
             }
             if (state.showDeleteNoteDialog) {
                 MoodFlowTwoOptionsDialog(
-                    titleText = stringResource(R.string.delete_note),
-                    bodyText = stringResource(R.string.delete_note_question),
+                    titleText = stringResource(R.string.delete_selection),
+                    bodyText = stringResource(R.string.delete_selection_question),
                     onAccept = {
                         viewModel.sendIntent(UiIntent.OnDeleteNote)
                     },

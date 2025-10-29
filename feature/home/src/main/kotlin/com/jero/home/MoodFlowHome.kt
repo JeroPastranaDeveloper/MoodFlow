@@ -35,6 +35,7 @@ import androidx.compose.foundation.lazy.staggeredgrid.StaggeredGridItemSpan
 import androidx.compose.foundation.lazy.staggeredgrid.items
 import androidx.compose.foundation.lazy.staggeredgrid.rememberLazyStaggeredGridState
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Search
@@ -112,57 +113,85 @@ fun SharedTransitionScope.MoodFlowHome(
                         ),
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-                    AnimatedVisibility(visible = !isKeyboardOpen) {
+                    if (!state.canBeSelected) {
+                        AnimatedVisibility(visible = !isKeyboardOpen) {
+                            IconButton(onClick = {
+                                viewModel.sendIntent(UiIntent.OnChangeMoreMenuVisibility)
+                            }) {
+                                Icon(
+                                    modifier = Modifier.size(32.dp),
+                                    painter = painterResource(id = R.drawable.ic_more_menu),
+                                    contentDescription = "More menu"
+                                )
+                            }
+                        }
+
+                        AnimatedVisibility(visible = !isKeyboardOpen) {
+                            Spacer(modifier = Modifier.width(16.dp))
+                        }
+
+                        MoodFlowTextField(
+                            modifier = Modifier.weight(1f),
+                            text = query,
+                            placeHolder = stringResource(R.string.search_placeholder),
+                            placeHolderFontSize = 20.sp,
+                            leadingIcon = {
+                                Icon(
+                                    imageVector = Icons.Default.Search,
+                                    contentDescription = "Buscar"
+                                )
+                            },
+                            trailingIcon = {
+                                AnimatedVisibility(
+                                    visible = query.isNotBlank(),
+                                    enter = fadeIn(animationSpec = tween(100)) + scaleIn(
+                                        initialScale = 0.8f,
+                                        animationSpec = tween(100)
+                                    ),
+                                    exit = fadeOut(animationSpec = tween(100)) + scaleOut(
+                                        targetScale = 0.8f,
+                                        animationSpec = tween(100)
+                                    )
+                                ) {
+                                    IconButton(onClick = {
+                                        viewModel.sendIntent(
+                                            UiIntent.OnSearchQueryChanged(
+                                                emptyString()
+                                            )
+                                        )
+                                    }) {
+                                        Icon(
+                                            imageVector = Icons.Default.Close,
+                                            contentDescription = "Borrar búsqueda"
+                                        )
+                                    }
+                                }
+                            },
+                        ) { newQuery ->
+                            viewModel.sendIntent(UiIntent.OnSearchQueryChanged(newQuery))
+                        }
+                    } else {
                         IconButton(onClick = {
-                            viewModel.sendIntent(UiIntent.OnChangeMoreMenuVisibility)
+                            viewModel.sendIntent(UiIntent.OnChangeMultipleSelectorUIVisibility)
                         }) {
                             Icon(
                                 modifier = Modifier.size(32.dp),
-                                painter = painterResource(id = R.drawable.ic_more_menu),
-                                contentDescription = "More menu"
+                                imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                                contentDescription = "Hide multiple selector"
                             )
                         }
-                    }
 
-                    AnimatedVisibility(visible = !isKeyboardOpen) {
-                        Spacer(modifier = Modifier.width(16.dp))
-                    }
+                        Spacer(modifier = Modifier.weight(1f))
 
-                    MoodFlowTextField(
-                        modifier = Modifier.weight(1f),
-                        text = query,
-                        placeHolder = stringResource(R.string.search_placeholder),
-                        placeHolderFontSize = 20.sp,
-                        leadingIcon = {
+                        IconButton(onClick = {
+                            viewModel.sendIntent(UiIntent.OnChangeDeleteNotesDialogVisibility)
+                        }) {
                             Icon(
-                                imageVector = Icons.Default.Search,
-                                contentDescription = "Buscar"
+                                modifier = Modifier.size(32.dp),
+                                painter = painterResource(id = R.drawable.ic_trash),
+                                contentDescription = "Delete multiple notes"
                             )
-                        },
-                        trailingIcon = {
-                            AnimatedVisibility(
-                                visible = query.isNotBlank(),
-                                enter = fadeIn(animationSpec = tween(100)) + scaleIn(
-                                    initialScale = 0.8f,
-                                    animationSpec = tween(100)
-                                ),
-                                exit = fadeOut(animationSpec = tween(100)) + scaleOut(
-                                    targetScale = 0.8f,
-                                    animationSpec = tween(100)
-                                )
-                            ) {
-                                IconButton(onClick = {
-                                    viewModel.sendIntent(UiIntent.OnSearchQueryChanged(emptyString()))
-                                }) {
-                                    Icon(
-                                        imageVector = Icons.Default.Close,
-                                        contentDescription = "Borrar búsqueda"
-                                    )
-                                }
-                            }
-                        },
-                    ) { newQuery ->
-                        viewModel.sendIntent(UiIntent.OnSearchQueryChanged(newQuery))
+                        }
                     }
                 }
             },
@@ -188,6 +217,7 @@ fun SharedTransitionScope.MoodFlowHome(
                             items = state.filteredNotes,
                             key = { it.id }
                         ) { note ->
+                            val isChecked = state.selectedNotes.contains(note.id)
                             MoodFlowNote(
                                 modifier = Modifier.animateItem(),
                                 note = note,
@@ -196,12 +226,17 @@ fun SharedTransitionScope.MoodFlowHome(
                                 localInspectionMode = localInspectionMode,
                                 animatedVisibilityScope = animatedVisibilityScope,
                                 boundsTransform = boundsTransform,
+                                canBeSelected = state.canBeSelected,
+                                isSelected = isChecked,
                                 onClick = { noteId ->
                                     viewModel.sendIntent(UiIntent.OnGoEditNoteScreen(noteId))
                                 },
-                                onLongClick = { noteId ->
-                                    viewModel.sendIntent(UiIntent.OnShowDeleteNoteDialog(noteId))
-                                }
+                                onCheck = { noteId, isChecked ->
+                                    if (!state.canBeSelected) {
+                                        viewModel.sendIntent(UiIntent.OnChangeMultipleSelectorUIVisibility)
+                                    }
+                                    viewModel.sendIntent(UiIntent.OnSelectNote(note.id, isChecked))
+                                },
                             )
                         }
                     } else {
@@ -215,6 +250,7 @@ fun SharedTransitionScope.MoodFlowHome(
                                 items = state.pinnedNotes,
                                 key = { it.id }
                             ) { note ->
+                                val isChecked = state.selectedNotes.contains(note.id)
                                 MoodFlowNote(
                                     modifier = Modifier.animateItem(),
                                     note = note,
@@ -223,12 +259,17 @@ fun SharedTransitionScope.MoodFlowHome(
                                     localInspectionMode = localInspectionMode,
                                     animatedVisibilityScope = animatedVisibilityScope,
                                     boundsTransform = boundsTransform,
+                                    canBeSelected = state.canBeSelected,
+                                    isSelected = isChecked,
                                     onClick = { noteId ->
                                         viewModel.sendIntent(UiIntent.OnGoEditNoteScreen(noteId))
                                     },
-                                    onLongClick = { noteId ->
-                                        viewModel.sendIntent(UiIntent.OnShowDeleteNoteDialog(noteId))
-                                    }
+                                    onCheck = { noteId, isChecked ->
+                                        if (!state.canBeSelected) {
+                                            viewModel.sendIntent(UiIntent.OnChangeMultipleSelectorUIVisibility)
+                                        }
+                                        viewModel.sendIntent(UiIntent.OnSelectNote(note.id, isChecked))
+                                    },
                                 )
                             }
 
@@ -245,6 +286,7 @@ fun SharedTransitionScope.MoodFlowHome(
                             items = state.notes,
                             key = { it.id }
                         ) { note ->
+                            val isChecked = state.selectedNotes.contains(note.id)
                             MoodFlowNote(
                                 modifier = Modifier.animateItem(),
                                 note = note,
@@ -253,12 +295,17 @@ fun SharedTransitionScope.MoodFlowHome(
                                 localInspectionMode = localInspectionMode,
                                 animatedVisibilityScope = animatedVisibilityScope,
                                 boundsTransform = boundsTransform,
+                                canBeSelected = state.canBeSelected,
+                                isSelected = isChecked,
                                 onClick = { noteId ->
                                     viewModel.sendIntent(UiIntent.OnGoEditNoteScreen(noteId))
                                 },
-                                onLongClick = { noteId ->
-                                    viewModel.sendIntent(UiIntent.OnShowDeleteNoteDialog(noteId))
-                                }
+                                onCheck = { noteId, isChecked ->
+                                    if (!state.canBeSelected) {
+                                        viewModel.sendIntent(UiIntent.OnChangeMultipleSelectorUIVisibility)
+                                    }
+                                    viewModel.sendIntent(UiIntent.OnSelectNote(note.id, isChecked))
+                                },
                             )
                         }
 
@@ -268,26 +315,28 @@ fun SharedTransitionScope.MoodFlowHome(
                     }
                 }
 
-                FloatingActionButton(
-                    modifier = Modifier
-                        .align(Alignment.BottomEnd)
-                        .padding(end = 16.dp, bottom = 32.dp),
-                    onClick = {
-                        viewModel.sendIntent(UiIntent.OnGoEditNoteScreen(null))
+                if (!state.canBeSelected) {
+                    FloatingActionButton(
+                        modifier = Modifier
+                            .align(Alignment.BottomEnd)
+                            .padding(end = 16.dp, bottom = 32.dp),
+                        onClick = {
+                            viewModel.sendIntent(UiIntent.OnGoEditNoteScreen(null))
+                        }
+                    ) {
+                        Icon(imageVector = Icons.Default.Add, null)
                     }
-                ) {
-                    Icon(imageVector = Icons.Default.Add, null)
                 }
 
-                if (state.showDeleteNoteDialog) {
+                if (state.showDeleteNotesDialog) {
                     MoodFlowTwoOptionsDialog(
-                        titleText = stringResource(R.string.delete_note),
-                        bodyText = stringResource(R.string.delete_note_question),
+                        titleText = stringResource(R.string.delete_selection),
+                        bodyText = stringResource(R.string.delete_selection_question),
                         onAccept = {
-                            viewModel.sendIntent(UiIntent.OnDeleteNote)
+                            viewModel.sendIntent(UiIntent.OnDeleteMultipleNotes)
                         },
                         onCancel = {
-                            viewModel.sendIntent(UiIntent.OnChangeDeleteNoteDialogVisibility)
+                            viewModel.sendIntent(UiIntent.OnChangeDeleteNotesDialogVisibility)
                         }
                     )
                 }
@@ -369,6 +418,7 @@ fun SharedTransitionScope.MoodFlowHome(
                 viewModel.sendIntent(UiIntent.OnSearchQueryChanged(emptyString()))
                 focusManager.clearFocus(force = true)
             }
+            state.canBeSelected -> viewModel.sendIntent(UiIntent.OnChangeMultipleSelectorUIVisibility)
 
             else -> (context as? Activity)?.finish()
         }

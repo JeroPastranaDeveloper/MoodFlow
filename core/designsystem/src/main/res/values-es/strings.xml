@@ -25,8 +25,8 @@
     <string name="accept_button">Aceptar</string>
     <string name="cancel_button">Cancelar</string>
 
-    <string name="delete_note">Eliminar nota</string>
-    <string name="delete_note_question">¿Estás seguro de que quieres eliminar esta nota?</string>
+    <string name="delete_selection">Eliminar selección</string>
+    <string name="delete_selection_question">¿Estás seguro de que quieres eliminar la selección?</string>
     <string name="sign_out">Cerrar sesión</string>
     <string name="sign_out_question">¿Estás seguro de que quieres cerrar sesión?</string>
 

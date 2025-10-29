@@ -27,8 +27,8 @@
   <string name="accept_button">Accept</string>
   <string name="cancel_button">Cancel</string>
 
-  <string name="delete_note">Delete note</string>
-  <string name="delete_note_question">Are you sure you want to delete this note?</string>
+  <string name="delete_selection">Delete selection</string>
+  <string name="delete_selection_question">Are you sure you want to delete the selection?</string>
   <string name="sign_out">Close session</string>
   <string name="sign_out_question">Are you sure you want to close session?</string>
 

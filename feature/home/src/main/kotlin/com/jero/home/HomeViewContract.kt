@@ -10,19 +10,22 @@ class HomeViewContract {
         val notes: List<Note> = emptyList(),
         val pinnedNotes: List<Note> = emptyList(),
         val query: String = emptyString(),
-        val showDeleteNoteDialog: Boolean = false,
+        val showDeleteNotesDialog: Boolean = false,
         val showMoreMenu: Boolean = false,
-        val selectedNoteData: Note = Note(),
+        val canBeSelected: Boolean = false,
+        val selectedNotes: List<String> = emptyList(),
     )
 
     sealed class UiIntent {
-        data object OnChangeDeleteNoteDialogVisibility : UiIntent()
+        data object OnChangeDeleteNotesDialogVisibility : UiIntent()
         data object OnChangeMoreMenuVisibility : UiIntent()
-        data object OnDeleteNote : UiIntent()
         data object OnGoSettingsScreen : UiIntent()
+        data object OnChangeMultipleSelectorUIVisibility : UiIntent()
+        data object OnShowDeleteNoteDialog : UiIntent()
 
-        data class OnShowDeleteNoteDialog(val noteId: String) : UiIntent()
+        data object OnDeleteMultipleNotes : UiIntent()
         data class OnGoEditNoteScreen(val noteId: String?) : UiIntent()
+        data class OnSelectNote(val noteId: String, val isChecked: Boolean) : UiIntent()
         data class OnSearchQueryChanged(val query: String) : UiIntent()
     }
 
