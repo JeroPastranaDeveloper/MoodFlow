@@ -19,6 +19,6 @@ val notesDatasourceModule = module {
     
     // Repository
     single<NotesRepository> {
-        NotesRepositoryImpl(get(), get(), get(), get())
+        NotesRepositoryImpl(get(), get(), get(), get(), get())
     }
 }

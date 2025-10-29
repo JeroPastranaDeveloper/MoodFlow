@@ -59,6 +59,7 @@ dependencies {
     implementation(libs.accompanist.systemuicontroller)
 
     implementation(libs.firebase.database)
+    implementation(libs.koin.androidx.workmanager)
 
     // Core
     implementation(projects.core.navigation)

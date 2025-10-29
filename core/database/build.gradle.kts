@@ -14,4 +14,6 @@ dependencies {
     implementation(projects.core.network)
     implementation(libs.firebase.database)
     implementation(libs.firebase.auth)
+    implementation(libs.androidx.work.manager)
+    implementation(libs.koin.androidx.workmanager)
 }

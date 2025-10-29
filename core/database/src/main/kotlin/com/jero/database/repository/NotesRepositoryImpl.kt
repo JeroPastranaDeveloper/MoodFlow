@@ -1,6 +1,13 @@
 package com.jero.database.repository
 
 import android.util.Log
+import androidx.work.BackoffPolicy
+import androidx.work.Constraints
+import androidx.work.ExistingWorkPolicy
+import androidx.work.NetworkType
+import androidx.work.OneTimeWorkRequestBuilder
+import androidx.work.WorkManager
+import androidx.work.WorkRequest
 import com.example.domain.repository.NotesRepository
 import com.google.firebase.auth.FirebaseAuth
 import com.jero.core.model.Note
@@ -8,18 +15,21 @@ import com.jero.database.datasource.NotesDataSource
 import com.jero.database.mapper.toDomain
 import com.jero.database.mapper.toDto
 import com.jero.database.mapper.toEntity
+import com.jero.database.workmanager.SyncNotesWorker
 import com.jero.localdatabase.dao.NoteDao
 import com.jero.localdatabase.model.PendingDeletionEntity
 import com.jero.network.NetworkMonitor
 import kotlinx.coroutines.flow.channelFlow
 import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.launch
+import java.util.concurrent.TimeUnit
 
 class NotesRepositoryImpl(
     private val notesDataSource: NotesDataSource,
     private val auth: FirebaseAuth,
     private val notesDao: NoteDao,
     private val networkMonitor: NetworkMonitor,
+    private val workManager: WorkManager
 ) : NotesRepository {
 
     private fun getCurrentUserId(): String? = auth.currentUser?.uid
@@ -38,7 +48,7 @@ class NotesRepositoryImpl(
             networkMonitor.observeConnectivity()
                 .filter { it }
                 .collect {
-                    syncPendingChanges(userId)
+                    scheduleSyncWork()
                 }
         }
 
@@ -87,12 +97,7 @@ class NotesRepositoryImpl(
             )
             notesDao.insertNote(entity)
 
-            if (networkMonitor.isConnected()) {
-                val syncResult = notesDataSource.syncNote(userId, entity.toDto())
-                syncResult.onSuccess {
-                    notesDao.markAsSynced(entity.id)
-                }
-            }
+            scheduleSyncWork()
 
             Result.success(note)
         } catch (e: Exception) {
@@ -113,10 +118,7 @@ class NotesRepositoryImpl(
             notesDao.insertNote(entity)
 
             if (networkMonitor.isConnected()) {
-                val syncResult = notesDataSource.syncNote(userId, entity.toDto())
-                syncResult.onSuccess {
-                    notesDao.markAsSynced(entity.id)
-                }
+                scheduleSyncWork()
             }
 
             Result.success(note)
@@ -133,7 +135,7 @@ class NotesRepositoryImpl(
             notesDao.deleteNote(noteId)
 
             if (networkMonitor.isConnected()) {
-                notesDataSource.deleteNote(noteId, userId)
+                scheduleSyncWork()
             } else {
                 notesDao.insertPendingDeletion(
                     PendingDeletionEntity(
@@ -166,7 +168,9 @@ class NotesRepositoryImpl(
         }
     }
 
-    private suspend fun syncPendingChanges(userId: String) {
+    override suspend fun syncPendingChanges() {
+        val userId = getCurrentUserId() ?: return
+
         try {
             val pendingNotes = notesDao.getPendingNotes(userId)
             pendingNotes.forEach { noteEntity ->
@@ -190,5 +194,26 @@ class NotesRepositoryImpl(
         } catch (e: Exception) {
             Log.e("NotesRepository", "Error syncing pending changes", e)
         }
+    }
+
+    private fun scheduleSyncWork() {
+        val constraints = Constraints.Builder()
+            .setRequiredNetworkType(NetworkType.CONNECTED)
+            .build()
+
+        val syncRequest = OneTimeWorkRequestBuilder<SyncNotesWorker>()
+            .setConstraints(constraints)
+            .setBackoffCriteria(
+                BackoffPolicy.EXPONENTIAL,
+                WorkRequest.MIN_BACKOFF_MILLIS,
+                TimeUnit.MILLISECONDS
+            )
+            .build()
+
+        workManager.enqueueUniqueWork(
+            "sync_notes",
+            ExistingWorkPolicy.REPLACE,
+            syncRequest
+        )
     }
 }
