@@ -9,6 +9,7 @@ val homeViewModelModule = module {
         HomeViewModel(
             get(),
             get(),
+            get(),
         )
     }
 }

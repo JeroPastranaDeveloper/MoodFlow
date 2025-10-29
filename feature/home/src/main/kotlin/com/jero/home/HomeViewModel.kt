@@ -3,6 +3,7 @@ package com.jero.home
 import androidx.lifecycle.viewModelScope
 import com.example.domain.usecase.notes.interfaces.DeleteNoteUseCase
 import com.example.domain.usecase.notes.interfaces.GetAllNotesUseCase
+import com.example.domain.usecase.notes.interfaces.UpdateNoteUseCase
 import com.jero.core.model.Note
 import com.jero.core.viewmodel.BaseViewModelWithActions
 import com.jero.home.HomeViewContract.UiAction
@@ -13,6 +14,7 @@ import kotlinx.coroutines.launch
 class HomeViewModel(
     private val getAllNotesUseCase: GetAllNotesUseCase,
     private val deleteNoteUseCase: DeleteNoteUseCase,
+    private val updateNoteUseCase: UpdateNoteUseCase,
 ) : BaseViewModelWithActions<UiState, UiIntent, UiAction>() {
 
     override val initialViewState = UiState()
@@ -32,6 +34,7 @@ class HomeViewModel(
             UiIntent.OnChangeMoreMenuVisibility -> setState { copy(showMoreMenu = !showMoreMenu) }
             UiIntent.OnChangeMultipleSelectorUIVisibility -> changeMultipleSelectorUIVisibility()
             UiIntent.OnDeleteMultipleNotes -> deleteMultipleNotes()
+            UiIntent.OnPinOrUnpinSelectedNotes -> pinOrUnpinSelectedNotes()
         }
     }
 
@@ -39,10 +42,30 @@ class HomeViewModel(
         observeNotes()
     }
 
+    private fun pinOrUnpinSelectedNotes() {
+        viewModelScope.launch {
+            val selectedNotes = state.value.selectedNotes
+            selectedNotes.forEach { noteId ->
+                val note = state.value.allNotes.find { it.id == noteId }
+                if (note != null) {
+                    val updatedNote = note.copy(pinned = !note.pinned)
+                    updateNoteUseCase(updatedNote).fold(
+                        onSuccess = { /* no-op */ },
+                        onFailure = {
+                            dispatchAction(UiAction.ShowToast(it.message.orEmpty()))
+                        }
+                    )
+                }
+            }
+
+            changeMultipleSelectorUIVisibility()
+        }
+    }
+
     private fun changeMultipleSelectorUIVisibility() {
         setState {
             copy(
-                canBeSelected = !canBeSelected,
+                notesCanBeSelected = !notesCanBeSelected,
                 showDeleteNotesDialog = false,
                 selectedNotes = emptyList()
             )
@@ -80,7 +103,7 @@ class HomeViewModel(
         setState {
             copy(
                 selectedNotes = selectedNotes.toList(),
-                canBeSelected = canBeSelected
+                notesCanBeSelected = canBeSelected
             )
         }
     }

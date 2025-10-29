@@ -12,7 +12,7 @@ class HomeViewContract {
         val query: String = emptyString(),
         val showDeleteNotesDialog: Boolean = false,
         val showMoreMenu: Boolean = false,
-        val canBeSelected: Boolean = false,
+        val notesCanBeSelected: Boolean = false,
         val selectedNotes: List<String> = emptyList(),
     )
 
@@ -22,6 +22,7 @@ class HomeViewContract {
         data object OnGoSettingsScreen : UiIntent()
         data object OnChangeMultipleSelectorUIVisibility : UiIntent()
         data object OnShowDeleteNoteDialog : UiIntent()
+        data object OnPinOrUnpinSelectedNotes : UiIntent()
 
         data object OnDeleteMultipleNotes : UiIntent()
         data class OnGoEditNoteScreen(val noteId: String?) : UiIntent()
