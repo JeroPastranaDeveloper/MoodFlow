@@ -9,4 +9,5 @@ interface NotesRepository {
     suspend fun deleteNote(noteId: String): Result<Unit>
     suspend fun getNote(noteId: String): Result<Note>
     suspend fun getAllNotes(userId: String): Flow<List<Note>>
+    suspend fun syncPendingChanges()
 }

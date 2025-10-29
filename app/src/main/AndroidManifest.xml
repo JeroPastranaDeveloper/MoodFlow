@@ -16,6 +16,18 @@
         android:enableOnBackInvokedCallback="true"
         tools:targetApi="33"
         android:theme="@style/Theme.MoodFlow">
+
+        <provider
+            android:name="androidx.startup.InitializationProvider"
+            android:authorities="${applicationId}.androidx-startup"
+            android:exported="false"
+            tools:node="merge">
+            <meta-data
+                android:name="androidx.work.WorkManagerInitializer"
+                android:value="androidx.startup"
+                tools:node="remove" />
+        </provider>
+
         <activity
             android:name="com.jero.moodflow.MainActivity"
             android:exported="true"

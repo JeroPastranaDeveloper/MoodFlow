@@ -1,6 +1,7 @@
 package com.jero.moodflow
 
 import android.app.Application
+import androidx.work.Configuration
 import com.example.domain.di.authErrorHandlerModule
 import com.example.domain.di.validatorModule
 import com.example.domain.usecase.di.notesUseCaseModule
@@ -9,6 +10,7 @@ import com.jero.data.di.authUseCaseModule
 import com.jero.data.di.preferencesModule
 import com.jero.data.di.stringsProviderModule
 import com.jero.database.di.notesDatasourceModule
+import com.jero.database.di.workManagerModule
 import com.jero.editnote.di.editNoteViewModelModule
 import com.jero.home.di.homeViewModelModule
 import com.jero.localdatabase.di.localDatabaseModule
@@ -19,15 +21,21 @@ import com.jero.network.di.networkMonitorModule
 import com.jero.register.di.registerViewModelModule
 import com.jero.settings.di.settingsViewModelModule
 import org.koin.android.ext.koin.androidContext
+import org.koin.androidx.workmanager.koin.workManagerFactory
+import org.koin.core.component.KoinComponent
 import org.koin.core.context.startKoin
 
-class App : Application() {
+class App : Application(), Configuration.Provider, KoinComponent {
+
     override fun onCreate() {
         super.onCreate()
 
         startKoin {
             androidContext(this@App)
+            workManagerFactory()
+
             modules(
+                workManagerModule,
                 mainViewModelModule,
                 navigationModule,
                 preferencesModule,
@@ -48,4 +56,9 @@ class App : Application() {
             )
         }
     }
+
+    override val workManagerConfiguration: Configuration
+        get() = Configuration.Builder()
+            .setMinimumLoggingLevel(android.util.Log.INFO)
+            .build()
 }
