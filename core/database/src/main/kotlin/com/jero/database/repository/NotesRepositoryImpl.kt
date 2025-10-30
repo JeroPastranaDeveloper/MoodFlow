@@ -132,10 +132,22 @@ class NotesRepositoryImpl(
             val userId = getCurrentUserId()
                 ?: return Result.failure(Exception("User not authenticated"))
 
-            notesDao.deleteNote(noteId)
-
             if (networkMonitor.isConnected()) {
-                scheduleSyncWork()
+                val deleteResult = notesDataSource.deleteNote(noteId, userId)
+                deleteResult.onSuccess {
+                    notesDao.deleteNote(noteId)
+                    notesDao.removePendingDeletion(noteId)
+                }.onFailure {
+                    notesDao.insertPendingDeletion(
+                        PendingDeletionEntity(
+                            noteId = noteId,
+                            userId = userId
+                        )
+                    )
+                    notesDao.deleteNote(noteId)
+                    scheduleSyncWork()
+                }
+                return deleteResult.map { Unit }
             } else {
                 notesDao.insertPendingDeletion(
                     PendingDeletionEntity(
@@ -143,9 +155,12 @@ class NotesRepositoryImpl(
                         userId = userId
                     )
                 )
-            }
+                notesDao.deleteNote(noteId)
 
-            Result.success(Unit)
+                scheduleSyncWork()
+
+                Result.success(Unit)
+            }
         } catch (e: Exception) {
             Result.failure(e)
         }
