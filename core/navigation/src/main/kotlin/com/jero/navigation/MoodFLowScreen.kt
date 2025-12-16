@@ -1,10 +1,9 @@
 package com.jero.navigation
 
-import com.jero.core.model.Note
+import androidx.navigation3.runtime.NavKey
 import kotlinx.serialization.Serializable
-import kotlin.reflect.typeOf
 
-sealed interface MoodFLowScreen {
+sealed interface MoodFLowScreen : NavKey {
     @Serializable
     data object Home : MoodFLowScreen
 
@@ -15,38 +14,8 @@ sealed interface MoodFLowScreen {
     data object Register : MoodFLowScreen
 
     @Serializable
-    data class EditNote(val note: Note) : MoodFLowScreen {
-        companion object {
-            val typeMap = mapOf(
-                typeOf<Note>() to NoteType
-            )
-        }
-    }
+    data class EditNote(val id: String = "") : MoodFLowScreen
 
     @Serializable
     data object Settings : MoodFLowScreen
-
-    /*@Serializable
-    data object SelectDatabase : MoodFLowScreen
-
-    @Serializable
-    data object Accounts : MoodFLowScreen
-
-    @Serializable
-    data class AddEditAccount(val id: String) : MoodFLowScreen {
-        companion object {
-            val typeMap = mapOf(
-                typeOf<String>() to NavType.StringType
-            )
-        }
-    }
-
-    @Serializable
-    data class AccountDetail(val id: String) : MoodFLowScreen {
-        companion object {
-            val typeMap = mapOf(
-                typeOf<String>() to NavType.StringType
-            )
-        }
-    }*/
 }

@@ -19,5 +19,7 @@ local.properties
 
 /core/localdatabase/schemas/com.jero.localdatabase.NoteDatabase
 
+.idea/misc.xml
+
 # Project exclude paths
 /core/designsystem/build/

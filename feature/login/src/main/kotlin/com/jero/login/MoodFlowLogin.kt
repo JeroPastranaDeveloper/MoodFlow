@@ -1,10 +1,6 @@
 package com.jero.login
 
-import android.app.Activity
 import android.widget.Toast
-import androidx.activity.compose.BackHandler
-import androidx.compose.animation.AnimatedVisibilityScope
-import androidx.compose.animation.SharedTransitionScope
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -46,34 +42,33 @@ import com.jero.designsystem.theme.MoodFlowColors
 import com.jero.designsystem.utils.rememberKeyboardAsState
 import com.jero.login.LoginViewContract.UiAction
 import com.jero.login.LoginViewContract.UiIntent
-import com.jero.navigation.MoodFLowScreen
-import com.jero.navigation.currentComposeNavigator
 import org.koin.androidx.compose.koinViewModel
 
 @Composable
-fun SharedTransitionScope.MoodFlowLogin(
-    animatedVisibilityScope: AnimatedVisibilityScope,
+fun MoodFlowLogin(
     viewModel: LoginViewModel = koinViewModel(),
+    onGoHome: () -> Unit,
+    onGoRegister: () -> Unit,
 ) {
     SetStatusBarIconsColor()
-    val composeNavigator = currentComposeNavigator
     val isKeyboardOpen by rememberKeyboardAsState()
     val focusManager = LocalFocusManager.current
     val context = LocalContext.current
 
     val state by viewModel.state.collectAsStateWithLifecycle()
 
-    BackHandler {
-        if (!isKeyboardOpen) {
-            (context as? Activity)?.finish()
-        }
-    }
-
     HandleActions(viewModel.actions) { action ->
         when (action) {
-            UiAction.GoHome -> composeNavigator.navigate(MoodFLowScreen.Home)
-            UiAction.GoRegister -> composeNavigator.navigate(MoodFLowScreen.Register)
-            is UiAction.ShowToast -> Toast.makeText(context, action.message, Toast.LENGTH_SHORT).show()
+            UiAction.GoHome -> {
+                onGoHome()
+            }
+
+            UiAction.GoRegister -> {
+                onGoRegister()
+            }
+
+            is UiAction.ShowToast -> Toast.makeText(context, action.message, Toast.LENGTH_SHORT)
+                .show()
         }
     }
 
@@ -163,6 +158,7 @@ fun SharedTransitionScope.MoodFlowLogin(
         Spacer(modifier = Modifier.height(16.dp))
 
         NotAccountText {
+            focusManager.clearFocus(force = true)
             viewModel.sendIntent(UiIntent.OnSignUpClicked)
         }
     }

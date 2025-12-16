@@ -13,6 +13,7 @@ import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.KeyboardCapitalization
 import androidx.compose.ui.unit.TextUnit
 
 @Composable
@@ -46,7 +47,9 @@ fun MoodFlowTransparentTextField(
                 fontWeight = FontWeight.Normal
             )
         },
-        keyboardOptions = keyboardOptions,
+        keyboardOptions = keyboardOptions.copy(
+            capitalization = KeyboardCapitalization.Sentences
+        ),
         keyboardActions = keyboardActions,
         colors = TextFieldDefaults.colors(
             focusedTextColor = Color.Black,

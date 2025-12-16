@@ -3,19 +3,13 @@ package com.jero.moodflow
 import android.os.Bundle
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
-import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.getValue
 import androidx.fragment.app.FragmentActivity
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.jero.moodflow.ui.MoodFlowMain
-import com.jero.navigation.AppComposeNavigator
-import com.jero.navigation.LocalComposeNavigator
-import com.jero.navigation.MoodFLowScreen
-import org.koin.android.ext.android.inject
 import org.koin.androidx.viewmodel.ext.android.viewModel
 
 class MainActivity : FragmentActivity() {
-    private val composeNavigator: AppComposeNavigator<MoodFLowScreen> by inject()
     private val viewModel: MainViewModel by viewModel()
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -23,11 +17,7 @@ class MainActivity : FragmentActivity() {
         enableEdgeToEdge()
         setContent {
             val state by viewModel.state.collectAsStateWithLifecycle()
-            CompositionLocalProvider(
-                LocalComposeNavigator provides composeNavigator
-            ) {
-                MoodFlowMain(composeNavigator = composeNavigator, isLogged = state.isLogged)
-            }
+            MoodFlowMain(isLogged = state.isLogged)
         }
     }
 }
