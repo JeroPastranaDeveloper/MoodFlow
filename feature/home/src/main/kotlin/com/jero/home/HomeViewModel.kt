@@ -4,7 +4,6 @@ import androidx.lifecycle.viewModelScope
 import com.example.domain.usecase.notes.interfaces.DeleteNoteUseCase
 import com.example.domain.usecase.notes.interfaces.GetAllNotesUseCase
 import com.example.domain.usecase.notes.interfaces.UpdateNoteUseCase
-import com.jero.core.model.Note
 import com.jero.core.viewmodel.BaseViewModelWithActions
 import com.jero.home.HomeViewContract.UiAction
 import com.jero.home.HomeViewContract.UiIntent
@@ -29,8 +28,10 @@ class HomeViewModel(
             UiIntent.OnGoSettingsScreen -> goSettings()
             UiIntent.OnChangeDeleteNotesDialogVisibility -> setState {
                 copy(
-                    showDeleteNotesDialog = !showDeleteNotesDialog)
+                    showDeleteNotesDialog = !showDeleteNotesDialog
+                )
             }
+
             UiIntent.OnChangeMoreMenuVisibility -> setState { copy(showMoreMenu = !showMoreMenu) }
             UiIntent.OnChangeMultipleSelectorUIVisibility -> changeMultipleSelectorUIVisibility()
             UiIntent.OnDeleteMultipleNotes -> deleteMultipleNotes()
@@ -113,8 +114,7 @@ class HomeViewModel(
     }
 
     private fun showEditNoteDialog(noteId: String?) {
-        val note = state.value.allNotes.find { it.id == noteId } ?: Note()
-        dispatchAction(UiAction.GoEditNoteScreen(note))
+        dispatchAction(UiAction.GoEditNoteScreen(noteId.orEmpty()))
     }
 
     private fun goSettings() {

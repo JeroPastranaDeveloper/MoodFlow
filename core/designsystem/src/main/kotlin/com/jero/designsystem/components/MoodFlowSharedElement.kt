@@ -4,7 +4,6 @@ import androidx.compose.animation.AnimatedVisibilityScope
 import androidx.compose.animation.BoundsTransform
 import androidx.compose.animation.SharedTransitionScope
 import androidx.compose.animation.SharedTransitionScope.OverlayClip
-import androidx.compose.animation.SharedTransitionScope.PlaceHolderSize
 import androidx.compose.animation.SharedTransitionScope.SharedContentState
 import androidx.compose.animation.core.Spring
 import androidx.compose.animation.core.VisibilityThreshold
@@ -21,7 +20,6 @@ fun Modifier.moodFlowSharedElement(
     state: SharedContentState,
     animatedVisibilityScope: AnimatedVisibilityScope,
     boundsTransform: BoundsTransform = DefaultBoundsTransform,
-    placeHolderSize: PlaceHolderSize = PlaceHolderSize.contentSize,
     renderInOverlayDuringTransition: Boolean = true,
     zIndexInOverlay: Float = 0f,
     clipInOverlayDuringTransition: OverlayClip = ParentClip,
@@ -33,7 +31,6 @@ fun Modifier.moodFlowSharedElement(
             sharedContentState = state,
             animatedVisibilityScope = animatedVisibilityScope,
             boundsTransform = boundsTransform,
-            placeHolderSize = placeHolderSize,
             renderInOverlayDuringTransition = renderInOverlayDuringTransition,
             zIndexInOverlay = zIndexInOverlay,
             clipInOverlayDuringTransition = clipInOverlayDuringTransition,
@@ -51,7 +48,6 @@ fun Modifier.moodflowSharedElementForText(
     state = state,
     animatedVisibilityScope = animatedVisibilityScope,
     boundsTransform = TextBoundsTransform,
-    placeHolderSize = PlaceHolderSize.contentSize,
 )
 
 // Clip de overlay por defecto

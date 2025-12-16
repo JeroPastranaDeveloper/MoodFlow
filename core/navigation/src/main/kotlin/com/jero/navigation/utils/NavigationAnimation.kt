@@ -1,4 +1,4 @@
-package com.jero.navigation
+package com.jero.navigation.utils
 
 import androidx.compose.animation.core.tween
 import androidx.compose.ui.geometry.Rect

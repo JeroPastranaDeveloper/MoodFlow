@@ -13,11 +13,17 @@ dependencies {
     implementation(libs.androidx.core)
     implementation(libs.kotlinx.coroutines.android)
 
-    api(libs.androidx.navigation.compose)
-
     // json parsing
     implementation(libs.kotlinx.serialization.json)
 
     implementation(projects.core.model)
     implementation(libs.gson)
+
+    // Navigation 3
+    implementation(libs.androidx.navigation3.ui)
+    implementation(libs.androidx.navigation3.runtime)
+    implementation(libs.androidx.lifecycle.viewmodel.navigation3)
+    implementation(libs.androidx.material3.adaptive.navigation3)
+    // Material 3 Adaptive
+    implementation(libs.androidx.compose.material3.adaptive)
 }

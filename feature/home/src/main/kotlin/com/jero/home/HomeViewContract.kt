@@ -31,10 +31,10 @@ class HomeViewContract {
     }
 
     sealed class UiAction {
-        data object GoHome : UiAction()
+        data object GoLogin : UiAction()
         data object GoSettingsScreen : UiAction()
 
-        data class GoEditNoteScreen(val note: Note) : UiAction()
+        data class GoEditNoteScreen(val noteId: String) : UiAction()
         data class ShowToast(val message: String) : UiAction()
     }
 }

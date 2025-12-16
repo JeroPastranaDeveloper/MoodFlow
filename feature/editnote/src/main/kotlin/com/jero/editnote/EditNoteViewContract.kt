@@ -15,6 +15,7 @@ class EditNoteViewContract {
         data object OnPinChanged : UiIntent()
         data object OnGoBack : UiIntent()
 
+        data class OnFetchNoteDetails(val noteId: String) : UiIntent()
         data class OnTitleChanged(val title: String) : UiIntent()
         data class OnDescriptionChanged(val description: String) : UiIntent()
     }

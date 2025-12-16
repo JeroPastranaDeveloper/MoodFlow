@@ -81,18 +81,18 @@ import com.jero.designsystem.theme.MoodFlowColors
 import com.jero.designsystem.utils.rememberKeyboardAsState
 import com.jero.home.HomeViewContract.UiAction
 import com.jero.home.HomeViewContract.UiIntent
-import com.jero.navigation.MoodFLowScreen
-import com.jero.navigation.boundsTransform
-import com.jero.navigation.currentComposeNavigator
+import com.jero.navigation.utils.boundsTransform
 import org.koin.androidx.compose.koinViewModel
 
 @Composable
 fun SharedTransitionScope.MoodFlowHome(
     animatedVisibilityScope: AnimatedVisibilityScope,
     viewModel: HomeViewModel = koinViewModel(),
+    onGoLogin: () -> Unit,
+    onGoEditNote: (String) -> Unit,
+    onGoSettings: () -> Unit,
 ) {
     SetStatusBarIconsColor()
-    val composeNavigator = currentComposeNavigator
     val state by viewModel.state.collectAsStateWithLifecycle()
 
     val context = LocalContext.current
@@ -199,7 +199,7 @@ fun SharedTransitionScope.MoodFlowHome(
                                     if (!state.notesCanBeSelected) {
                                         viewModel.sendIntent(UiIntent.OnChangeMultipleSelectorUIVisibility)
                                     }
-                                    viewModel.sendIntent(UiIntent.OnSelectNote(note.id, isChecked))
+                                    viewModel.sendIntent(UiIntent.OnSelectNote(noteId, isChecked))
                                 },
                             )
                         }
@@ -234,7 +234,7 @@ fun SharedTransitionScope.MoodFlowHome(
                                         }
                                         viewModel.sendIntent(
                                             UiIntent.OnSelectNote(
-                                                note.id,
+                                                noteId,
                                                 isChecked
                                             )
                                         )
@@ -273,7 +273,7 @@ fun SharedTransitionScope.MoodFlowHome(
                                     if (!state.notesCanBeSelected) {
                                         viewModel.sendIntent(UiIntent.OnChangeMultipleSelectorUIVisibility)
                                     }
-                                    viewModel.sendIntent(UiIntent.OnSelectNote(note.id, isChecked))
+                                    viewModel.sendIntent(UiIntent.OnSelectNote(noteId, isChecked))
                                 },
                             )
                         }
@@ -388,13 +388,19 @@ fun SharedTransitionScope.MoodFlowHome(
 
     HandleActions(viewModel.actions) { action ->
         when (action) {
-            UiAction.GoHome -> composeNavigator.navigateAndClearBackStack(MoodFLowScreen.Login)
-            UiAction.GoSettingsScreen -> composeNavigator.navigate(MoodFLowScreen.Settings)
+            UiAction.GoLogin -> {
+                onGoLogin()
+            }
+            UiAction.GoSettingsScreen -> {
+                onGoSettings()
+            }
 
             is UiAction.ShowToast -> Toast.makeText(context, action.message, Toast.LENGTH_SHORT)
                 .show()
 
-            is UiAction.GoEditNoteScreen -> composeNavigator.navigate(MoodFLowScreen.EditNote(action.note))
+            is UiAction.GoEditNoteScreen -> {
+                onGoEditNote(action.noteId)
+            }
         }
     }
 }

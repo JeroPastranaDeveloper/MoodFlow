@@ -7,7 +7,6 @@ import androidx.compose.animation.Crossfade
 import androidx.compose.animation.SharedTransitionScope
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -25,6 +24,7 @@ import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
@@ -50,22 +50,26 @@ import com.jero.designsystem.components.moodFlowSharedElement
 import com.jero.designsystem.theme.MoodFlowColors
 import com.jero.editnote.EditNoteViewContract.UiAction
 import com.jero.editnote.EditNoteViewContract.UiIntent
-import com.jero.navigation.boundsTransform
-import com.jero.navigation.currentComposeNavigator
+import com.jero.navigation.utils.boundsTransform
 import org.koin.androidx.compose.koinViewModel
 
 @Composable
 fun SharedTransitionScope.MoodFlowEditNote(
     animatedVisibilityScope: AnimatedVisibilityScope,
     viewModel: EditNoteViewModel = koinViewModel(),
+    noteId: String,
+    onGoBack: () -> Unit,
 ) {
-    val composeNavigator = currentComposeNavigator
     val context = LocalContext.current
     val state by viewModel.state.collectAsStateWithLifecycle()
 
     val focusManager = LocalFocusManager.current
     val titleFocusRequester = remember { FocusRequester() }
     val contentFocusRequester = remember { FocusRequester() }
+
+    LaunchedEffect(noteId) {
+        viewModel.sendIntent(UiIntent.OnFetchNoteDetails(noteId))
+    }
 
     Scaffold(
         topBar = {
@@ -115,71 +119,74 @@ fun SharedTransitionScope.MoodFlowEditNote(
             }
         }
     ) { paddingValues ->
-        Box(modifier = Modifier.padding(paddingValues)
-            .background(MoodFlowColors.defaultLightColors().backGroundColor)) {
-            Column {
-                Spacer(modifier = Modifier.height(16.dp))
-                MoodFlowTransparentTextField(
-                    modifier = Modifier.moodFlowSharedElement(
-                        isLocalInspectionMode = LocalInspectionMode.current,
-                        state = rememberSharedContentState(key = "title-${state.originalNote.id}"),
-                        animatedVisibilityScope = animatedVisibilityScope,
-                        boundsTransform = boundsTransform,
-                    ),
-                    text = state.editedNote.title,
-                    textFontSize = 22.sp,
-                    textFontWeight = FontWeight.Bold,
-                    placeholder = stringResource(R.string.title),
-                    placeholderFontSize = 20.sp,
-                    focusRequester = titleFocusRequester,
-                    keyboardOptions = KeyboardOptions(
-                        keyboardType = KeyboardType.Unspecified,
-                        imeAction = ImeAction.Next
-                    ),
-                    keyboardActions = KeyboardActions(
-                        onNext = { contentFocusRequester.requestFocus() }
-                    ),
-                ) { title ->
-                    viewModel.sendIntent(UiIntent.OnTitleChanged(title))
-                }
+        Column(
+            modifier = Modifier
+                .padding(paddingValues)
+                .background(MoodFlowColors.defaultLightColors().backGroundColor)
+        ) {
+            Spacer(modifier = Modifier.height(16.dp))
+            MoodFlowTransparentTextField(
+                modifier = Modifier.moodFlowSharedElement(
+                    isLocalInspectionMode = LocalInspectionMode.current,
+                    state = rememberSharedContentState(key = "title-${state.originalNote.id}"),
+                    animatedVisibilityScope = animatedVisibilityScope,
+                    boundsTransform = boundsTransform,
+                ),
+                text = state.editedNote.title,
+                textFontSize = 22.sp,
+                textFontWeight = FontWeight.Bold,
+                placeholder = stringResource(R.string.title),
+                placeholderFontSize = 20.sp,
+                focusRequester = titleFocusRequester,
+                keyboardOptions = KeyboardOptions(
+                    keyboardType = KeyboardType.Unspecified,
+                    imeAction = ImeAction.Next
+                ),
+                keyboardActions = KeyboardActions(
+                    onNext = { contentFocusRequester.requestFocus() }
+                ),
+            ) { title ->
+                viewModel.sendIntent(UiIntent.OnTitleChanged(title))
+            }
 
-                Spacer(modifier = Modifier.height(4.dp))
+            Spacer(modifier = Modifier.height(4.dp))
 
-                MoodFlowTransparentTextField(
-                    modifier = Modifier.fillMaxSize().moodFlowSharedElement(
+            MoodFlowTransparentTextField(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .moodFlowSharedElement(
                         isLocalInspectionMode = LocalInspectionMode.current,
                         state = rememberSharedContentState(key = "content-${state.originalNote.id}"),
                         animatedVisibilityScope = animatedVisibilityScope,
                         boundsTransform = boundsTransform,
                     ),
-                    text = state.editedNote.content,
-                    textFontSize = 16.sp,
-                    placeholder = stringResource(R.string.note),
-                    placeholderFontSize = 16.sp,
-                    focusRequester = contentFocusRequester,
-                    keyboardOptions = KeyboardOptions(
-                        keyboardType = KeyboardType.Unspecified,
-                        imeAction = ImeAction.Done
-                    ),
-                    keyboardActions = KeyboardActions(
-                        onDone = { focusManager.clearFocus(force = true) }
-                    ),
-                ) { description ->
-                    viewModel.sendIntent(UiIntent.OnDescriptionChanged(description))
+                text = state.editedNote.content,
+                textFontSize = 16.sp,
+                placeholder = stringResource(R.string.note),
+                placeholderFontSize = 16.sp,
+                focusRequester = contentFocusRequester,
+                keyboardOptions = KeyboardOptions(
+                    keyboardType = KeyboardType.Unspecified,
+                    imeAction = ImeAction.Done
+                ),
+                keyboardActions = KeyboardActions(
+                    onDone = { focusManager.clearFocus(force = true) }
+                ),
+            ) { description ->
+                viewModel.sendIntent(UiIntent.OnDescriptionChanged(description))
+            }
+        }
+        if (state.showDeleteNoteDialog) {
+            MoodFlowTwoOptionsDialog(
+                titleText = stringResource(R.string.delete_selection),
+                bodyText = stringResource(R.string.delete_selection_question),
+                onAccept = {
+                    viewModel.sendIntent(UiIntent.OnDeleteNote)
+                },
+                onCancel = {
+                    viewModel.sendIntent(UiIntent.OnChangeDeleteDialogVisibility)
                 }
-            }
-            if (state.showDeleteNoteDialog) {
-                MoodFlowTwoOptionsDialog(
-                    titleText = stringResource(R.string.delete_selection),
-                    bodyText = stringResource(R.string.delete_selection_question),
-                    onAccept = {
-                        viewModel.sendIntent(UiIntent.OnDeleteNote)
-                    },
-                    onCancel = {
-                        viewModel.sendIntent(UiIntent.OnChangeDeleteDialogVisibility)
-                    }
-                )
-            }
+            )
         }
     }
 
@@ -191,7 +198,7 @@ fun SharedTransitionScope.MoodFlowEditNote(
         when (action) {
             UiAction.GoBack -> {
                 focusManager.clearFocus(force = true)
-                composeNavigator.navigateUp()
+                onGoBack()
             }
 
             is UiAction.ShowToast -> Toast.makeText(

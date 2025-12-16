@@ -82,4 +82,6 @@ dependencies {
 
     // Database
     implementation(projects.core.database)
+    implementation(libs.androidx.navigation3.ui)
+    implementation(libs.androidx.material3.adaptive.navigation3)
 }

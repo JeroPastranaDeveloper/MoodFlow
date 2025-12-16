@@ -16,7 +16,6 @@ import com.jero.home.di.homeViewModelModule
 import com.jero.localdatabase.di.localDatabaseModule
 import com.jero.login.di.loginViewModelModule
 import com.jero.moodflow.di.mainViewModelModule
-import com.jero.navigation.navigationModule
 import com.jero.network.di.networkMonitorModule
 import com.jero.register.di.registerViewModelModule
 import com.jero.settings.di.settingsViewModelModule
@@ -38,7 +37,6 @@ class App : Application(), Configuration.Provider, KoinComponent {
             modules(
                 workManagerModule,
                 mainViewModelModule,
-                navigationModule,
                 preferencesModule,
                 stringsProviderModule,
                 networkMonitorModule,

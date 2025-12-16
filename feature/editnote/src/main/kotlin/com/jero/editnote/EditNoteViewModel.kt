@@ -1,9 +1,9 @@
 package com.jero.editnote
 
-import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.viewModelScope
 import com.example.domain.usecase.notes.interfaces.CreateNoteUseCase
 import com.example.domain.usecase.notes.interfaces.DeleteNoteUseCase
+import com.example.domain.usecase.notes.interfaces.GetNoteByIdUseCase
 import com.example.domain.usecase.notes.interfaces.UpdateNoteUseCase
 import com.jero.core.model.Note
 import com.jero.core.model.hasContentWithoutId
@@ -14,20 +14,12 @@ import com.jero.editnote.EditNoteViewContract.UiState
 import kotlinx.coroutines.launch
 
 class EditNoteViewModel(
+    private val getNoteByIdUseCase: GetNoteByIdUseCase,
     private val createNoteUseCase: CreateNoteUseCase,
     private val deleteNoteUseCase: DeleteNoteUseCase,
     private val updateNoteUseCase: UpdateNoteUseCase,
-    savedStateHandle: SavedStateHandle,
 ) : BaseViewModelWithActions<UiState, UiIntent, UiAction>() {
     override val initialViewState = UiState()
-
-    val note = savedStateHandle.getStateFlow<Note?>("note", null)
-
-    init {
-        note.value?.let {
-            setState { copy(originalNote = it, editedNote = it) }
-        }
-    }
 
     override suspend fun manageIntent(intent: UiIntent) {
         when (intent) {
@@ -36,8 +28,27 @@ class EditNoteViewModel(
             UiIntent.OnPinChanged -> changePin()
             UiIntent.OnGoBack -> goBack()
 
+            is UiIntent.OnFetchNoteDetails -> fetchNoteDetails(intent.noteId)
             is UiIntent.OnDescriptionChanged -> changeDescription(intent.description)
             is UiIntent.OnTitleChanged -> changeTitle(intent.title)
+        }
+    }
+
+    private fun fetchNoteDetails(noteId: String) {
+        viewModelScope.launch {
+            val result = getNoteByIdUseCase(noteId)
+
+            result.fold(
+                onSuccess = {
+                    setState {
+                        copy(
+                            editedNote = it ?: Note(),
+                            originalNote = it ?: Note(),
+                        )
+                    }
+                },
+                onFailure = {}
+            )
         }
     }
 

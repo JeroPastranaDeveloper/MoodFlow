@@ -1,130 +1,115 @@
 package com.jero.moodflow.navigation
 
-import androidx.compose.animation.AnimatedContentTransitionScope
-import androidx.compose.animation.SharedTransitionScope
-import androidx.compose.animation.core.FastOutSlowInEasing
-import androidx.compose.animation.core.tween
-import androidx.compose.animation.fadeIn
-import androidx.compose.animation.fadeOut
+import androidx.compose.animation.SharedTransitionLayout
 import androidx.compose.animation.slideInHorizontally
 import androidx.compose.animation.slideOutHorizontally
-import androidx.navigation.NavGraphBuilder
-import androidx.navigation.compose.composable
+import androidx.compose.animation.togetherWith
+import androidx.compose.material3.adaptive.ExperimentalMaterial3AdaptiveApi
+import androidx.compose.material3.adaptive.navigation3.ListDetailSceneStrategy
+import androidx.compose.material3.adaptive.navigation3.rememberListDetailSceneStrategy
+import androidx.compose.runtime.Composable
+import androidx.navigation3.runtime.NavKey
+import androidx.navigation3.runtime.entryProvider
+import androidx.navigation3.runtime.rememberNavBackStack
+import androidx.navigation3.ui.LocalNavAnimatedContentScope
+import androidx.navigation3.ui.NavDisplay
 import com.jero.editnote.MoodFlowEditNote
 import com.jero.home.MoodFlowHome
 import com.jero.login.MoodFlowLogin
 import com.jero.navigation.MoodFLowScreen
+import com.jero.navigation.utils.clearAndNavigateTo
+import com.jero.navigation.utils.goBack
 import com.jero.register.MoodFlowRegister
 import com.jero.settings.MoodFlowSettings
 
-context(SharedTransitionScope)
-fun NavGraphBuilder.moodFlowNavigation() {
-    composable<MoodFLowScreen.Login>(
-        enterTransition = {
-            slideInHorizontally(
-                initialOffsetX = { fullWidth -> -fullWidth },
-                animationSpec = tween(durationMillis = 400)
-            )
-        },
-        exitTransition = {
-            slideOutHorizontally(
-                targetOffsetX = { fullWidth -> -fullWidth },
-                animationSpec = tween(durationMillis = 400)
-            )
-        }
-    ) {
-        MoodFlowLogin(this)
-    }
+@OptIn(ExperimentalMaterial3AdaptiveApi::class)
+@Composable
+fun MoodFlowNavigation(isLogged: Boolean) {
+    val startScreen = if (isLogged) MoodFLowScreen.Home else MoodFLowScreen.Login
+    val backStack = rememberNavBackStack(startScreen)
+    val listDetailStrategy = rememberListDetailSceneStrategy<NavKey>()
 
-    composable<MoodFLowScreen.Register>(
-        enterTransition = {
-            slideInHorizontally(
-                initialOffsetX = { fullWidth -> fullWidth },
-                animationSpec = tween(durationMillis = 400)
-            )
-        },
-        exitTransition = {
-            slideOutHorizontally(
-                targetOffsetX = { fullWidth -> fullWidth },
-                animationSpec = tween(durationMillis = 400)
-            )
-        }
-    ) {
-        MoodFlowRegister(this)
-    }
+    SharedTransitionLayout {
+        NavDisplay(
+            backStack = backStack,
+            sceneStrategy = listDetailStrategy,
+            entryProvider = entryProvider {
+                entry<MoodFLowScreen.Login> {
+                    MoodFlowLogin(
+                        onGoHome = {
+                            backStack.clearAndNavigateTo(MoodFLowScreen.Home)
+                        },
+                        onGoRegister = {
+                            backStack.add(MoodFLowScreen.Register)
+                        }
+                    )
+                }
 
-    composable<MoodFLowScreen.Home> {
-        MoodFlowHome(this)
-    }
+                entry<MoodFLowScreen.Register> {
+                    MoodFlowRegister(
+                        onGoHome = {
+                            backStack.clearAndNavigateTo(MoodFLowScreen.Home)
+                        },
+                        onGoBack = {
+                            backStack.goBack()
+                        }
+                    )
+                }
 
-    composable<MoodFLowScreen.EditNote>(
-        typeMap = MoodFLowScreen.EditNote.typeMap,
-        enterTransition = {
-            slideIntoContainer(
-                AnimatedContentTransitionScope.SlideDirection.Up,
-                animationSpec = tween(
-                    durationMillis = 450,
-                    easing = FastOutSlowInEasing
-                )
-            ) + fadeIn(
-                animationSpec = tween(
-                    durationMillis = 450,
-                    easing = FastOutSlowInEasing
-                )
-            )
-        },
-        exitTransition = {
-            slideOutOfContainer(
-                AnimatedContentTransitionScope.SlideDirection.Down,
-                animationSpec = tween(
-                    durationMillis = 400,
-                    easing = FastOutSlowInEasing
-                )
-            ) + fadeOut(
-                animationSpec = tween(
-                    durationMillis = 400,
-                    easing = FastOutSlowInEasing
-                )
-            )
-        }
-    ) {
-        MoodFlowEditNote(this)
-    }
+                entry<MoodFLowScreen.Home>(
+                    metadata = ListDetailSceneStrategy.listPane()
+                ) {
+                    MoodFlowHome(
+                        LocalNavAnimatedContentScope.current,
+                        onGoLogin = {
+                            backStack.clearAndNavigateTo(MoodFLowScreen.Login)
+                        },
+                        onGoEditNote = { noteId ->
+                            backStack.add(
+                                MoodFLowScreen.EditNote(
+                                    id = noteId,
+                                )
+                            )
+                        },
+                        onGoSettings = {
+                            backStack.add(MoodFLowScreen.Settings)
+                        }
+                    )
+                }
 
-    composable<MoodFLowScreen.Settings>(
-        enterTransition = {
-            slideInHorizontally(
-                initialOffsetX = { fullWidth -> fullWidth },
-                animationSpec = tween(durationMillis = 400)
-            )
-        },
-        exitTransition = {
-            slideOutHorizontally(
-                targetOffsetX = { fullWidth -> fullWidth },
-                animationSpec = tween(durationMillis = 400)
-            )
-        }
-    ) {
-        MoodFlowSettings(this)
-    }
+                entry<MoodFLowScreen.EditNote>(
+                    metadata = ListDetailSceneStrategy.detailPane()
+                ) {
+                    MoodFlowEditNote(
+                        animatedVisibilityScope = LocalNavAnimatedContentScope.current,
+                        noteId = it.id,
+                        onGoBack = { backStack.goBack() }
+                    )
+                }
 
-    /*composable<MoodFlowScreen.SelectDatabase> {
-        SelectDatabaseScreen(this)
+                entry<MoodFLowScreen.Settings> {
+                    MoodFlowSettings(
+                        onGoLogin = {
+                            backStack.clearAndNavigateTo(MoodFLowScreen.Login)
+                        },
+                        onGoBack = {
+                            backStack.goBack()
+                        }
+                    )
+                }
+            },
+            transitionSpec = {
+                slideInHorizontally(initialOffsetX = { it }) togetherWith
+                        slideOutHorizontally(targetOffsetX = { -it })
+            },
+            popTransitionSpec = {
+                slideInHorizontally(initialOffsetX = { -it }) togetherWith
+                        slideOutHorizontally(targetOffsetX = { it })
+            },
+            predictivePopTransitionSpec = {
+                slideInHorizontally(initialOffsetX = { -it }) togetherWith
+                        slideOutHorizontally(targetOffsetX = { it })
+            },
+        )
     }
-
-    composable<MoodFlowScreen.Accounts> {
-        AccountsScreen(this)
-    }
-
-    composable<MoodFlowScreen.AddEditAccount>(
-        typeMap = MoodFlowScreen.AddEditAccount.typeMap
-    ) {
-        AddEditAccountScreen(this)
-    }
-
-    composable<MoodFlowScreen.AccountDetail>(
-        typeMap = MoodFlowScreen.AccountDetail.typeMap
-    ) {
-        AccountDetailScreen(this)
-    }*/
 }

@@ -1,9 +1,6 @@
 package com.jero.register
 
 import android.widget.Toast
-import androidx.activity.compose.BackHandler
-import androidx.compose.animation.AnimatedVisibilityScope
-import androidx.compose.animation.SharedTransitionScope
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -49,36 +46,35 @@ import com.jero.designsystem.components.MoodFlowPasswordTextField
 import com.jero.designsystem.components.MoodFlowTextField
 import com.jero.designsystem.theme.MoodFlowColors
 import com.jero.designsystem.utils.rememberKeyboardAsState
-import com.jero.navigation.MoodFLowScreen
-import com.jero.navigation.currentComposeNavigator
 import com.jero.register.RegisterViewContract.UiAction
 import com.jero.register.RegisterViewContract.UiIntent
 import org.koin.androidx.compose.koinViewModel
 
 @Composable
-fun SharedTransitionScope.MoodFlowRegister(
-    animatedVisibilityScope: AnimatedVisibilityScope,
-    viewModel: RegisterViewModel = koinViewModel()
+fun MoodFlowRegister(
+    viewModel: RegisterViewModel = koinViewModel(),
+    onGoHome: () -> Unit,
+    onGoBack: () -> Unit,
 ) {
     SetStatusBarIconsColor()
-    val composeNavigator = currentComposeNavigator
     val isKeyboardOpen by rememberKeyboardAsState()
     val focusManager = LocalFocusManager.current
     val context = LocalContext.current
 
     val state by viewModel.state.collectAsStateWithLifecycle()
 
-    BackHandler {
-        if (!isKeyboardOpen) {
-            viewModel.sendIntent(UiIntent.OnGoBack)
-        }
-    }
-
     HandleActions(viewModel.actions) { action ->
-        when(action) {
-            UiAction.GoBack -> composeNavigator.navigateUp()
-            UiAction.GoHome -> composeNavigator.navigate(MoodFLowScreen.Home)
-            is UiAction.ShowToast -> Toast.makeText(context, action.message, Toast.LENGTH_SHORT).show()
+        when (action) {
+            UiAction.GoBack -> {
+                onGoBack()
+            }
+
+            UiAction.GoHome -> {
+                onGoHome()
+            }
+
+            is UiAction.ShowToast -> Toast.makeText(context, action.message, Toast.LENGTH_SHORT)
+                .show()
         }
     }
 
@@ -193,6 +189,7 @@ fun SharedTransitionScope.MoodFlowRegister(
             Spacer(modifier = Modifier.height(16.dp))
 
             LoginButton {
+                focusManager.clearFocus(force = true)
                 viewModel.sendIntent(UiIntent.OnSignUpClicked)
             }
 
@@ -205,6 +202,7 @@ fun SharedTransitionScope.MoodFlowRegister(
             Spacer(modifier = Modifier.height(16.dp))
 
             NotAccountText {
+                focusManager.clearFocus(force = true)
                 viewModel.sendIntent(UiIntent.OnGoBack)
             }
         }
