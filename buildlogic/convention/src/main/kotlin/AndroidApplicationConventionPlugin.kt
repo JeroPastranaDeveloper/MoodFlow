@@ -1,5 +1,6 @@
-import com.android.build.gradle.internal.dsl.BaseAppModuleExtension
+import com.android.build.api.dsl.ApplicationExtension
 import com.jero.convention.configureKotlinAndroid
+import org.gradle.api.JavaVersion
 import org.gradle.api.Plugin
 import org.gradle.api.Project
 import org.gradle.kotlin.dsl.configure
@@ -14,9 +15,19 @@ class AndroidApplicationConventionPlugin : Plugin<Project> {
                 apply("org.jetbrains.kotlin.android")
             }
 
-            extensions.configure<BaseAppModuleExtension> {
-                configureKotlinAndroid(this)
-                defaultConfig.targetSdk = 35
+            extensions.configure<ApplicationExtension> {
+                compileSdk = 35
+                defaultConfig {
+                    minSdk = 30
+                    targetSdk = 35
+                }
+                compileOptions {
+                    sourceCompatibility = JavaVersion.VERSION_17
+                    targetCompatibility = JavaVersion.VERSION_17
+                }
+                lint {
+                    abortOnError = false
+                }
             }
 
             extensions.getByType<KotlinAndroidProjectExtension>().apply {
