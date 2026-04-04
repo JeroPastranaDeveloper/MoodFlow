@@ -33,6 +33,7 @@ class EditNoteViewModel(
 
             is UiIntent.OnFetchNoteDetails -> fetchNoteDetails(intent.noteId)
             is UiIntent.OnDescriptionChanged -> changeDescription(intent.description)
+            is UiIntent.OnColorChanged -> setState { copy(editedNote = editedNote.copy(color = intent.color)) }
             is UiIntent.OnTitleChanged -> changeTitle(intent.title)
         }
     }

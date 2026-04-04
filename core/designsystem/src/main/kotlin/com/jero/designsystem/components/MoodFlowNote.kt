@@ -28,6 +28,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.jero.core.model.Note
 import com.jero.designsystem.theme.MoodFlowColors
+import com.jero.designsystem.theme.NoteColors
 
 context(scope: SharedTransitionScope)
 @OptIn(ExperimentalFoundationApi::class)
@@ -66,7 +67,7 @@ fun MoodFlowNote(
                 },
                 onLongClick = { if (!canBeSelected) onCheck(note.id, !isSelected) }
             ),
-        colors = CardDefaults.cardColors(containerColor = Color.White),
+        colors = CardDefaults.cardColors(containerColor = NoteColors.toComposeColor(note.color)),
         border = BorderStroke(borderWidth, borderColor),
     ) {
         Column(

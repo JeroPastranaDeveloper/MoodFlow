@@ -6,29 +6,39 @@ import androidx.compose.animation.AnimatedVisibilityScope
 import androidx.compose.animation.Crossfade
 import androidx.compose.animation.SharedTransitionScope
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.lazy.LazyRow
+import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.Check
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.rememberVectorPainter
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalFocusManager
@@ -47,7 +57,7 @@ import com.jero.core.screen.getTopSystemPadding
 import com.jero.designsystem.components.MoodFlowTransparentTextField
 import com.jero.designsystem.components.MoodFlowTwoOptionsDialog
 import com.jero.designsystem.components.moodFlowSharedElement
-import com.jero.designsystem.theme.MoodFlowColors
+import com.jero.designsystem.theme.NoteColors
 import com.jero.editnote.EditNoteViewContract.UiAction
 import com.jero.editnote.EditNoteViewContract.UiIntent
 import com.jero.navigation.utils.boundsTransform
@@ -76,6 +86,7 @@ fun SharedTransitionScope.MoodFlowEditNote(
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
+                    .background(NoteColors.toComposeColor(state.editedNote.color))
                     .padding(start = 16.dp, top = getTopSystemPadding(true), end = 16.dp)
             ) {
                 Icon(
@@ -117,12 +128,19 @@ fun SharedTransitionScope.MoodFlowEditNote(
                     )
                 }
             }
-        }
+        },
+        bottomBar = {
+            NoteColorPicker(
+                selectedColor = state.editedNote.color,
+                onColorSelected = { viewModel.sendIntent(UiIntent.OnColorChanged(it)) },
+            )
+        },
     ) { paddingValues ->
         Column(
             modifier = Modifier
                 .padding(paddingValues)
-                .background(MoodFlowColors.defaultLightColors().backGroundColor)
+                .fillMaxSize()
+                .background(NoteColors.toComposeColor(state.editedNote.color))
         ) {
             Spacer(modifier = Modifier.height(16.dp))
             MoodFlowTransparentTextField(
@@ -190,9 +208,7 @@ fun SharedTransitionScope.MoodFlowEditNote(
         }
     }
 
-    BackHandler {
-        viewModel.sendIntent(UiIntent.OnGoBack)
-    }
+    BackHandler { viewModel.sendIntent(UiIntent.OnGoBack) }
 
     HandleActions(viewModel.actions) { action ->
         when (action) {
@@ -206,6 +222,46 @@ fun SharedTransitionScope.MoodFlowEditNote(
                 action.message,
                 Toast.LENGTH_SHORT
             ).show()
+        }
+    }
+}
+
+@Composable
+private fun NoteColorPicker(
+    selectedColor: Long,
+    onColorSelected: (Long) -> Unit,
+) {
+    LazyRow(
+        modifier = Modifier
+            .fillMaxWidth()
+            .background(NoteColors.toComposeColor(selectedColor))
+            .padding(horizontal = 16.dp, vertical = 12.dp)
+            .navigationBarsPadding(),
+        horizontalArrangement = Arrangement.spacedBy(12.dp),
+    ) {
+        items(NoteColors.palette) { colorLong ->
+            val isSelected = colorLong == selectedColor
+            Box(
+                modifier = Modifier
+                    .size(32.dp)
+                    .background(NoteColors.toComposeColor(colorLong), CircleShape)
+                    .border(
+                        width = if (isSelected) 2.dp else 1.dp,
+                        color = if (isSelected) Color.DarkGray else Color.LightGray,
+                        shape = CircleShape,
+                    )
+                    .clickable { onColorSelected(colorLong) },
+                contentAlignment = Alignment.Center,
+            ) {
+                if (isSelected) {
+                    Icon(
+                        imageVector = Icons.Default.Check,
+                        contentDescription = null,
+                        modifier = Modifier.size(16.dp),
+                        tint = Color.DarkGray,
+                    )
+                }
+            }
         }
     }
 }

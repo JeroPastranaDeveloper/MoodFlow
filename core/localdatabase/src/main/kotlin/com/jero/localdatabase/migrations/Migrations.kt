@@ -17,3 +17,9 @@ val MIGRATION_2_3 = object : Migration(2, 3) {
         )
     }
 }
+
+val MIGRATION_3_4 = object : Migration(3, 4) {
+    override fun migrate(db: SupportSQLiteDatabase) {
+        db.execSQL("ALTER TABLE `NoteEntity` ADD COLUMN `color` INTEGER NOT NULL DEFAULT 0")
+    }
+}
