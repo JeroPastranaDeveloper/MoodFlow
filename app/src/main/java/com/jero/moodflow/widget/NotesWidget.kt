@@ -1,6 +1,7 @@
 package com.jero.moodflow.widget
 
 import android.content.Context
+import android.content.Intent
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -10,9 +11,9 @@ import androidx.datastore.preferences.core.Preferences
 import androidx.glance.GlanceId
 import androidx.glance.GlanceModifier
 import androidx.glance.GlanceTheme
-import androidx.glance.action.actionStartActivity
 import androidx.glance.action.clickable
 import androidx.glance.appwidget.GlanceAppWidget
+import androidx.glance.appwidget.action.actionStartActivity
 import androidx.glance.appwidget.lazy.LazyColumn
 import androidx.glance.appwidget.lazy.items
 import androidx.glance.appwidget.provideContent
@@ -105,7 +106,9 @@ private fun Header(context: Context, filter: NotesWidgetFilter) {
             .fillMaxWidth()
             .background(GlanceTheme.colors.primary)
             .padding(horizontal = 12.dp, vertical = 10.dp)
-            .clickable(actionStartActivity<MainActivity>()),
+            .clickable(actionStartActivity(Intent(context, MainActivity::class.java).apply {
+    flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP
+})),
         verticalAlignment = Alignment.CenterVertically,
     ) {
         Text(
@@ -148,7 +151,9 @@ private fun NoteItem(note: NoteEntity, context: Context) {
         modifier = GlanceModifier
             .fillMaxWidth()
             .padding(horizontal = 12.dp, vertical = 8.dp)
-            .clickable(actionStartActivity<MainActivity>()),
+            .clickable(actionStartActivity(Intent(context, MainActivity::class.java).apply {
+    flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP
+})),
     ) {
         Text(
             modifier = GlanceModifier.padding(bottom = 4.dp),
