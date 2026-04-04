@@ -82,6 +82,7 @@ import com.jero.designsystem.theme.MoodFlowColors
 import com.jero.designsystem.utils.rememberKeyboardAsState
 import com.jero.home.HomeViewContract.UiAction
 import com.jero.home.HomeViewContract.UiIntent
+import com.jero.home.HomeViewContract.UiState
 import com.jero.navigation.utils.boundsTransform
 import org.koin.androidx.compose.koinViewModel
 
@@ -95,8 +96,8 @@ fun SharedTransitionScope.MoodFlowHome(
 ) {
     SetStatusBarIconsColor()
     val state by viewModel.state.collectAsStateWithLifecycle()
-
     val context = LocalContext.current
+
     val isKeyboardOpen by rememberKeyboardAsState()
     val focusManager = LocalFocusManager.current
 
@@ -104,6 +105,61 @@ fun SharedTransitionScope.MoodFlowHome(
         if (!isKeyboardOpen) focusManager.clearFocus(force = true)
     }
 
+    HandleActions(viewModel.actions) { action ->
+        when (action) {
+            UiAction.GoLogin -> onGoLogin()
+            UiAction.GoSettingsScreen -> onGoSettings()
+            is UiAction.ShowToast -> Toast.makeText(context, action.message, Toast.LENGTH_SHORT).show()
+            is UiAction.GoEditNoteScreen -> onGoEditNote(action.noteId)
+        }
+    }
+
+    BackHandler {
+        when {
+            state.showMoreMenu -> viewModel.sendIntent(UiIntent.OnChangeMoreMenuVisibility)
+            isKeyboardOpen -> focusManager.clearFocus(force = true)
+            state.query.isNotBlank() -> {
+                viewModel.sendIntent(UiIntent.OnSearchQueryChanged(emptyString()))
+                focusManager.clearFocus(force = true)
+            }
+            state.notesCanBeSelected -> viewModel.sendIntent(UiIntent.OnChangeMultipleSelectorUIVisibility)
+            else -> (context as? Activity)?.finish()
+        }
+    }
+
+    Content(
+        state = state,
+        animatedVisibilityScope = animatedVisibilityScope,
+        isKeyboardOpen = isKeyboardOpen,
+        onSearchQueryChanged = { viewModel.sendIntent(UiIntent.OnSearchQueryChanged(it)) },
+        onSearchFilterChanged = { viewModel.sendIntent(UiIntent.OnSearchFilterChanged(it)) },
+        onChangeMoreMenuVisibility = { viewModel.sendIntent(UiIntent.OnChangeMoreMenuVisibility) },
+        onPinOrUnpinSelectedNotes = { viewModel.sendIntent(UiIntent.OnPinOrUnpinSelectedNotes) },
+        onChangeMultipleSelectorUIVisibility = { viewModel.sendIntent(UiIntent.OnChangeMultipleSelectorUIVisibility) },
+        onChangeDeleteNotesDialogVisibility = { viewModel.sendIntent(UiIntent.OnChangeDeleteNotesDialogVisibility) },
+        onGoEditNoteScreen = { viewModel.sendIntent(UiIntent.OnGoEditNoteScreen(it)) },
+        onDeleteMultipleNotes = { viewModel.sendIntent(UiIntent.OnDeleteMultipleNotes) },
+        onGoSettingsScreen = { viewModel.sendIntent(UiIntent.OnGoSettingsScreen) },
+        onSelectNote = { noteId, isChecked -> viewModel.sendIntent(UiIntent.OnSelectNote(noteId, isChecked)) },
+    )
+}
+
+@Composable
+private fun SharedTransitionScope.Content(
+    state: UiState,
+    animatedVisibilityScope: AnimatedVisibilityScope,
+    isKeyboardOpen: Boolean,
+    onSearchQueryChanged: (String) -> Unit,
+    onSearchFilterChanged: (SearchFilter) -> Unit,
+    onChangeMoreMenuVisibility: () -> Unit,
+    onPinOrUnpinSelectedNotes: () -> Unit,
+    onChangeMultipleSelectorUIVisibility: () -> Unit,
+    onChangeDeleteNotesDialogVisibility: () -> Unit,
+    onGoEditNoteScreen: (String?) -> Unit,
+    onDeleteMultipleNotes: () -> Unit,
+    onGoSettingsScreen: () -> Unit,
+    onSelectNote: (String, Boolean) -> Unit,
+) {
     val localInspectionMode = LocalInspectionMode.current
     val gridState = rememberLazyStaggeredGridState()
     val query = remember(state.query) { state.query }
@@ -135,28 +191,17 @@ fun SharedTransitionScope.MoodFlowHome(
                                 isKeyboardOpen = isKeyboardOpen,
                                 query = query,
                                 searchFilter = state.searchFilter,
-                                onQueryChanged = { query ->
-                                    viewModel.sendIntent(UiIntent.OnSearchQueryChanged(query))
-                                },
-                                onFilterChanged = { filter ->
-                                    viewModel.sendIntent(UiIntent.OnSearchFilterChanged(filter))
-                                },
-                            ) {
-                                viewModel.sendIntent(UiIntent.OnChangeMoreMenuVisibility)
-                            }
+                                onQueryChanged = onSearchQueryChanged,
+                                onFilterChanged = onSearchFilterChanged,
+                                onChangeMoreMenuVisibility = onChangeMoreMenuVisibility,
+                            )
                         } else {
                             MultipleUiSelector(
                                 selectedNotes = state.selectedNotes,
                                 allNotes = state.allNotes,
-                                onPinOrUnpinSelectedNotes = {
-                                    viewModel.sendIntent(UiIntent.OnPinOrUnpinSelectedNotes)
-                                },
-                                onChangeMultipleSelectorUIVisibility = {
-                                    viewModel.sendIntent(UiIntent.OnChangeMultipleSelectorUIVisibility)
-                                },
-                                onChangeDeleteNotesDialogVisibility = {
-                                    viewModel.sendIntent(UiIntent.OnChangeDeleteNotesDialogVisibility)
-                                }
+                                onPinOrUnpinSelectedNotes = onPinOrUnpinSelectedNotes,
+                                onChangeMultipleSelectorUIVisibility = onChangeMultipleSelectorUIVisibility,
+                                onChangeDeleteNotesDialogVisibility = onChangeDeleteNotesDialogVisibility,
                             )
                         }
                     }
@@ -169,79 +214,42 @@ fun SharedTransitionScope.MoodFlowHome(
                     state = gridState,
                     modifier = Modifier
                         .fillMaxSize()
-                        .graphicsLayer {
-                            renderEffect = null
-                        }
+                        .graphicsLayer { renderEffect = null }
                         .background(MoodFlowColors.defaultLightColors().backGroundColor)
                         .padding(paddingValues)
                         .padding(horizontal = 16.dp),
-
                     verticalItemSpacing = 8.dp,
                     horizontalArrangement = Arrangement.spacedBy(8.dp),
                 ) {
                     if (query.isNotBlank()) {
-                        items(
-                            items = state.filteredNotes,
-                            key = { it.id }
-                        ) { note ->
-                            val isChecked = state.selectedNotes.contains(note.id)
-                            MoodFlowNote(
+                        items(items = state.filteredNotes, key = { it.id }) { note ->
+                            NoteItem(
                                 modifier = Modifier.animateItem(),
                                 note = note,
-                                titleState = rememberSharedContentState(key = "title-${note.id}"),
-                                contentState = rememberSharedContentState(key = "content-${note.id}"),
+                                state = state,
                                 localInspectionMode = localInspectionMode,
                                 animatedVisibilityScope = animatedVisibilityScope,
-                                boundsTransform = boundsTransform,
-                                canBeSelected = state.notesCanBeSelected,
-                                isSelected = isChecked,
-                                onClick = { noteId ->
-                                    viewModel.sendIntent(UiIntent.OnGoEditNoteScreen(noteId))
-                                },
-                                onCheck = { noteId, isChecked ->
-                                    if (!state.notesCanBeSelected) {
-                                        viewModel.sendIntent(UiIntent.OnChangeMultipleSelectorUIVisibility)
-                                    }
-                                    viewModel.sendIntent(UiIntent.OnSelectNote(noteId, isChecked))
-                                },
+                                onGoEditNoteScreen = onGoEditNoteScreen,
+                                onChangeMultipleSelectorUIVisibility = onChangeMultipleSelectorUIVisibility,
+                                onSelectNote = onSelectNote,
                             )
                         }
                     } else {
-
                         if (state.pinnedNotes.isNotEmpty()) {
                             item(span = StaggeredGridItemSpan.FullLine) {
                                 Text(stringResource(R.string.pinned_notes))
                             }
 
-                            items(
-                                items = state.pinnedNotes,
-                                key = { it.id }
-                            ) { note ->
-                                val isChecked = state.selectedNotes.contains(note.id)
-                                MoodFlowNote(
+                            items(items = state.pinnedNotes, key = { it.id }) { note ->
+                                NoteItem(
                                     modifier = Modifier.animateItem(),
                                     note = note,
-                                    titleState = rememberSharedContentState(key = "title-${note.id}"),
-                                    contentState = rememberSharedContentState(key = "content-${note.id}"),
+                                    state = state,
                                     localInspectionMode = localInspectionMode,
                                     animatedVisibilityScope = animatedVisibilityScope,
-                                    boundsTransform = boundsTransform,
-                                    canBeSelected = state.notesCanBeSelected,
-                                    isSelected = isChecked,
-                                    onClick = { noteId ->
-                                        viewModel.sendIntent(UiIntent.OnGoEditNoteScreen(noteId))
-                                    },
-                                    onCheck = { noteId, isChecked ->
-                                        if (!state.notesCanBeSelected) {
-                                            viewModel.sendIntent(UiIntent.OnChangeMultipleSelectorUIVisibility)
-                                        }
-                                        viewModel.sendIntent(
-                                            UiIntent.OnSelectNote(
-                                                noteId,
-                                                isChecked
-                                            )
-                                        )
-                                    },
+                                    onGoEditNoteScreen = onGoEditNoteScreen,
+                                    onChangeMultipleSelectorUIVisibility = onChangeMultipleSelectorUIVisibility,
+                                    onSelectNote = onSelectNote,
                                 )
                             }
 
@@ -254,30 +262,16 @@ fun SharedTransitionScope.MoodFlowHome(
                             Text(stringResource(if (state.pinnedNotes.isEmpty()) R.string.notes else R.string.other_notes))
                         }
 
-                        items(
-                            items = state.notes,
-                            key = { it.id }
-                        ) { note ->
-                            val isChecked = state.selectedNotes.contains(note.id)
-                            MoodFlowNote(
+                        items(items = state.notes, key = { it.id }) { note ->
+                            NoteItem(
                                 modifier = Modifier.animateItem(),
                                 note = note,
-                                titleState = rememberSharedContentState(key = "title-${note.id}"),
-                                contentState = rememberSharedContentState(key = "content-${note.id}"),
+                                state = state,
                                 localInspectionMode = localInspectionMode,
                                 animatedVisibilityScope = animatedVisibilityScope,
-                                boundsTransform = boundsTransform,
-                                canBeSelected = state.notesCanBeSelected,
-                                isSelected = isChecked,
-                                onClick = { noteId ->
-                                    viewModel.sendIntent(UiIntent.OnGoEditNoteScreen(noteId))
-                                },
-                                onCheck = { noteId, isChecked ->
-                                    if (!state.notesCanBeSelected) {
-                                        viewModel.sendIntent(UiIntent.OnChangeMultipleSelectorUIVisibility)
-                                    }
-                                    viewModel.sendIntent(UiIntent.OnSelectNote(noteId, isChecked))
-                                },
+                                onGoEditNoteScreen = onGoEditNoteScreen,
+                                onChangeMultipleSelectorUIVisibility = onChangeMultipleSelectorUIVisibility,
+                                onSelectNote = onSelectNote,
                             )
                         }
 
@@ -288,19 +282,15 @@ fun SharedTransitionScope.MoodFlowHome(
                 }
 
                 FloatingActionButton(notesCanBeSelected = !state.notesCanBeSelected) {
-                    viewModel.sendIntent(UiIntent.OnGoEditNoteScreen(null))
+                    onGoEditNoteScreen(null)
                 }
 
                 if (state.showDeleteNotesDialog) {
                     MoodFlowTwoOptionsDialog(
                         titleText = stringResource(R.string.delete_selection),
                         bodyText = stringResource(R.string.delete_selection_question),
-                        onAccept = {
-                            viewModel.sendIntent(UiIntent.OnDeleteMultipleNotes)
-                        },
-                        onCancel = {
-                            viewModel.sendIntent(UiIntent.OnChangeDeleteNotesDialogVisibility)
-                        }
+                        onAccept = onDeleteMultipleNotes,
+                        onCancel = onChangeDeleteNotesDialogVisibility,
                     )
                 }
             }
@@ -317,10 +307,9 @@ fun SharedTransitionScope.MoodFlowHome(
                     .background(Color.Black.copy(alpha = 0.4f))
                     .clickable(
                         interactionSource = remember { MutableInteractionSource() },
-                        indication = null
-                    ) {
-                        viewModel.sendIntent(UiIntent.OnChangeMoreMenuVisibility)
-                    }
+                        indication = null,
+                        onClick = onChangeMoreMenuVisibility,
+                    )
             )
         }
 
@@ -340,24 +329,25 @@ fun SharedTransitionScope.MoodFlowHome(
                     .width(250.dp)
                     .fillMaxHeight()
                     .background(Color.White)
+                    .clickable(
+                        interactionSource = remember { MutableInteractionSource() },
+                        indication = null,
+                        onClick = {},
+                    )
                     .padding(vertical = 16.dp)
             ) {
-
                 Spacer(modifier = Modifier.weight(1f))
 
                 Box(
                     modifier = Modifier
                         .fillMaxWidth()
                         .offset(y = 16.dp)
-                        .clickable {
-                            viewModel.sendIntent(UiIntent.OnGoSettingsScreen)
-                        }
+                        .clickable { onGoSettingsScreen() }
                 ) {
                     Row(
                         modifier = Modifier
                             .fillMaxWidth()
                             .padding(16.dp)
-
                     ) {
                         Icon(
                             imageVector = Icons.Default.Settings,
@@ -375,37 +365,36 @@ fun SharedTransitionScope.MoodFlowHome(
         }
     }
 
-    BackHandler {
-        when {
-            isKeyboardOpen -> focusManager.clearFocus(force = true)
-            query.isNotBlank() -> {
-                viewModel.sendIntent(UiIntent.OnSearchQueryChanged(emptyString()))
-                focusManager.clearFocus(force = true)
-            }
+}
 
-            state.notesCanBeSelected -> viewModel.sendIntent(UiIntent.OnChangeMultipleSelectorUIVisibility)
-
-            else -> (context as? Activity)?.finish()
-        }
-    }
-
-    HandleActions(viewModel.actions) { action ->
-        when (action) {
-            UiAction.GoLogin -> {
-                onGoLogin()
-            }
-            UiAction.GoSettingsScreen -> {
-                onGoSettings()
-            }
-
-            is UiAction.ShowToast -> Toast.makeText(context, action.message, Toast.LENGTH_SHORT)
-                .show()
-
-            is UiAction.GoEditNoteScreen -> {
-                onGoEditNote(action.noteId)
-            }
-        }
-    }
+@Composable
+private fun SharedTransitionScope.NoteItem(
+    modifier: Modifier = Modifier,
+    note: Note,
+    state: UiState,
+    localInspectionMode: Boolean,
+    animatedVisibilityScope: AnimatedVisibilityScope,
+    onGoEditNoteScreen: (String?) -> Unit,
+    onChangeMultipleSelectorUIVisibility: () -> Unit,
+    onSelectNote: (String, Boolean) -> Unit,
+) {
+    val isChecked = state.selectedNotes.contains(note.id)
+    MoodFlowNote(
+        modifier = modifier,
+        note = note,
+        titleState = rememberSharedContentState(key = "title-${note.id}"),
+        contentState = rememberSharedContentState(key = "content-${note.id}"),
+        localInspectionMode = localInspectionMode,
+        animatedVisibilityScope = animatedVisibilityScope,
+        boundsTransform = boundsTransform,
+        canBeSelected = state.notesCanBeSelected,
+        isSelected = isChecked,
+        onClick = { noteId -> onGoEditNoteScreen(noteId) },
+        onCheck = { noteId, checked ->
+            if (!state.notesCanBeSelected) onChangeMultipleSelectorUIVisibility()
+            onSelectNote(noteId, checked)
+        },
+    )
 }
 
 @Composable
@@ -418,22 +407,16 @@ private fun BoxScope.FloatingActionButton(
             .align(Alignment.BottomEnd)
             .padding(end = 16.dp, bottom = 32.dp),
         visible = notesCanBeSelected,
-        enter = fadeIn(
-            animationSpec = tween(300, easing = FastOutSlowInEasing)
-        ) + scaleIn(
+        enter = fadeIn(animationSpec = tween(300, easing = FastOutSlowInEasing)) + scaleIn(
             initialScale = 0.8f,
             animationSpec = tween(300, easing = FastOutSlowInEasing)
         ),
-        exit = fadeOut(
-            animationSpec = tween(200, easing = FastOutSlowInEasing)
-        ) + scaleOut(
+        exit = fadeOut(animationSpec = tween(200, easing = FastOutSlowInEasing)) + scaleOut(
             targetScale = 0.8f,
             animationSpec = tween(200, easing = FastOutSlowInEasing)
         )
     ) {
-        FloatingActionButton(
-            onClick = { onGoEditNoteScreen() }
-        ) {
+        FloatingActionButton(onClick = onGoEditNoteScreen) {
             Icon(imageVector = Icons.Default.Add, contentDescription = null)
         }
     }
@@ -443,13 +426,11 @@ private fun BoxScope.FloatingActionButton(
 private fun RowScope.MultipleUiSelector(
     selectedNotes: List<String>,
     allNotes: List<Note>,
-    onPinOrUnpinSelectedNotes: () -> Unit = { },
-    onChangeMultipleSelectorUIVisibility: () -> Unit = { },
-    onChangeDeleteNotesDialogVisibility: () -> Unit = { },
+    onPinOrUnpinSelectedNotes: () -> Unit = {},
+    onChangeMultipleSelectorUIVisibility: () -> Unit = {},
+    onChangeDeleteNotesDialogVisibility: () -> Unit = {},
 ) {
-    IconButton(onClick = {
-        onChangeMultipleSelectorUIVisibility()
-    }) {
+    IconButton(onClick = onChangeMultipleSelectorUIVisibility) {
         Icon(
             imageVector = Icons.AutoMirrored.Filled.ArrowBack,
             contentDescription = "Hide multiple selector"
@@ -475,10 +456,7 @@ private fun RowScope.MultipleUiSelector(
             )
         ) + scaleIn(
             initialScale = 0.8f,
-            animationSpec = tween(
-                durationMillis = 300,
-                easing = FastOutSlowInEasing
-            )
+            animationSpec = tween(durationMillis = 300, easing = FastOutSlowInEasing)
         ),
         exit = fadeOut(
             animationSpec = tween(
@@ -487,32 +465,22 @@ private fun RowScope.MultipleUiSelector(
             )
         ) + scaleOut(
             targetScale = 0.8f,
-            animationSpec = tween(
-                durationMillis = 200,
-                easing = FastOutSlowInEasing
-            )
+            animationSpec = tween(durationMillis = 200, easing = FastOutSlowInEasing)
         )
     ) {
         Icon(
             modifier = Modifier
                 .size(22.dp)
                 .offset(y = 2.dp)
-                .clickable {
-                    onPinOrUnpinSelectedNotes()
-                },
-            painter = painterResource(
-                id = if (!allNotesArePinned) R.drawable.ic_pinned
-                else R.drawable.ic_not_pinned
-            ),
+                .clickable { onPinOrUnpinSelectedNotes() },
+            painter = painterResource(id = if (!allNotesArePinned) R.drawable.ic_pinned else R.drawable.ic_not_pinned),
             contentDescription = null
         )
 
         Spacer(modifier = Modifier.width(16.dp))
     }
 
-    IconButton(onClick = {
-        onChangeDeleteNotesDialogVisibility()
-    }) {
+    IconButton(onClick = onChangeDeleteNotesDialogVisibility) {
         Icon(
             painter = painterResource(id = R.drawable.ic_trash),
             contentDescription = "Delete multiple notes"
@@ -610,12 +578,7 @@ private fun SearchFilterChips(
                 onFilterChanged(filter.copy(sortOrder = newOrder))
             },
             label = {
-                Text(
-                    stringResource(
-                        if (filter.sortOrder == SortOrder.DATE_ASC) R.string.sort_oldest
-                        else R.string.sort_newest
-                    )
-                )
+                Text(stringResource(if (filter.sortOrder == SortOrder.DATE_ASC) R.string.sort_oldest else R.string.sort_newest))
             },
         )
         FilterChip(

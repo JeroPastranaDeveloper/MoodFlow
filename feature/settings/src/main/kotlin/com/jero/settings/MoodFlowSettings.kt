@@ -30,6 +30,7 @@ import com.jero.designsystem.components.MoodFlowTwoOptionsDialog
 import com.jero.designsystem.theme.MoodFlowColors
 import com.jero.settings.SettingsViewContract.UiAction
 import com.jero.settings.SettingsViewContract.UiIntent
+import com.jero.settings.SettingsViewContract.UiState
 import org.koin.androidx.compose.koinViewModel
 
 @Composable
@@ -42,12 +43,37 @@ fun MoodFlowSettings(
     val context = LocalContext.current
     val state by viewModel.state.collectAsStateWithLifecycle()
 
+    HandleActions(viewModel.actions) { action ->
+        when (action) {
+            UiAction.GoLogin -> { onGoLogin() }
+            UiAction.GoBack -> { onGoBack() }
+
+            is UiAction.ShowToast -> Toast.makeText(context, action.message, Toast.LENGTH_SHORT)
+                .show()
+        }
+    }
+
+    Content(
+        state = state,
+        onChangeCloseSessionDialogVisibility = { viewModel.sendIntent(UiIntent.OnChangeCloseSessionDialogVisibility) },
+        onCloseSession = { viewModel.sendIntent(UiIntent.OnCloseSession) },
+        onGoBack = { viewModel.sendIntent(UiIntent.OnGoBack) },
+    )
+}
+
+@Composable
+private fun Content(
+    state: UiState,
+    onChangeCloseSessionDialogVisibility: () -> Unit,
+    onCloseSession: () -> Unit,
+    onGoBack: () -> Unit,
+) {
     Scaffold(
         topBar = {
             Icon(
                 modifier = Modifier
                     .padding(start = 16.dp, top = getTopSystemPadding())
-                    .clickable { viewModel.sendIntent(UiIntent.OnGoBack) },
+                    .clickable { onGoBack() },
                 painter = rememberVectorPainter(image = Icons.AutoMirrored.Filled.ArrowBack),
                 contentDescription = null,
             )
@@ -67,9 +93,7 @@ fun MoodFlowSettings(
                     addBorder = true,
                     textColor = Color.White,
                     backgroundColor = MoodFlowColors.defaultLightColors().primary,
-                ) {
-                    viewModel.sendIntent(UiIntent.OnChangeCloseSessionDialogVisibility)
-                }
+                ) { onChangeCloseSessionDialogVisibility() }
 
                 Spacer(modifier = Modifier.height(16.dp))
             }
@@ -78,20 +102,10 @@ fun MoodFlowSettings(
                 MoodFlowTwoOptionsDialog(
                     titleText = stringResource(R.string.sign_out),
                     bodyText = stringResource(R.string.sign_out_question),
-                    onAccept = { viewModel.sendIntent(UiIntent.OnCloseSession) },
-                    onCancel = { viewModel.sendIntent(UiIntent.OnChangeCloseSessionDialogVisibility) }
+                    onAccept = { onCloseSession() },
+                    onCancel = { onChangeCloseSessionDialogVisibility() }
                 )
             }
-        }
-    }
-
-    HandleActions(viewModel.actions) { action ->
-        when (action) {
-            UiAction.GoLogin -> { onGoLogin() }
-            UiAction.GoBack -> { onGoBack() }
-
-            is UiAction.ShowToast -> Toast.makeText(context, action.message, Toast.LENGTH_SHORT)
-                .show()
         }
     }
 }
