@@ -45,4 +45,10 @@
   <string name="validation_error_email_invalid_format">Invalid email format</string>
   <string name="user_not_authenticated">User not authenticated</string>
   <string name="title_cannot_be_empty">Title can\'t be empty</string>
+
+  <string name="search_in_content">Content</string>
+  <string name="only_pinned">Pinned</string>
+  <string name="sort_newest">Newest</string>
+  <string name="sort_oldest">Oldest</string>
+  <string name="sort_a_z">A-Z</string>
 </resources>

@@ -3,6 +3,14 @@ package com.jero.home
 import com.jero.core.model.Note
 import com.jero.core.utils.emptyString
 
+enum class SortOrder { DATE_DESC, DATE_ASC, TITLE_ASC }
+
+data class SearchFilter(
+    val inContent: Boolean = false,
+    val onlyPinned: Boolean = false,
+    val sortOrder: SortOrder = SortOrder.DATE_DESC,
+)
+
 class HomeViewContract {
     data class UiState(
         val allNotes: List<Note> = emptyList(),
@@ -10,6 +18,7 @@ class HomeViewContract {
         val notes: List<Note> = emptyList(),
         val pinnedNotes: List<Note> = emptyList(),
         val query: String = emptyString(),
+        val searchFilter: SearchFilter = SearchFilter(),
         val showDeleteNotesDialog: Boolean = false,
         val showMoreMenu: Boolean = false,
         val notesCanBeSelected: Boolean = false,
@@ -28,6 +37,7 @@ class HomeViewContract {
         data class OnGoEditNoteScreen(val noteId: String?) : UiIntent()
         data class OnSelectNote(val noteId: String, val isChecked: Boolean) : UiIntent()
         data class OnSearchQueryChanged(val query: String) : UiIntent()
+        data class OnSearchFilterChanged(val filter: SearchFilter) : UiIntent()
     }
 
     sealed class UiAction {
