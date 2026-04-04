@@ -144,7 +144,7 @@ class NotesRepositoryImpl(
                     notesDao.deleteNote(noteId)
                     scheduleSyncWork()
                 }
-                return deleteResult.map { Unit }
+                return deleteResult.map { /* no-op */ }
             } else {
                 notesDao.insertPendingDeletion(
                     PendingDeletionEntity(
