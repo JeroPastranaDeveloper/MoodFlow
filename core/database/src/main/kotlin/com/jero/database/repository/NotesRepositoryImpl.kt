@@ -113,10 +113,7 @@ class NotesRepositoryImpl(
                 date = System.currentTimeMillis()
             )
             notesDao.insertNote(entity)
-
-            if (networkMonitor.isConnected()) {
-                scheduleSyncWork()
-            }
+            scheduleSyncWork()
 
             Result.success(note)
         } catch (e: Exception) {

@@ -6,6 +6,6 @@ import org.koin.dsl.module
 
 val settingsViewModelModule = module {
     viewModel {
-        SettingsViewModel(get(), get())
+        SettingsViewModel(get(), get(), get())
     }
 }
