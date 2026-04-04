@@ -42,6 +42,7 @@ import com.jero.designsystem.theme.MoodFlowColors
 import com.jero.designsystem.utils.rememberKeyboardAsState
 import com.jero.login.LoginViewContract.UiAction
 import com.jero.login.LoginViewContract.UiIntent
+import com.jero.login.LoginViewContract.UiState
 import org.koin.androidx.compose.koinViewModel
 
 @Composable
@@ -51,31 +52,44 @@ fun MoodFlowLogin(
     onGoRegister: () -> Unit,
 ) {
     SetStatusBarIconsColor()
-    val isKeyboardOpen by rememberKeyboardAsState()
-    val focusManager = LocalFocusManager.current
     val context = LocalContext.current
-
     val state by viewModel.state.collectAsStateWithLifecycle()
 
     HandleActions(viewModel.actions) { action ->
         when (action) {
-            UiAction.GoHome -> {
-                onGoHome()
-            }
-
-            UiAction.GoRegister -> {
-                onGoRegister()
-            }
-
+            UiAction.GoHome -> onGoHome()
+            UiAction.GoRegister -> onGoRegister()
             is UiAction.ShowToast -> Toast.makeText(context, action.message, Toast.LENGTH_SHORT)
                 .show()
         }
     }
 
+    Content(
+        state = state,
+        onEmailChanged = { viewModel.sendIntent(UiIntent.OnEmailChanged(it)) },
+        onPasswordChanged = { viewModel.sendIntent(UiIntent.OnPasswordChanged(it)) },
+        onChangePasswordVisibility = { viewModel.sendIntent(UiIntent.OnChangePasswordVisibility(it)) },
+        onEmailLoginClicked = { viewModel.sendIntent(UiIntent.OnEmailLoginClicked) },
+        onSignUpClicked = { viewModel.sendIntent(UiIntent.OnSignUpClicked) },
+    )
+}
+
+@Composable
+private fun Content(
+    state: UiState,
+    onEmailChanged: (String) -> Unit,
+    onPasswordChanged: (String) -> Unit,
+    onChangePasswordVisibility: (Boolean) -> Unit,
+    onEmailLoginClicked: () -> Unit,
+    onSignUpClicked: () -> Unit,
+) {
+    val focusManager = LocalFocusManager.current
+    val isKeyboardOpen by rememberKeyboardAsState()
+    val emailFocusRequester = remember { FocusRequester() }
+    val passwordFocusRequester = remember { FocusRequester() }
+
     LaunchedEffect(isKeyboardOpen) {
-        if (!isKeyboardOpen) {
-            focusManager.clearFocus(force = true)
-        }
+        if (!isKeyboardOpen) focusManager.clearFocus(force = true)
     }
 
     Column(
@@ -87,9 +101,6 @@ fun MoodFlowLogin(
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center,
     ) {
-        val emailFocusRequester = remember { FocusRequester() }
-        val passwordFocusRequester = remember { FocusRequester() }
-
         Text(
             modifier = Modifier.padding(top = 32.dp),
             text = stringResource(R.string.login),
@@ -112,9 +123,7 @@ fun MoodFlowLogin(
             ),
             isError = state.emailError != null,
             errorMessage = state.emailError,
-        ) { email ->
-            viewModel.sendIntent(UiIntent.OnEmailChanged(email))
-        }
+        ) { onEmailChanged(it) }
 
         Spacer(modifier = Modifier.height(8.dp))
 
@@ -131,12 +140,8 @@ fun MoodFlowLogin(
             keyboardActions = KeyboardActions(
                 onDone = { focusManager.clearFocus(force = true) }
             ),
-            onPasswordChanged = { password ->
-                viewModel.sendIntent(UiIntent.OnPasswordChanged(password))
-            },
-            onChangePasswordVisibility = { visible ->
-                viewModel.sendIntent(UiIntent.OnChangePasswordVisibility(visible))
-            },
+            onPasswordChanged = { onPasswordChanged(it) },
+            onChangePasswordVisibility = { onChangePasswordVisibility(it) },
             isError = state.passwordError != null,
             errorMessage = state.passwordError,
         )
@@ -145,7 +150,7 @@ fun MoodFlowLogin(
 
         LoginButton {
             focusManager.clearFocus(force = true)
-            viewModel.sendIntent(UiIntent.OnEmailLoginClicked)
+            onEmailLoginClicked()
         }
 
         /*Spacer(modifier = Modifier.height(16.dp))
@@ -159,7 +164,7 @@ fun MoodFlowLogin(
 
         NotAccountText {
             focusManager.clearFocus(force = true)
-            viewModel.sendIntent(UiIntent.OnSignUpClicked)
+            onSignUpClicked()
         }
     }
 }
@@ -175,9 +180,7 @@ private fun NotAccountText(onClick: () -> Unit) {
         Spacer(modifier = Modifier.width(4.dp))
 
         Text(
-            modifier = Modifier.clickable {
-                onClick()
-            },
+            modifier = Modifier.clickable { onClick() },
             text = stringResource(R.string.sign_up),
             fontWeight = FontWeight.Bold,
             fontSize = 14.sp,
