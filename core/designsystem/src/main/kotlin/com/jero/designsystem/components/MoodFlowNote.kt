@@ -29,7 +29,7 @@ import androidx.compose.ui.unit.dp
 import com.jero.core.model.Note
 import com.jero.designsystem.theme.MoodFlowColors
 
-context(SharedTransitionScope)
+context(scope: SharedTransitionScope)
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun MoodFlowNote(

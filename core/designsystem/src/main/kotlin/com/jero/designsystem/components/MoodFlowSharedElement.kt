@@ -14,7 +14,7 @@ import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.LayoutDirection
 
-context(SharedTransitionScope)
+context(scope: SharedTransitionScope)
 fun Modifier.moodFlowSharedElement(
     isLocalInspectionMode: Boolean,
     state: SharedContentState,
@@ -27,18 +27,20 @@ fun Modifier.moodFlowSharedElement(
     if (isLocalInspectionMode) {
         this
     } else {
-        this.sharedElement(
-            sharedContentState = state,
-            animatedVisibilityScope = animatedVisibilityScope,
-            boundsTransform = boundsTransform,
-            renderInOverlayDuringTransition = renderInOverlayDuringTransition,
-            zIndexInOverlay = zIndexInOverlay,
-            clipInOverlayDuringTransition = clipInOverlayDuringTransition,
-        )
+        with(scope) {
+            this@moodFlowSharedElement.sharedElement(
+                sharedContentState = state,
+                animatedVisibilityScope = animatedVisibilityScope,
+                boundsTransform = boundsTransform,
+                renderInOverlayDuringTransition = renderInOverlayDuringTransition,
+                zIndexInOverlay = zIndexInOverlay,
+                clipInOverlayDuringTransition = clipInOverlayDuringTransition,
+            )
+        }
     }
 
 // Reutilizable para Texts con un boundsTransform más suave
-context(SharedTransitionScope)
+context(scope: SharedTransitionScope)
 fun Modifier.moodflowSharedElementForText(
     isLocalInspectionMode: Boolean,
     state: SharedContentState,
