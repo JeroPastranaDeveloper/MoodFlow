@@ -47,6 +47,7 @@ import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.Settings
+import androidx.compose.material3.FilterChip
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -131,13 +132,15 @@ fun SharedTransitionScope.MoodFlowHome(
                     ) {
                         if (!notesCanBeSelected) {
                             SearchBar(
-                                isKeyboardOpen,
-                                query,
+                                isKeyboardOpen = isKeyboardOpen,
+                                query = query,
+                                searchFilter = state.searchFilter,
                                 onQueryChanged = { query ->
-                                    viewModel.sendIntent(
-                                        UiIntent.OnSearchQueryChanged(query)
-                                    )
-                                }
+                                    viewModel.sendIntent(UiIntent.OnSearchQueryChanged(query))
+                                },
+                                onFilterChanged = { filter ->
+                                    viewModel.sendIntent(UiIntent.OnSearchFilterChanged(filter))
+                                },
                             ) {
                                 viewModel.sendIntent(UiIntent.OnChangeMoreMenuVisibility)
                             }
@@ -521,59 +524,107 @@ private fun RowScope.MultipleUiSelector(
 private fun RowScope.SearchBar(
     isKeyboardOpen: Boolean,
     query: String,
+    searchFilter: SearchFilter,
     onQueryChanged: (String) -> Unit = {},
-    onChangeMoreMenuVisibility: () -> Unit
+    onFilterChanged: (SearchFilter) -> Unit = {},
+    onChangeMoreMenuVisibility: () -> Unit,
 ) {
-    AnimatedVisibility(visible = !isKeyboardOpen) {
-        IconButton(onClick = {
-            onChangeMoreMenuVisibility()
-        }) {
-            Icon(
-                modifier = Modifier.size(32.dp),
-                painter = painterResource(id = R.drawable.ic_more_menu),
-                contentDescription = "More menu"
-            )
-        }
-    }
+    val showFilters = isKeyboardOpen || query.isNotBlank()
 
-    AnimatedVisibility(visible = !isKeyboardOpen) {
-        Spacer(modifier = Modifier.width(16.dp))
-    }
-
-    MoodFlowTextField(
-        modifier = Modifier.weight(1f),
-        text = query,
-        placeHolder = stringResource(R.string.search_placeholder),
-        placeHolderFontSize = 20.sp,
-        leadingIcon = {
-            Icon(
-                imageVector = Icons.Default.Search,
-                contentDescription = "Buscar"
-            )
-        },
-        trailingIcon = {
-            AnimatedVisibility(
-                visible = query.isNotBlank(),
-                enter = fadeIn(tween(100)) + scaleIn(
-                    initialScale = 0.8f,
-                    animationSpec = tween(100)
-                ),
-                exit = fadeOut(tween(100)) + scaleOut(
-                    targetScale = 0.8f,
-                    animationSpec = tween(100)
-                )
-            ) {
-                IconButton(onClick = {
-                    onQueryChanged(emptyString())
-                }) {
+    Column(modifier = Modifier.weight(1f)) {
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            AnimatedVisibility(visible = !isKeyboardOpen) {
+                IconButton(onClick = onChangeMoreMenuVisibility) {
                     Icon(
-                        imageVector = Icons.Default.Close,
-                        contentDescription = "Borrar búsqueda"
+                        modifier = Modifier.size(32.dp),
+                        painter = painterResource(id = R.drawable.ic_more_menu),
+                        contentDescription = "More menu"
                     )
                 }
             }
-        },
-    ) { newQuery ->
-        onQueryChanged(newQuery)
+
+            AnimatedVisibility(visible = !isKeyboardOpen) {
+                Spacer(modifier = Modifier.width(16.dp))
+            }
+
+            MoodFlowTextField(
+                modifier = Modifier.weight(1f),
+                text = query,
+                placeHolder = stringResource(R.string.search_placeholder),
+                placeHolderFontSize = 20.sp,
+                leadingIcon = {
+                    Icon(imageVector = Icons.Default.Search, contentDescription = null)
+                },
+                trailingIcon = {
+                    AnimatedVisibility(
+                        visible = query.isNotBlank(),
+                        enter = fadeIn(tween(100)) + scaleIn(initialScale = 0.8f, animationSpec = tween(100)),
+                        exit = fadeOut(tween(100)) + scaleOut(targetScale = 0.8f, animationSpec = tween(100))
+                    ) {
+                        IconButton(onClick = { onQueryChanged(emptyString()) }) {
+                            Icon(imageVector = Icons.Default.Close, contentDescription = null)
+                        }
+                    }
+                },
+            ) { newQuery -> onQueryChanged(newQuery) }
+        }
+
+        AnimatedVisibility(
+            visible = showFilters,
+            enter = fadeIn(tween(200)) + slideInVertically(initialOffsetY = { -it / 2 }),
+            exit = fadeOut(tween(150)) + slideOutVertically(targetOffsetY = { -it / 2 }),
+        ) {
+            SearchFilterChips(
+                filter = searchFilter,
+                onFilterChanged = onFilterChanged,
+            )
+        }
+    }
+}
+
+@Composable
+private fun SearchFilterChips(
+    filter: SearchFilter,
+    onFilterChanged: (SearchFilter) -> Unit,
+) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(top = 8.dp),
+        horizontalArrangement = Arrangement.spacedBy(8.dp),
+    ) {
+        FilterChip(
+            selected = filter.inContent,
+            onClick = { onFilterChanged(filter.copy(inContent = !filter.inContent)) },
+            label = { Text(stringResource(R.string.search_in_content)) },
+        )
+        FilterChip(
+            selected = filter.onlyPinned,
+            onClick = { onFilterChanged(filter.copy(onlyPinned = !filter.onlyPinned)) },
+            label = { Text(stringResource(R.string.only_pinned)) },
+        )
+        FilterChip(
+            selected = filter.sortOrder == SortOrder.DATE_ASC,
+            onClick = {
+                val newOrder = if (filter.sortOrder == SortOrder.DATE_ASC) SortOrder.DATE_DESC else SortOrder.DATE_ASC
+                onFilterChanged(filter.copy(sortOrder = newOrder))
+            },
+            label = {
+                Text(
+                    stringResource(
+                        if (filter.sortOrder == SortOrder.DATE_ASC) R.string.sort_oldest
+                        else R.string.sort_newest
+                    )
+                )
+            },
+        )
+        FilterChip(
+            selected = filter.sortOrder == SortOrder.TITLE_ASC,
+            onClick = {
+                val newOrder = if (filter.sortOrder == SortOrder.TITLE_ASC) SortOrder.DATE_DESC else SortOrder.TITLE_ASC
+                onFilterChanged(filter.copy(sortOrder = newOrder))
+            },
+            label = { Text(stringResource(R.string.sort_a_z)) },
+        )
     }
 }

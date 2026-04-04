@@ -23,6 +23,10 @@ class HomeViewModel(
     override suspend fun manageIntent(intent: UiIntent) {
         when (intent) {
             is UiIntent.OnSearchQueryChanged -> searchNotes(intent.query)
+            is UiIntent.OnSearchFilterChanged -> {
+                setState { copy(searchFilter = intent.filter) }
+                searchNotes(state.value.query)
+            }
 
             is UiIntent.OnGoEditNoteScreen -> showEditNoteDialog(intent.noteId)
             is UiIntent.OnSelectNote -> updateNoteSelection(intent.noteId, intent.isChecked)
@@ -158,10 +162,23 @@ class HomeViewModel(
     }
 
     private fun searchNotes(query: String) {
-        val notes = state.value.allNotes.filter {
-            it.title.contains(query, true)
-        }
+        val filter = state.value.searchFilter
+        val filtered = state.value.allNotes
+            .filter { note ->
+                if (query.isBlank()) return@filter true
+                val matchesTitle = note.title.contains(query, ignoreCase = true)
+                val matchesContent = filter.inContent && note.content.contains(query, ignoreCase = true)
+                matchesTitle || matchesContent
+            }
+            .filter { note -> if (filter.onlyPinned) note.pinned else true }
+            .let { notes ->
+                when (filter.sortOrder) {
+                    SortOrder.DATE_DESC -> notes.sortedByDescending { it.date }
+                    SortOrder.DATE_ASC  -> notes.sortedBy { it.date }
+                    SortOrder.TITLE_ASC -> notes.sortedBy { it.title.lowercase() }
+                }
+            }
 
-        setState { copy(query = query, filteredNotes = notes) }
+        setState { copy(query = query, filteredNotes = filtered) }
     }
 }

@@ -43,4 +43,10 @@
     <string name="validation_error_email_invalid_format">Formato de correo inválido</string>
     <string name="user_not_authenticated">Usuario no autenticado</string>
     <string name="title_cannot_be_empty">El título no puede estar vacío</string>
+
+    <string name="search_in_content">Contenido</string>
+    <string name="only_pinned">Fijadas</string>
+    <string name="sort_newest">Más reciente</string>
+    <string name="sort_oldest">Más antiguo</string>
+    <string name="sort_a_z">A-Z</string>
 </resources>
