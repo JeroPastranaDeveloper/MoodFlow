@@ -60,6 +60,7 @@ dependencies {
     implementation(libs.accompanist.systemuicontroller)
 
     implementation(libs.firebase.database)
+    implementation(libs.firebase.auth)
     implementation(libs.koin.androidx.workmanager)
 
     // Core
@@ -85,4 +86,10 @@ dependencies {
     implementation(projects.core.database)
     implementation(libs.androidx.navigation3.ui)
     implementation(libs.androidx.material3.adaptive.navigation3)
+
+    // Widget
+    implementation(libs.androidx.glance.appwidget)
+    implementation(libs.androidx.glance.material3) {
+        exclude(group = "androidx.compose.material3", module = "material3")
+    }
 }
