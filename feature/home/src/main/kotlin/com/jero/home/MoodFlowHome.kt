@@ -340,9 +340,13 @@ fun SharedTransitionScope.MoodFlowHome(
                     .width(250.dp)
                     .fillMaxHeight()
                     .background(Color.White)
+                    .clickable(
+                        interactionSource = remember { MutableInteractionSource() },
+                        indication = null,
+                        onClick = {},
+                    )
                     .padding(vertical = 16.dp)
             ) {
-
                 Spacer(modifier = Modifier.weight(1f))
 
                 Box(
@@ -377,6 +381,7 @@ fun SharedTransitionScope.MoodFlowHome(
 
     BackHandler {
         when {
+            state.showMoreMenu -> viewModel.sendIntent(UiIntent.OnChangeMoreMenuVisibility)
             isKeyboardOpen -> focusManager.clearFocus(force = true)
             query.isNotBlank() -> {
                 viewModel.sendIntent(UiIntent.OnSearchQueryChanged(emptyString()))
