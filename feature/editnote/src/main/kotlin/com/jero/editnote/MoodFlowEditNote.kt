@@ -5,6 +5,8 @@ import androidx.activity.compose.BackHandler
 import androidx.compose.animation.AnimatedVisibilityScope
 import androidx.compose.animation.Crossfade
 import androidx.compose.animation.SharedTransitionScope
+import androidx.compose.animation.animateColorAsState
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -77,6 +79,12 @@ fun SharedTransitionScope.MoodFlowEditNote(
     val titleFocusRequester = remember { FocusRequester() }
     val contentFocusRequester = remember { FocusRequester() }
 
+    val backgroundColor by animateColorAsState(
+        targetValue = NoteColors.toComposeColor(state.editedNote.color),
+        animationSpec = tween(durationMillis = 400),
+        label = "backgroundColor",
+    )
+
     LaunchedEffect(noteId) {
         viewModel.sendIntent(UiIntent.OnFetchNoteDetails(noteId))
     }
@@ -86,7 +94,7 @@ fun SharedTransitionScope.MoodFlowEditNote(
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .background(NoteColors.toComposeColor(state.editedNote.color))
+                    .background(backgroundColor)
                     .padding(start = 16.dp, top = getTopSystemPadding(true), end = 16.dp)
             ) {
                 Icon(
@@ -132,6 +140,7 @@ fun SharedTransitionScope.MoodFlowEditNote(
         bottomBar = {
             NoteColorPicker(
                 selectedColor = state.editedNote.color,
+                backgroundColor = backgroundColor,
                 onColorSelected = { viewModel.sendIntent(UiIntent.OnColorChanged(it)) },
             )
         },
@@ -140,7 +149,7 @@ fun SharedTransitionScope.MoodFlowEditNote(
             modifier = Modifier
                 .padding(paddingValues)
                 .fillMaxSize()
-                .background(NoteColors.toComposeColor(state.editedNote.color))
+                .background(backgroundColor)
         ) {
             Spacer(modifier = Modifier.height(16.dp))
             MoodFlowTransparentTextField(
@@ -229,12 +238,13 @@ fun SharedTransitionScope.MoodFlowEditNote(
 @Composable
 private fun NoteColorPicker(
     selectedColor: Long,
+    backgroundColor: Color,
     onColorSelected: (Long) -> Unit,
 ) {
     LazyRow(
         modifier = Modifier
             .fillMaxWidth()
-            .background(NoteColors.toComposeColor(selectedColor))
+            .background(backgroundColor)
             .padding(horizontal = 16.dp, vertical = 12.dp)
             .navigationBarsPadding(),
         horizontalArrangement = Arrangement.spacedBy(12.dp),
