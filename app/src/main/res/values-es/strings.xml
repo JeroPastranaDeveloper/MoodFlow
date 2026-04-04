@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Widget -->
+    <string name="widget_description">Widget de notas de MoodFlow</string>
+    <string name="widget_filter_all">Todas</string>
+    <string name="widget_filter_pinned">Fijadas</string>
+    <string name="widget_filter_normal">Normales</string>
+    <string name="widget_empty_notes">No hay notas que mostrar</string>
+    <string name="widget_not_logged">Inicia sesión en MoodFlow para ver tus notas</string>
+    <string name="widget_configure_title">Elige qué notas mostrar</string>
+    <string name="widget_untitled">Sin título</string>
+</resources>
