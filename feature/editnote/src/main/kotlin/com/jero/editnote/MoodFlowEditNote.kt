@@ -62,6 +62,7 @@ import com.jero.designsystem.components.moodFlowSharedElement
 import com.jero.designsystem.theme.NoteColors
 import com.jero.editnote.EditNoteViewContract.UiAction
 import com.jero.editnote.EditNoteViewContract.UiIntent
+import com.jero.editnote.EditNoteViewContract.UiState
 import com.jero.navigation.utils.boundsTransform
 import org.koin.androidx.compose.koinViewModel
 
@@ -74,7 +75,51 @@ fun SharedTransitionScope.MoodFlowEditNote(
 ) {
     val context = LocalContext.current
     val state by viewModel.state.collectAsStateWithLifecycle()
+    val focusManager = LocalFocusManager.current
 
+    LaunchedEffect(noteId) {
+        viewModel.sendIntent(UiIntent.OnFetchNoteDetails(noteId))
+    }
+
+    BackHandler { viewModel.sendIntent(UiIntent.OnGoBack) }
+
+    HandleActions(viewModel.actions) { action ->
+        when (action) {
+            UiAction.GoBack -> {
+                focusManager.clearFocus(force = true)
+                onGoBack()
+            }
+
+            is UiAction.ShowToast -> Toast.makeText(context, action.message, Toast.LENGTH_SHORT)
+                .show()
+        }
+    }
+
+    Content(
+        state = state,
+        animatedVisibilityScope = animatedVisibilityScope,
+        onPinChanged = { viewModel.sendIntent(UiIntent.OnPinChanged) },
+        onChangeDeleteDialogVisibility = { viewModel.sendIntent(UiIntent.OnChangeDeleteDialogVisibility) },
+        onDeleteNote = { viewModel.sendIntent(UiIntent.OnDeleteNote) },
+        onTitleChanged = { viewModel.sendIntent(UiIntent.OnTitleChanged(it)) },
+        onDescriptionChanged = { viewModel.sendIntent(UiIntent.OnDescriptionChanged(it)) },
+        onColorChanged = { viewModel.sendIntent(UiIntent.OnColorChanged(it)) },
+        onGoBack = { viewModel.sendIntent(UiIntent.OnGoBack) },
+    )
+}
+
+@Composable
+private fun SharedTransitionScope.Content(
+    state: UiState,
+    animatedVisibilityScope: AnimatedVisibilityScope,
+    onPinChanged: () -> Unit,
+    onChangeDeleteDialogVisibility: () -> Unit,
+    onDeleteNote: () -> Unit,
+    onTitleChanged: (String) -> Unit,
+    onDescriptionChanged: (String) -> Unit,
+    onColorChanged: (Long) -> Unit,
+    onGoBack: () -> Unit,
+) {
     val focusManager = LocalFocusManager.current
     val titleFocusRequester = remember { FocusRequester() }
     val contentFocusRequester = remember { FocusRequester() }
@@ -85,10 +130,6 @@ fun SharedTransitionScope.MoodFlowEditNote(
         label = "backgroundColor",
     )
 
-    LaunchedEffect(noteId) {
-        viewModel.sendIntent(UiIntent.OnFetchNoteDetails(noteId))
-    }
-
     Scaffold(
         topBar = {
             Row(
@@ -98,27 +139,20 @@ fun SharedTransitionScope.MoodFlowEditNote(
                     .padding(start = 16.dp, top = getTopSystemPadding(true), end = 16.dp)
             ) {
                 Icon(
-                    modifier = Modifier
-                        .clickable { viewModel.sendIntent(UiIntent.OnGoBack) },
+                    modifier = Modifier.clickable { onGoBack() },
                     painter = rememberVectorPainter(image = Icons.AutoMirrored.Filled.ArrowBack),
                     contentDescription = null,
                 )
 
                 Spacer(modifier = Modifier.weight(1f))
 
-                Crossfade(
-                    targetState = state.editedNote.pinned,
-                    label = "Icon change"
-                ) { pinned ->
+                Crossfade(targetState = state.editedNote.pinned, label = "Icon change") { pinned ->
                     Icon(
                         modifier = Modifier
                             .size(22.dp)
                             .offset(y = 2.dp)
-                            .clickable { viewModel.sendIntent(UiIntent.OnPinChanged) },
-                        painter = painterResource(
-                            id = if (pinned) R.drawable.ic_pinned
-                            else R.drawable.ic_not_pinned
-                        ),
+                            .clickable { onPinChanged() },
+                        painter = painterResource(id = if (pinned) R.drawable.ic_pinned else R.drawable.ic_not_pinned),
                         contentDescription = null
                     )
                 }
@@ -126,11 +160,10 @@ fun SharedTransitionScope.MoodFlowEditNote(
                 if (state.editedNote.id.isNotBlank()) {
                     Spacer(modifier = Modifier.width(16.dp))
                     Icon(
-                        modifier = Modifier
-                            .clickable {
-                                focusManager.clearFocus(force = true)
-                                viewModel.sendIntent(UiIntent.OnChangeDeleteDialogVisibility)
-                            },
+                        modifier = Modifier.clickable {
+                            focusManager.clearFocus(force = true)
+                            onChangeDeleteDialogVisibility()
+                        },
                         painter = painterResource(id = R.drawable.ic_trash),
                         contentDescription = null,
                     )
@@ -141,7 +174,7 @@ fun SharedTransitionScope.MoodFlowEditNote(
             NoteColorPicker(
                 selectedColor = state.editedNote.color,
                 backgroundColor = backgroundColor,
-                onColorSelected = { viewModel.sendIntent(UiIntent.OnColorChanged(it)) },
+                onColorSelected = onColorChanged,
             )
         },
     ) { paddingValues ->
@@ -172,9 +205,7 @@ fun SharedTransitionScope.MoodFlowEditNote(
                 keyboardActions = KeyboardActions(
                     onNext = { contentFocusRequester.requestFocus() }
                 ),
-            ) { title ->
-                viewModel.sendIntent(UiIntent.OnTitleChanged(title))
-            }
+            ) { onTitleChanged(it) }
 
             Spacer(modifier = Modifier.height(4.dp))
 
@@ -199,38 +230,16 @@ fun SharedTransitionScope.MoodFlowEditNote(
                 keyboardActions = KeyboardActions(
                     onDone = { focusManager.clearFocus(force = true) }
                 ),
-            ) { description ->
-                viewModel.sendIntent(UiIntent.OnDescriptionChanged(description))
-            }
+            ) { onDescriptionChanged(it) }
         }
+
         if (state.showDeleteNoteDialog) {
             MoodFlowTwoOptionsDialog(
                 titleText = stringResource(R.string.delete_selection),
                 bodyText = stringResource(R.string.delete_selection_question),
-                onAccept = {
-                    viewModel.sendIntent(UiIntent.OnDeleteNote)
-                },
-                onCancel = {
-                    viewModel.sendIntent(UiIntent.OnChangeDeleteDialogVisibility)
-                }
+                onAccept = onDeleteNote,
+                onCancel = onChangeDeleteDialogVisibility,
             )
-        }
-    }
-
-    BackHandler { viewModel.sendIntent(UiIntent.OnGoBack) }
-
-    HandleActions(viewModel.actions) { action ->
-        when (action) {
-            UiAction.GoBack -> {
-                focusManager.clearFocus(force = true)
-                onGoBack()
-            }
-
-            is UiAction.ShowToast -> Toast.makeText(
-                context,
-                action.message,
-                Toast.LENGTH_SHORT
-            ).show()
         }
     }
 }
