@@ -1,9 +1,11 @@
 package com.jero.home
 
 import androidx.lifecycle.viewModelScope
+import com.example.domain.providers.StringsProvider
 import com.example.domain.usecase.notes.interfaces.DeleteNoteUseCase
 import com.example.domain.usecase.notes.interfaces.GetAllNotesUseCase
 import com.example.domain.usecase.notes.interfaces.UpdateNoteUseCase
+import com.jero.core.designsystem.R
 import com.jero.core.viewmodel.BaseViewModelWithActions
 import com.jero.home.HomeViewContract.UiAction
 import com.jero.home.HomeViewContract.UiIntent
@@ -14,6 +16,7 @@ class HomeViewModel(
     private val getAllNotesUseCase: GetAllNotesUseCase,
     private val deleteNoteUseCase: DeleteNoteUseCase,
     private val updateNoteUseCase: UpdateNoteUseCase,
+    private val stringsProvider: StringsProvider,
 ) : BaseViewModelWithActions<UiState, UiIntent, UiAction>() {
 
     override val initialViewState = UiState()
@@ -46,20 +49,27 @@ class HomeViewModel(
     private fun pinOrUnpinSelectedNotes() {
         viewModelScope.launch {
             val selectedNotes = state.value.selectedNotes
+            val failedIds = mutableListOf<String>()
+
             selectedNotes.forEach { noteId ->
                 val note = state.value.allNotes.find { it.id == noteId }
                 if (note != null) {
                     val updatedNote = note.copy(pinned = !note.pinned)
                     updateNoteUseCase(updatedNote).fold(
-                        onSuccess = { /* no-op */ },
+                        onSuccess = { },
                         onFailure = {
-                            dispatchAction(UiAction.ShowToast(it.message.orEmpty()))
+                            failedIds.add(noteId)
+                            dispatchAction(UiAction.ShowToast(it.message ?: stringsProvider(R.string.unknown_error)))
                         }
                     )
                 }
             }
 
-            changeMultipleSelectorUIVisibility()
+            if (failedIds.isEmpty()) {
+                changeMultipleSelectorUIVisibility()
+            } else {
+                setState { copy(selectedNotes = failedIds) }
+            }
         }
     }
 
@@ -76,17 +86,23 @@ class HomeViewModel(
     private fun deleteMultipleNotes() {
         viewModelScope.launch {
             val selectedNotes = state.value.selectedNotes
+            val failedIds = mutableListOf<String>()
+
             selectedNotes.forEach { noteId ->
-                val result = deleteNoteUseCase(noteId)
-                result.fold(
-                    onSuccess = { /* no-op */ },
+                deleteNoteUseCase(noteId).fold(
+                    onSuccess = { },
                     onFailure = {
-                        dispatchAction(UiAction.ShowToast(it.message.orEmpty()))
+                        failedIds.add(noteId)
+                        dispatchAction(UiAction.ShowToast(it.message ?: stringsProvider(R.string.unknown_error)))
                     }
                 )
             }
 
-            changeMultipleSelectorUIVisibility()
+            if (failedIds.isEmpty()) {
+                changeMultipleSelectorUIVisibility()
+            } else {
+                setState { copy(selectedNotes = failedIds) }
+            }
         }
     }
 

@@ -1,10 +1,12 @@
 package com.jero.editnote
 
 import androidx.lifecycle.viewModelScope
+import com.example.domain.providers.StringsProvider
 import com.example.domain.usecase.notes.interfaces.CreateNoteUseCase
 import com.example.domain.usecase.notes.interfaces.DeleteNoteUseCase
 import com.example.domain.usecase.notes.interfaces.GetNoteByIdUseCase
 import com.example.domain.usecase.notes.interfaces.UpdateNoteUseCase
+import com.jero.core.designsystem.R
 import com.jero.core.model.Note
 import com.jero.core.model.hasContentWithoutId
 import com.jero.core.viewmodel.BaseViewModelWithActions
@@ -18,6 +20,7 @@ class EditNoteViewModel(
     private val createNoteUseCase: CreateNoteUseCase,
     private val deleteNoteUseCase: DeleteNoteUseCase,
     private val updateNoteUseCase: UpdateNoteUseCase,
+    private val stringsProvider: StringsProvider,
 ) : BaseViewModelWithActions<UiState, UiIntent, UiAction>() {
     override val initialViewState = UiState()
 
@@ -65,7 +68,7 @@ class EditNoteViewModel(
                     dispatchAction(UiAction.GoBack)
                 },
                 onFailure = {
-                    dispatchAction(UiAction.ShowToast(it.message.orEmpty()))
+                    dispatchAction(UiAction.ShowToast(it.message ?: stringsProvider(R.string.unknown_error)))
                 }
             )
             setState { copy(showDeleteNoteDialog = false) }
@@ -90,7 +93,7 @@ class EditNoteViewModel(
                 dispatchAction(UiAction.GoBack)
             },
             onFailure = {
-                dispatchAction(UiAction.ShowToast(it.message.orEmpty()))
+                dispatchAction(UiAction.ShowToast(it.message ?: stringsProvider(R.string.unknown_error)))
             }
         )
     }
@@ -102,7 +105,7 @@ class EditNoteViewModel(
                 dispatchAction(UiAction.GoBack)
             },
             onFailure = {
-                dispatchAction(UiAction.ShowToast(it.message.orEmpty()))
+                dispatchAction(UiAction.ShowToast(it.message ?: stringsProvider(R.string.unknown_error)))
             }
         )
     }

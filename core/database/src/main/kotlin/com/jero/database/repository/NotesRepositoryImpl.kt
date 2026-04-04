@@ -35,9 +35,6 @@ class NotesRepositoryImpl(
     private fun getCurrentUserId(): String? = auth.currentUser?.uid
 
     override suspend fun getAllNotes(userId: String) = channelFlow {
-        val userId = getCurrentUserId()
-            ?: throw Exception("User not authenticated")
-
         launch {
             notesDao.getNotesFlow(userId).collect { entities ->
                 send(entities.map { it.toDomain() })
@@ -116,10 +113,7 @@ class NotesRepositoryImpl(
                 date = System.currentTimeMillis()
             )
             notesDao.insertNote(entity)
-
-            if (networkMonitor.isConnected()) {
-                scheduleSyncWork()
-            }
+            scheduleSyncWork()
 
             Result.success(note)
         } catch (e: Exception) {
@@ -147,7 +141,7 @@ class NotesRepositoryImpl(
                     notesDao.deleteNote(noteId)
                     scheduleSyncWork()
                 }
-                return deleteResult.map { Unit }
+                return deleteResult.map { /* no-op */ }
             } else {
                 notesDao.insertPendingDeletion(
                     PendingDeletionEntity(
