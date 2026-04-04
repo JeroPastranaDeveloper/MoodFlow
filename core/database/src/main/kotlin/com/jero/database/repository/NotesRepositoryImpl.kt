@@ -35,9 +35,6 @@ class NotesRepositoryImpl(
     private fun getCurrentUserId(): String? = auth.currentUser?.uid
 
     override suspend fun getAllNotes(userId: String) = channelFlow {
-        val userId = getCurrentUserId()
-            ?: throw Exception("User not authenticated")
-
         launch {
             notesDao.getNotesFlow(userId).collect { entities ->
                 send(entities.map { it.toDomain() })

@@ -10,6 +10,7 @@ object NoteEntityMapperImpl : NoteEntityMapper<Note, NoteEntity> {
         title = domain.title,
         content = domain.content,
         date = domain.date,
+        pinned = domain.pinned,
         userId = domain.userId,
     )
 
@@ -18,6 +19,7 @@ object NoteEntityMapperImpl : NoteEntityMapper<Note, NoteEntity> {
         title = entity.title,
         content = entity.content,
         date = entity.date,
+        pinned = entity.pinned,
         userId = entity.userId,
     )
 }
