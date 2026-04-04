@@ -3,6 +3,7 @@ package com.jero.localdatabase.di
 import androidx.room.Room
 import com.jero.localdatabase.NoteDatabase
 import com.jero.localdatabase.migrations.MIGRATION_2_3
+import com.jero.localdatabase.migrations.MIGRATION_3_4
 import org.koin.android.ext.koin.androidApplication
 import org.koin.dsl.module
 
@@ -13,7 +14,10 @@ val localDatabaseModule = module {
             NoteDatabase::class.java,
             "Notes.db"
         )
-            .addMigrations(MIGRATION_2_3)
+            .addMigrations(
+                MIGRATION_2_3,
+                MIGRATION_3_4
+            )
             .fallbackToDestructiveMigrationFrom(dropAllTables = true, 1)
             .build()
     }

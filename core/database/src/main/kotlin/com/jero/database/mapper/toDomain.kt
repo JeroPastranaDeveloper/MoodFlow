@@ -10,6 +10,7 @@ fun NoteDto.toDomain(): Note = Note(
     content = content,
     date = date,
     pinned = pinned,
+    color = color,
     userId = userId,
     pendingSync = pendingSync,
 )
@@ -20,6 +21,7 @@ fun NoteEntity.toDto(): NoteDto = NoteDto(
     content = content,
     date = date,
     pinned = pinned,
+    color = color,
     userId = userId,
     pendingSync = pendingSync,
 )
@@ -30,6 +32,7 @@ fun NoteDto.toEntity(): NoteEntity = NoteEntity(
     content = content,
     date = date,
     pinned = pinned,
+    color = color,
     userId = userId,
     pendingSync = pendingSync,
 )
@@ -40,6 +43,7 @@ fun Note.toEntity(): NoteEntity = NoteEntity(
     content = content,
     date = date,
     pinned = pinned,
+    color = color,
     userId = userId,
     pendingSync = pendingSync,
 )
@@ -50,6 +54,7 @@ fun NoteEntity.toDomain(): Note = Note(
     content = content,
     date = date,
     pinned = pinned,
+    color = color,
     userId = userId,
     pendingSync = pendingSync,
 )

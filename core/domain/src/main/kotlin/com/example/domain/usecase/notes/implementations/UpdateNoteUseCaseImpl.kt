@@ -22,6 +22,7 @@ class UpdateNoteUseCaseImpl(
                     title = note.title.trim(),
                     content = note.content.trim(),
                     pinned = note.pinned,
+                    color = note.color,
                     date = note.date,
                 )
                 notesRepository.updateNote(updatedNote)

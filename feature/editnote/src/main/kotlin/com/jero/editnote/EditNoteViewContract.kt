@@ -18,6 +18,7 @@ class EditNoteViewContract {
         data class OnFetchNoteDetails(val noteId: String) : UiIntent()
         data class OnTitleChanged(val title: String) : UiIntent()
         data class OnDescriptionChanged(val description: String) : UiIntent()
+        data class OnColorChanged(val color: Long) : UiIntent()
     }
 
     sealed class UiAction {
