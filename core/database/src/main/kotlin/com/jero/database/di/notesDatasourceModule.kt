@@ -5,19 +5,21 @@ import com.google.firebase.database.FirebaseDatabase
 import com.jero.database.datasource.NotesDataSource
 import com.jero.database.datasource.NotesDataSourceImpl
 import com.jero.database.repository.NotesRepositoryImpl
+import com.jero.database.sync.NotesSyncManager
 import org.koin.dsl.module
 
 val notesDatasourceModule = module {
-    
-    // Firebase Database
+
     single { FirebaseDatabase.getInstance() }
-    
-    // Data Source
+
     single<NotesDataSource> {
         NotesDataSourceImpl(get(), get())
     }
-    
-    // Repository
+
+    single {
+        NotesSyncManager(get(), get(), get())
+    }
+
     single<NotesRepository> {
         NotesRepositoryImpl(get(), get(), get(), get(), get())
     }

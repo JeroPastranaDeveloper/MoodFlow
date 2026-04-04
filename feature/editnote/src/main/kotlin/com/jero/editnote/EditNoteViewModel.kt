@@ -39,20 +39,24 @@ class EditNoteViewModel(
     }
 
     private fun fetchNoteDetails(noteId: String) {
-        viewModelScope.launch {
-            val result = getNoteByIdUseCase(noteId)
+        if (noteId.isBlank()) {
+            setState { copy(editedNote = Note(), originalNote = Note()) }
+        } else {
+            viewModelScope.launch {
+                val result = getNoteByIdUseCase(noteId)
 
-            result.fold(
-                onSuccess = {
-                    setState {
-                        copy(
-                            editedNote = it ?: Note(),
-                            originalNote = it ?: Note(),
-                        )
-                    }
-                },
-                onFailure = {}
-            )
+                result.fold(
+                    onSuccess = {
+                        setState {
+                            copy(
+                                editedNote = it ?: Note(),
+                                originalNote = it ?: Note(),
+                            )
+                        }
+                    },
+                    onFailure = {}
+                )
+            }
         }
     }
 
