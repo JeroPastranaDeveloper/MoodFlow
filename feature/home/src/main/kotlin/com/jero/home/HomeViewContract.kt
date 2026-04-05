@@ -24,13 +24,6 @@ class HomeViewContract {
     )
 
     sealed class UiIntent {
-        data object OnChangeMoreMenuVisibility : UiIntent()
-        data object OnGoSettingsScreen : UiIntent()
-        data object OnChangeMultipleSelectorUIVisibility : UiIntent()
-        data object OnPinOrUnpinSelectedNotes : UiIntent()
-        data object OnClearFocus : UiIntent()
-        data object OnGoBack : UiIntent()
-
         data object OnDeleteMultipleNotes : UiIntent()
         data object OnGoTrashScreen : UiIntent()
         data class OnGoEditNoteScreen(val noteId: String?) : UiIntent()
@@ -38,16 +31,23 @@ class HomeViewContract {
         data class OnSearchQueryChanged(val query: String) : UiIntent()
         data class OnSearchFilterChanged(val filter: SearchFilter) : UiIntent()
         data class OnTagFilterSelected(val tagId: String?) : UiIntent()
+
+        data object OnChangeMoreMenuVisibility : UiIntent()
+        data object OnGoSettingsScreen : UiIntent()
+        data object OnChangeMultipleSelectorUIVisibility : UiIntent()
+        data object OnPinOrUnpinSelectedNotes : UiIntent()
+        data object OnClearFocus : UiIntent()
+        data object OnGoBack : UiIntent()
     }
 
     sealed class UiAction {
+        data class GoEditNoteScreen(val noteId: String) : UiAction()
+        data class ShowToast(val message: String) : UiAction()
+
         data object GoLogin : UiAction()
         data object GoSettingsScreen : UiAction()
         data object GoTrashScreen : UiAction()
         data object OnClearFocus : UiAction()
         data object OnGoBack : UiAction()
-
-        data class GoEditNoteScreen(val noteId: String) : UiAction()
-        data class ShowToast(val message: String) : UiAction()
     }
 }
