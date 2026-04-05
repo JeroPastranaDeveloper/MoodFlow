@@ -49,7 +49,7 @@ feature:register    → MoodFlowRegister, RegisterViewModel, RegisterViewContrac
 feature:home        → MoodFlowHome, HomeViewModel, HomeViewContract
 feature:editnote    → MoodFlowEditNote, EditNoteViewModel, EditNoteViewContract
 feature:settings    → MoodFlowSettings, SettingsViewModel, SettingsViewContract
-app                 → MainActivity, MoodFlowNavigation, MainViewModel, Koin app setup
+app                 → MainActivity, MoodFlowNavigation, MainViewModel, Koin app setup, NotesWidget (Glance)
 ```
 
 ### MVI pattern
@@ -202,6 +202,51 @@ Start screen depends on `PreferencesHandler.isLogged` (observed as `StateFlow` i
 
 ---
 
+## Home screen widget
+
+Built with **Jetpack Glance**. All files live in `app/.../widget/`.
+
+### Key constraints
+- **No ViewModel support** — Glance widgets have no `ViewModelStoreOwner`. Never try to inject a ViewModel into a `GlanceAppWidget`. Use use cases and domain interfaces directly.
+- **Single root per `item`** — in Glance's `LazyColumn`, each `item { }` lambda must contain a single root composable. Placing sibling composables directly in the lambda (without a `Column` wrapper) can cause them to overlap.
+
+### Structure
+
+| Class | Role |
+|---|---|
+| `NotesWidget` | `GlanceAppWidget` — injects `GetAllNotesUseCase` + `PreferencesHandler`, calls `provideContent` |
+| `NotesWidgetReceiver` | `GlanceAppWidgetReceiver` — entry point registered in the manifest |
+| `NotesWidgetConfigActivity` | Shown at widget placement; lets the user pick a filter, persists it via `updateAppWidgetState`, then triggers `NotesWidget.update()` |
+| `NotesWidgetFilter` | Enum: `ALL`, `PINNED`, `NORMAL` — stored as a `stringPreferencesKey` in Glance state (DataStore) |
+
+### Data flow
+
+1. `provideGlance` reads `PreferencesHandler.isLogged` — if not logged in, uses `flowOf(emptyList())` so the widget shows a login prompt instead of notes
+2. `GetAllNotesUseCase` handles `userId` resolution internally and returns `Flow<List<Note>>`
+3. Notes are filtered client-side by the stored `NotesWidgetFilter` and sorted by date descending
+4. `isLoggedIn` is captured once at `provideGlance` time and passed into the composable tree — it does **not** react to logout while the widget is open
+
+### LazyColumn list layout
+
+Notes and dividers are separate `item` entries to avoid overlap issues:
+
+```kotlin
+notes.forEachIndexed { index, note ->
+    item { NoteItem(note = note, context = context) }
+    if (index < notes.lastIndex) {
+        item { Spacer(/* 1.dp divider */) }
+    }
+}
+```
+
+The divider after the last note is intentionally omitted.
+
+### Widget update triggers
+
+Call `NotesWidget().updateAll(context)` (or use `NotesWidgetReceiver`) whenever note data changes externally — e.g. after a successful edit in the app. This is already done via the receiver for OS-initiated updates.
+
+---
+
 ## Dependency injection
 
 Koin. Modules are registered in `App.kt`. Each feature/core module has its own `*Module.kt` file. When adding a new dependency:
@@ -246,3 +291,7 @@ Koin. Modules are registered in `App.kt`. Each feature/core module has its own `
 | Kotlin compiler config | `buildlogic/.../convention/KotlinAndroid.kt` |
 | Preferences | `core/data/.../preferences/PreferencesHandlerImpl.kt` |
 | Main ViewModel | `app/.../MainViewModel.kt` |
+| Widget | `app/.../widget/NotesWidget.kt` |
+| Widget receiver | `app/.../widget/NotesWidgetReceiver.kt` |
+| Widget config activity | `app/.../widget/NotesWidgetConfigActivity.kt` |
+| Widget filter + state key | `app/.../widget/NotesWidgetFilter.kt` |
