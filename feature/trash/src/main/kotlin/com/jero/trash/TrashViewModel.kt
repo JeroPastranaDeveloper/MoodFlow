@@ -28,10 +28,10 @@ class TrashViewModel(
             UiIntent.OnConfirmDeletePermanently -> confirmDeletePermanently()
             UiIntent.OnCancelDeletePermanently -> setState { copy(noteIdPendingDeletion = null) }
             UiIntent.OnEmptyTrash -> emptyTrash()
-            UiIntent.OnGoBack -> dispatchAction(UiAction.GoBack)
             UiIntent.OnChangeEmptyTrashDialogVisibility -> setState {
                 copy(showEmptyTrashDialog = !showEmptyTrashDialog)
             }
+            UiIntent.OnGoBack -> dispatchAction(UiAction.GoBack)
         }
     }
 
