@@ -132,9 +132,10 @@ data class Note(
     val content: String = "",
     val date: Long = 0,
     val pinned: Boolean = false,
-    val color: Long = 0L,   // 0L = white (default), otherwise full ARGB Long e.g. 0xFFFFF9C4L
+    val color: Long = 0L,        // 0L = white (default), otherwise full ARGB Long e.g. 0xFFFFF9C4L
     val userId: String = "",
     val pendingSync: Boolean = false,
+    val deletedAt: Long? = null, // null = active note; non-null = in trash (epoch ms)
 ) : Parcelable
 ```
 
@@ -152,10 +153,11 @@ Color is stored as `Long` in Room and Firebase. Conversion uses `colorLong.toInt
 
 ## Room database
 
-- Class: `NoteDatabase` — current version **4**
+- Class: `NoteDatabase` — current version **5**
 - Migrations in `core:localdatabase/migrations/Migrations.kt`:
   - `MIGRATION_2_3` — creates `PendingDeletionEntity` table
   - `MIGRATION_3_4` — adds `color INTEGER NOT NULL DEFAULT 0` to `NoteEntity`
+  - `MIGRATION_4_5` — adds `deletedAt INTEGER DEFAULT NULL` to `NoteEntity`
   - Version 1 uses `fallbackToDestructiveMigrationFrom(dropAllTables = true, 1)`
 - **Always add a migration when changing any entity.** Never bump the version without a migration (except from 1).
 
@@ -185,6 +187,40 @@ Flow for any write:
 
 ---
 
+## Trash (soft delete)
+
+### How it works
+
+- **Deleting** a note from the home screen calls `NotesRepository.deleteNote` → sets `deletedAt = System.currentTimeMillis()` and `pendingSync = true` locally. The note is **not** removed from Firebase immediately; `SyncNotesWorker` pushes the updated `deletedAt` value on next sync.
+- **Restoring** a note sets `deletedAt = null` and `pendingSync = true`. Sync propagates the restore to Firebase.
+- **Permanently deleting** from the trash uses the existing `PendingDeletionEntity` flow — removes locally and queues a Firebase delete.
+- **Auto-clean** — `CleanTrashWorker` runs once daily (periodic, `KEEP` policy). It queries notes with `deletedAt <= now - 30 days` and permanently deletes them via the same `PendingDeletionEntity` flow. Scheduled from `App.onCreate` via `NotesSyncManager.scheduleTrashClean()`.
+
+### DAO queries
+
+| Query | Filter |
+|---|---|
+| `getNotesFlow(userId)` | `deletedAt IS NULL` — home screen |
+| `getDeletedNotesFlow(userId)` | `deletedAt IS NOT NULL` — trash screen |
+| `getNotes(userId)` | all notes — sync stale-check |
+| `getOldTrashedNotes(userId, cutoff)` | `deletedAt IS NOT NULL AND deletedAt <= cutoff` |
+| `softDeleteNote(id, deletedAt)` | sets `deletedAt` and `pendingSync = 1` |
+| `restoreNote(id)` | sets `deletedAt = NULL` and `pendingSync = 1` |
+
+### Sync interaction
+
+- Trashed notes stay in Firebase with `deletedAt` set — other devices see the trash state on next sync.
+- Pending notes (`pendingSync = true`) are never overwritten by `syncFromFirebase` — the stale-check skips them.
+- After `permanentlyDeleteNote`, the note is gone from Firebase and local Room.
+
+### Key rules
+
+- **Never call `notesDataSource.deleteNote` for a trash operation** — that is a hard delete. Only use it from `permanentlyDeleteNote` or `PendingDeletionEntity` cleanup.
+- `deleteNote` in `NotesRepository` is a **soft delete** (moves to trash). To hard-delete, call `permanentlyDeleteNote`.
+- The trash screen (`feature:trash`) uses `GetTrashedNotesUseCase`, `RestoreNoteUseCase`, and `PermanentlyDeleteNoteUseCase`.
+
+---
+
 ## Navigation
 
 Uses **Navigation 3** (androidx.navigation3) with type-safe `NavKey` destinations:
@@ -197,6 +233,8 @@ sealed interface MoodFLowScreen : NavKey {
 ```
 
 Navigation is in `app/navigation/MoodFlowNavigation.kt`. All screens are wrapped in `SharedTransitionLayout` to enable shared element transitions between `Home` and `EditNote`.
+
+Destinations: `Login`, `Register`, `Home`, `Settings`, `Trash`, `EditNote(id: String)`
 
 Start screen depends on `PreferencesHandler.isLogged` (observed as `StateFlow` in `MainViewModel`).
 
@@ -283,6 +321,11 @@ Koin. Modules are registered in `App.kt`. Each feature/core module has its own `
 | Firebase data source | `core/database/.../datasource/NotesDataSourceImpl.kt` |
 | Repository impl | `core/database/.../repository/NotesRepositoryImpl.kt` |
 | Sync worker | `core/database/.../workmanager/SyncNotesWorker.kt` |
+| Clean trash worker | `core/database/.../workmanager/CleanTrashWorker.kt` |
+| Trash screen | `feature/trash/.../MoodFlowTrash.kt` |
+| Trash ViewModel | `feature/trash/.../TrashViewModel.kt` |
+| Trash contract | `feature/trash/.../TrashViewContract.kt` |
+| Trash Koin module | `feature/trash/.../di/trashViewModelModule.kt` |
 | Note colors | `core/designsystem/.../theme/NoteColors.kt` |
 | Navigation | `app/.../navigation/MoodFlowNavigation.kt` |
 | Nav destinations | `core/navigation/.../MoodFLowScreen.kt` |

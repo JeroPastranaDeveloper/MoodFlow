@@ -78,6 +78,7 @@ dependencies {
     implementation(projects.feature.home)
     implementation(projects.feature.editnote)
     implementation(projects.feature.settings)
+    implementation(projects.feature.trash)
 
     // Auth
     implementation(projects.authentication)

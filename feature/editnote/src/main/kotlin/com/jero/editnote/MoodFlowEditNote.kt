@@ -57,7 +57,6 @@ import com.jero.core.designsystem.R
 import com.jero.core.screen.HandleActions
 import com.jero.core.screen.getTopSystemPadding
 import com.jero.designsystem.components.MoodFlowTransparentTextField
-import com.jero.designsystem.components.MoodFlowTwoOptionsDialog
 import com.jero.designsystem.components.moodFlowSharedElement
 import com.jero.designsystem.theme.NoteColors
 import com.jero.editnote.EditNoteViewContract.UiAction
@@ -99,7 +98,6 @@ fun SharedTransitionScope.MoodFlowEditNote(
         state = state,
         animatedVisibilityScope = animatedVisibilityScope,
         onPinChanged = { viewModel.sendIntent(UiIntent.OnPinChanged) },
-        onChangeDeleteDialogVisibility = { viewModel.sendIntent(UiIntent.OnChangeDeleteDialogVisibility) },
         onDeleteNote = { viewModel.sendIntent(UiIntent.OnDeleteNote) },
         onTitleChanged = { viewModel.sendIntent(UiIntent.OnTitleChanged(it)) },
         onDescriptionChanged = { viewModel.sendIntent(UiIntent.OnDescriptionChanged(it)) },
@@ -113,7 +111,6 @@ private fun SharedTransitionScope.Content(
     state: UiState,
     animatedVisibilityScope: AnimatedVisibilityScope,
     onPinChanged: () -> Unit,
-    onChangeDeleteDialogVisibility: () -> Unit,
     onDeleteNote: () -> Unit,
     onTitleChanged: (String) -> Unit,
     onDescriptionChanged: (String) -> Unit,
@@ -162,7 +159,7 @@ private fun SharedTransitionScope.Content(
                     Icon(
                         modifier = Modifier.clickable {
                             focusManager.clearFocus(force = true)
-                            onChangeDeleteDialogVisibility()
+                            onDeleteNote()
                         },
                         painter = painterResource(id = R.drawable.ic_trash),
                         contentDescription = null,
@@ -233,14 +230,6 @@ private fun SharedTransitionScope.Content(
             ) { onDescriptionChanged(it) }
         }
 
-        if (state.showDeleteNoteDialog) {
-            MoodFlowTwoOptionsDialog(
-                titleText = stringResource(R.string.delete_selection),
-                bodyText = stringResource(R.string.delete_selection_question),
-                onAccept = onDeleteNote,
-                onCancel = onChangeDeleteDialogVisibility,
-            )
-        }
     }
 }
 
