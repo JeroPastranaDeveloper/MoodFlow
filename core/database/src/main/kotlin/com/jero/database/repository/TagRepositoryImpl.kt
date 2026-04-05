@@ -104,10 +104,10 @@ class TagRepositoryImpl(
         val existing = tagDao.getTags(userId).map { it.id }
         val toInsert = buildList {
             if (UNTAGGED_TAG_ID !in existing) add(
-                TagEntity(id = UNTAGGED_TAG_ID, name = "Sin etiqueta", userId = userId, pendingSync = true)
+                TagEntity(id = UNTAGGED_TAG_ID, name = "Untagged", userId = userId, pendingSync = true)
             )
             if (PERSONAL_TAG_ID !in existing) add(
-                TagEntity(id = PERSONAL_TAG_ID, name = "Personales", userId = userId, pendingSync = true)
+                TagEntity(id = PERSONAL_TAG_ID, name = "Personal", userId = userId, pendingSync = true)
             )
         }
         if (toInsert.isNotEmpty()) {

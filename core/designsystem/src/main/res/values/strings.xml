@@ -32,13 +32,13 @@
   <string name="sign_out">Close session</string>
   <string name="sign_out_question">Are you sure you want to close session?</string>
 
-  <string name="tags">Etiquetas</string>
-  <string name="create_tag">Crear etiqueta</string>
-  <string name="edit_tag">Editar etiqueta</string>
-  <string name="delete_tag">Borrar etiqueta</string>
-  <string name="delete_tag_confirmation">¿Borrar la etiqueta «%s»? Las notas afectadas mantendrán sus otras etiquetas o pasarán a «Sin etiqueta».</string>
-  <string name="tag_name">Nombre</string>
-  <string name="no_tags_available">Sin etiquetas creadas</string>
+  <string name="tags">Tags</string>
+  <string name="create_tag">Create tag</string>
+  <string name="edit_tag">Edit tag</string>
+  <string name="delete_tag">Delete tag</string>
+  <string name="delete_tag_confirmation">Delete tag \"%s\"? Affected notes will keep their other tags or will be moved to \"Untagged\".</string>
+  <string name="tag_name">Name</string>
+  <string name="no_tags_available">No tags created</string>
 
   <string name="validation_error_password_empty">Password cannot be empty</string>
   <string name="validation_error_password_too_short">Password must be at least 8 characters long</string>
@@ -53,9 +53,9 @@
   <string name="validation_error_email_invalid_format">Invalid email format</string>
   <string name="user_not_authenticated">User not authenticated</string>
   <string name="title_cannot_be_empty">Title can\'t be empty</string>
-  <string name="error_tag_name_exists">Ya existe una etiqueta con ese nombre</string>
-  <string name="error_tag_not_editable">Esta etiqueta no se puede editar</string>
-  <string name="error_tag_not_deletable">Esta etiqueta no se puede borrar</string>
+  <string name="error_tag_name_exists">A tag with that name already exists</string>
+  <string name="error_tag_not_editable">This tag cannot be edited</string>
+  <string name="error_tag_not_deletable">This tag cannot be deleted</string>
 
   <string name="search_in_content">Content</string>
   <string name="only_pinned">Pinned</string>
