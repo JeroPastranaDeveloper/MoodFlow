@@ -31,18 +31,12 @@ class HomeViewModel(
             is UiIntent.OnGoEditNoteScreen -> showEditNoteDialog(intent.noteId)
             is UiIntent.OnSelectNote -> updateNoteSelection(intent.noteId, intent.isChecked)
 
-            UiIntent.OnShowDeleteNoteDialog -> showDeleteNoteDialog()
             UiIntent.OnGoSettingsScreen -> goSettings()
-            UiIntent.OnChangeDeleteNotesDialogVisibility -> setState {
-                copy(
-                    showDeleteNotesDialog = !showDeleteNotesDialog
-                )
-            }
-
             UiIntent.OnChangeMoreMenuVisibility -> setState { copy(showMoreMenu = !showMoreMenu) }
             UiIntent.OnChangeMultipleSelectorUIVisibility -> changeMultipleSelectorUIVisibility()
             UiIntent.OnDeleteMultipleNotes -> deleteMultipleNotes()
             UiIntent.OnPinOrUnpinSelectedNotes -> pinOrUnpinSelectedNotes()
+            UiIntent.OnGoTrashScreen -> goTrash()
         }
     }
 
@@ -81,7 +75,6 @@ class HomeViewModel(
         setState {
             copy(
                 notesCanBeSelected = !notesCanBeSelected,
-                showDeleteNotesDialog = false,
                 selectedNotes = emptyList()
             )
         }
@@ -129,10 +122,6 @@ class HomeViewModel(
         }
     }
 
-    private fun showDeleteNoteDialog() {
-        setState { copy(showDeleteNotesDialog = true) }
-    }
-
     private fun showEditNoteDialog(noteId: String?) {
         dispatchAction(UiAction.GoEditNoteScreen(noteId.orEmpty()))
     }
@@ -140,6 +129,11 @@ class HomeViewModel(
     private fun goSettings() {
         setState { copy(showMoreMenu = false) }
         dispatchAction(UiAction.GoSettingsScreen)
+    }
+
+    private fun goTrash() {
+        setState { copy(showMoreMenu = false) }
+        dispatchAction(UiAction.GoTrashScreen)
     }
 
     private fun observeNotes() {

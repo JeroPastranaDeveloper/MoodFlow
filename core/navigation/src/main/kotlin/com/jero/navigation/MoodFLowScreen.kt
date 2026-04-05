@@ -18,4 +18,7 @@ sealed interface MoodFLowScreen : NavKey {
 
     @Serializable
     data object Settings : MoodFLowScreen
+
+    @Serializable
+    data object Trash : MoodFLowScreen
 }

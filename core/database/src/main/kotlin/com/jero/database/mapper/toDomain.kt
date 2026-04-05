@@ -13,6 +13,7 @@ fun NoteDto.toDomain(): Note = Note(
     color = color,
     userId = userId,
     pendingSync = pendingSync,
+    deletedAt = deletedAt,
 )
 
 fun NoteEntity.toDto(): NoteDto = NoteDto(
@@ -24,6 +25,7 @@ fun NoteEntity.toDto(): NoteDto = NoteDto(
     color = color,
     userId = userId,
     pendingSync = pendingSync,
+    deletedAt = deletedAt,
 )
 
 fun NoteDto.toEntity(): NoteEntity = NoteEntity(
@@ -35,6 +37,7 @@ fun NoteDto.toEntity(): NoteEntity = NoteEntity(
     color = color,
     userId = userId,
     pendingSync = pendingSync,
+    deletedAt = deletedAt,
 )
 
 fun Note.toEntity(): NoteEntity = NoteEntity(
@@ -46,6 +49,7 @@ fun Note.toEntity(): NoteEntity = NoteEntity(
     color = color,
     userId = userId,
     pendingSync = pendingSync,
+    deletedAt = deletedAt,
 )
 
 fun NoteEntity.toDomain(): Note = Note(
@@ -57,4 +61,5 @@ fun NoteEntity.toDomain(): Note = Note(
     color = color,
     userId = userId,
     pendingSync = pendingSync,
+    deletedAt = deletedAt,
 )

@@ -12,8 +12,10 @@ import com.jero.database.sync.NotesSyncManager
 import com.jero.localdatabase.dao.NoteDao
 import com.jero.localdatabase.model.PendingDeletionEntity
 import com.jero.network.NetworkMonitor
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.channelFlow
 import kotlinx.coroutines.flow.filter
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 
 class NotesRepositoryImpl(
@@ -41,6 +43,9 @@ class NotesRepositoryImpl(
             syncManager.syncFromFirebase(userId)
         }
     }
+
+    override suspend fun getDeletedNotes(userId: String): Flow<List<Note>> =
+        notesDao.getDeletedNotesFlow(userId).map { entities -> entities.map { it.toDomain() } }
 
     override suspend fun createNote(note: Note): Result<Note> {
         return try {
@@ -76,7 +81,28 @@ class NotesRepositoryImpl(
         }
     }
 
+    // Moves a note to trash (soft delete)
     override suspend fun deleteNote(noteId: String): Result<Unit> {
+        return try {
+            notesDao.softDeleteNote(noteId, System.currentTimeMillis())
+            syncManager.scheduleSync()
+            Result.success(Unit)
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
+    }
+
+    override suspend fun restoreNote(noteId: String): Result<Unit> {
+        return try {
+            notesDao.restoreNote(noteId)
+            syncManager.scheduleSync()
+            Result.success(Unit)
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
+    }
+
+    override suspend fun permanentlyDeleteNote(noteId: String): Result<Unit> {
         return try {
             val userId = getCurrentUserId()
                 ?: return Result.failure(Exception("User not authenticated"))
@@ -130,6 +156,14 @@ class NotesRepositoryImpl(
             }
         } catch (e: Exception) {
             Log.e("NotesRepository", "Error syncing pending changes", e)
+        }
+    }
+
+    override suspend fun cleanOldTrash() {
+        val userId = getCurrentUserId() ?: return
+        val cutoff = System.currentTimeMillis() - 30L * 24 * 60 * 60 * 1000
+        notesDao.getOldTrashedNotes(userId, cutoff).forEach { entity ->
+            queuePendingDeletion(entity.id, userId)
         }
     }
 

@@ -4,11 +4,17 @@ import com.example.domain.usecase.notes.implementations.CreateNoteUseCaseImpl
 import com.example.domain.usecase.notes.implementations.DeleteNoteUseCaseImpl
 import com.example.domain.usecase.notes.implementations.GetAllNotesUseCaseImpl
 import com.example.domain.usecase.notes.implementations.GetNoteByIdUseCaseImpl
+import com.example.domain.usecase.notes.implementations.GetTrashedNotesUseCaseImpl
+import com.example.domain.usecase.notes.implementations.PermanentlyDeleteNoteUseCaseImpl
+import com.example.domain.usecase.notes.implementations.RestoreNoteUseCaseImpl
 import com.example.domain.usecase.notes.implementations.UpdateNoteUseCaseImpl
 import com.example.domain.usecase.notes.interfaces.CreateNoteUseCase
 import com.example.domain.usecase.notes.interfaces.DeleteNoteUseCase
 import com.example.domain.usecase.notes.interfaces.GetAllNotesUseCase
 import com.example.domain.usecase.notes.interfaces.GetNoteByIdUseCase
+import com.example.domain.usecase.notes.interfaces.GetTrashedNotesUseCase
+import com.example.domain.usecase.notes.interfaces.PermanentlyDeleteNoteUseCase
+import com.example.domain.usecase.notes.interfaces.RestoreNoteUseCase
 import com.example.domain.usecase.notes.interfaces.UpdateNoteUseCase
 import org.koin.dsl.module
 
@@ -31,5 +37,17 @@ val notesUseCaseModule = module {
 
     factory<GetNoteByIdUseCase> {
         GetNoteByIdUseCaseImpl(get())
+    }
+
+    factory<GetTrashedNotesUseCase> {
+        GetTrashedNotesUseCaseImpl(get(), get())
+    }
+
+    factory<RestoreNoteUseCase> {
+        RestoreNoteUseCaseImpl(get())
+    }
+
+    factory<PermanentlyDeleteNoteUseCase> {
+        PermanentlyDeleteNoteUseCaseImpl(get())
     }
 }

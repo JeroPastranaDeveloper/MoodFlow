@@ -77,7 +77,6 @@ import com.jero.core.screen.getTopSystemPadding
 import com.jero.core.utils.emptyString
 import com.jero.designsystem.components.MoodFlowNote
 import com.jero.designsystem.components.MoodFlowTextField
-import com.jero.designsystem.components.MoodFlowTwoOptionsDialog
 import com.jero.designsystem.theme.MoodFlowColors
 import com.jero.designsystem.utils.rememberKeyboardAsState
 import com.jero.home.HomeViewContract.UiAction
@@ -93,6 +92,7 @@ fun SharedTransitionScope.MoodFlowHome(
     onGoLogin: () -> Unit,
     onGoEditNote: (String) -> Unit,
     onGoSettings: () -> Unit,
+    onGoTrash: () -> Unit,
 ) {
     SetStatusBarIconsColor()
     val state by viewModel.state.collectAsStateWithLifecycle()
@@ -109,6 +109,7 @@ fun SharedTransitionScope.MoodFlowHome(
         when (action) {
             UiAction.GoLogin -> onGoLogin()
             UiAction.GoSettingsScreen -> onGoSettings()
+            UiAction.GoTrashScreen -> onGoTrash()
             is UiAction.ShowToast -> Toast.makeText(context, action.message, Toast.LENGTH_SHORT).show()
             is UiAction.GoEditNoteScreen -> onGoEditNote(action.noteId)
         }
@@ -136,10 +137,10 @@ fun SharedTransitionScope.MoodFlowHome(
         onChangeMoreMenuVisibility = { viewModel.sendIntent(UiIntent.OnChangeMoreMenuVisibility) },
         onPinOrUnpinSelectedNotes = { viewModel.sendIntent(UiIntent.OnPinOrUnpinSelectedNotes) },
         onChangeMultipleSelectorUIVisibility = { viewModel.sendIntent(UiIntent.OnChangeMultipleSelectorUIVisibility) },
-        onChangeDeleteNotesDialogVisibility = { viewModel.sendIntent(UiIntent.OnChangeDeleteNotesDialogVisibility) },
         onGoEditNoteScreen = { viewModel.sendIntent(UiIntent.OnGoEditNoteScreen(it)) },
         onDeleteMultipleNotes = { viewModel.sendIntent(UiIntent.OnDeleteMultipleNotes) },
         onGoSettingsScreen = { viewModel.sendIntent(UiIntent.OnGoSettingsScreen) },
+        onGoTrashScreen = { viewModel.sendIntent(UiIntent.OnGoTrashScreen) },
         onSelectNote = { noteId, isChecked -> viewModel.sendIntent(UiIntent.OnSelectNote(noteId, isChecked)) },
     )
 }
@@ -154,10 +155,10 @@ private fun SharedTransitionScope.Content(
     onChangeMoreMenuVisibility: () -> Unit,
     onPinOrUnpinSelectedNotes: () -> Unit,
     onChangeMultipleSelectorUIVisibility: () -> Unit,
-    onChangeDeleteNotesDialogVisibility: () -> Unit,
     onGoEditNoteScreen: (String?) -> Unit,
     onDeleteMultipleNotes: () -> Unit,
     onGoSettingsScreen: () -> Unit,
+    onGoTrashScreen: () -> Unit,
     onSelectNote: (String, Boolean) -> Unit,
 ) {
     val localInspectionMode = LocalInspectionMode.current
@@ -174,7 +175,7 @@ private fun SharedTransitionScope.Content(
                                 fadeOut(tween(200)) + slideOutVertically(targetOffsetY = { it / 2 })
                     },
                     label = "TopBarTransition"
-                ) { notesCanBeSelected ->
+                ) { canSelectNotes ->
                     Row(
                         modifier = Modifier
                             .fillMaxWidth()
@@ -186,7 +187,7 @@ private fun SharedTransitionScope.Content(
                             ),
                         verticalAlignment = Alignment.CenterVertically
                     ) {
-                        if (!notesCanBeSelected) {
+                        if (!canSelectNotes) {
                             SearchBar(
                                 isKeyboardOpen = isKeyboardOpen,
                                 query = query,
@@ -201,7 +202,7 @@ private fun SharedTransitionScope.Content(
                                 allNotes = state.allNotes,
                                 onPinOrUnpinSelectedNotes = onPinOrUnpinSelectedNotes,
                                 onChangeMultipleSelectorUIVisibility = onChangeMultipleSelectorUIVisibility,
-                                onChangeDeleteNotesDialogVisibility = onChangeDeleteNotesDialogVisibility,
+                                onDeleteMultipleNotes = onDeleteMultipleNotes,
                             )
                         }
                     }
@@ -258,21 +259,23 @@ private fun SharedTransitionScope.Content(
                             }
                         }
 
-                        item(span = StaggeredGridItemSpan.FullLine) {
-                            Text(stringResource(if (state.pinnedNotes.isEmpty()) R.string.notes else R.string.other_notes))
-                        }
+                        if (state.notes.isNotEmpty()) {
+                            item(span = StaggeredGridItemSpan.FullLine) {
+                                Text(stringResource(if (state.pinnedNotes.isEmpty()) R.string.notes else R.string.other_notes))
+                            }
 
-                        items(items = state.notes, key = { it.id }) { note ->
-                            NoteItem(
-                                modifier = Modifier.animateItem(),
-                                note = note,
-                                state = state,
-                                localInspectionMode = localInspectionMode,
-                                animatedVisibilityScope = animatedVisibilityScope,
-                                onGoEditNoteScreen = onGoEditNoteScreen,
-                                onChangeMultipleSelectorUIVisibility = onChangeMultipleSelectorUIVisibility,
-                                onSelectNote = onSelectNote,
-                            )
+                            items(items = state.notes, key = { it.id }) { note ->
+                                NoteItem(
+                                    modifier = Modifier.animateItem(),
+                                    note = note,
+                                    state = state,
+                                    localInspectionMode = localInspectionMode,
+                                    animatedVisibilityScope = animatedVisibilityScope,
+                                    onGoEditNoteScreen = onGoEditNoteScreen,
+                                    onChangeMultipleSelectorUIVisibility = onChangeMultipleSelectorUIVisibility,
+                                    onSelectNote = onSelectNote,
+                                )
+                            }
                         }
 
                         item(span = StaggeredGridItemSpan.FullLine) {
@@ -285,14 +288,6 @@ private fun SharedTransitionScope.Content(
                     onGoEditNoteScreen(null)
                 }
 
-                if (state.showDeleteNotesDialog) {
-                    MoodFlowTwoOptionsDialog(
-                        titleText = stringResource(R.string.delete_selection),
-                        bodyText = stringResource(R.string.delete_selection_question),
-                        onAccept = onDeleteMultipleNotes,
-                        onCancel = onChangeDeleteNotesDialogVisibility,
-                    )
-                }
             }
         }
 
@@ -341,6 +336,27 @@ private fun SharedTransitionScope.Content(
                 Box(
                     modifier = Modifier
                         .fillMaxWidth()
+                        .clickable { onGoTrashScreen() }
+                ) {
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(16.dp)
+                    ) {
+                        Icon(
+                            painter = painterResource(id = R.drawable.ic_trash),
+                            contentDescription = "Go trash",
+                        )
+
+                        Spacer(modifier = Modifier.width(4.dp))
+
+                        Text(stringResource(R.string.trash))
+                    }
+                }
+
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
                         .offset(y = 16.dp)
                         .clickable { onGoSettingsScreen() }
                 ) {
@@ -364,7 +380,6 @@ private fun SharedTransitionScope.Content(
             }
         }
     }
-
 }
 
 @Composable
@@ -428,7 +443,7 @@ private fun RowScope.MultipleUiSelector(
     allNotes: List<Note>,
     onPinOrUnpinSelectedNotes: () -> Unit = {},
     onChangeMultipleSelectorUIVisibility: () -> Unit = {},
-    onChangeDeleteNotesDialogVisibility: () -> Unit = {},
+    onDeleteMultipleNotes: () -> Unit = {},
 ) {
     IconButton(onClick = onChangeMultipleSelectorUIVisibility) {
         Icon(
@@ -473,14 +488,14 @@ private fun RowScope.MultipleUiSelector(
                 .size(22.dp)
                 .offset(y = 2.dp)
                 .clickable { onPinOrUnpinSelectedNotes() },
-            painter = painterResource(id = if (!allNotesArePinned) R.drawable.ic_pinned else R.drawable.ic_not_pinned),
+            painter = painterResource(id = if (allNotesArePinned) R.drawable.ic_pinned else R.drawable.ic_not_pinned),
             contentDescription = null
         )
 
         Spacer(modifier = Modifier.width(16.dp))
     }
 
-    IconButton(onClick = onChangeDeleteNotesDialogVisibility) {
+    IconButton(onClick = onDeleteMultipleNotes) {
         Icon(
             painter = painterResource(id = R.drawable.ic_trash),
             contentDescription = "Delete multiple notes"

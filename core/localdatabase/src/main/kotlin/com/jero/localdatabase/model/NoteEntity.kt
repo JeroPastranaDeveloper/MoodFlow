@@ -13,4 +13,5 @@ data class NoteEntity(
     val color: Long = 0L,
     val userId: String = "",
     val pendingSync: Boolean = false,
+    val deletedAt: Long? = null,
 )

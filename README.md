@@ -13,7 +13,7 @@ MoodFlow is an Android note-taking app with offline-first support, real-time Fir
 - Full-text search with filters (content, pinned only, sort order)
 - Multi-select mode: pin or delete multiple notes at once
 - Offline-first: notes are saved locally and synced to Firebase when online
-- Pending deletions are queued and executed on next connection
+- Trash: deleted notes go to a trash bin and can be restored or permanently deleted; auto-purged after 30 days
 - Home screen widget: displays a scrollable list of notes with a configurable filter (all / pinned / normal)
 
 ---
@@ -29,7 +29,7 @@ MoodFlow is an Android note-taking app with offline-first support, real-time Fir
 | Local database | Room (with migrations) |
 | Remote database | Firebase Realtime Database |
 | Authentication | Firebase Auth |
-| Background sync | WorkManager (`SyncNotesWorker`) |
+| Background sync | WorkManager (`SyncNotesWorker`, `CleanTrashWorker`) |
 | Home screen widget | Jetpack Glance |
 | Async | Kotlin Coroutines + Flow |
 | Build system | Gradle convention plugins (AGP 9.x) |
@@ -81,6 +81,15 @@ Each screen composable is split into two functions:
 3. On connectivity, the worker calls `syncPendingChanges()` which pushes all pending notes to Firebase
 4. Firebase changes are observed via a real-time listener; incoming notes are merged into Room while preserving local data (color, pending changes)
 
+### Trash (soft delete)
+
+Deleting a note moves it to the trash instead of removing it immediately:
+
+1. `NotesRepository.deleteNote` sets `deletedAt` locally and schedules sync
+2. The note disappears from the home screen (`getNotesFlow` filters `deletedAt IS NULL`) but stays in Firebase with `deletedAt` set
+3. From the trash screen the user can **restore** (clears `deletedAt`) or **permanently delete** (queues `PendingDeletionEntity`)
+4. `CleanTrashWorker` runs daily and permanently deletes notes trashed for more than 30 days
+
 ### Room migrations
 
 | Version | Change |
@@ -88,6 +97,7 @@ Each screen composable is split into two functions:
 | 1 → 2 | Initial schema |
 | 2 → 3 | Added `PendingDeletionEntity` table |
 | 3 → 4 | Added `color: Long` column to `NoteEntity` |
+| 4 → 5 | Added `deletedAt: Long?` column to `NoteEntity` |
 
 ---
 

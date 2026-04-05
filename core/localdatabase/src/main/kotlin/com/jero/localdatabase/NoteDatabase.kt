@@ -11,7 +11,7 @@ import com.jero.localdatabase.model.PendingDeletionEntity
         NoteEntity::class,
         PendingDeletionEntity::class
     ],
-    version = 4,
+    version = 5,
     exportSchema = true
 )
 

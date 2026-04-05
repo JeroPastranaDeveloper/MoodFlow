@@ -26,7 +26,6 @@ class EditNoteViewModel(
 
     override suspend fun manageIntent(intent: UiIntent) {
         when (intent) {
-            UiIntent.OnChangeDeleteDialogVisibility -> setState { copy(showDeleteNoteDialog = !showDeleteNoteDialog) }
             UiIntent.OnDeleteNote -> deleteNote()
             UiIntent.OnPinChanged -> changePin()
             UiIntent.OnGoBack -> goBack()
@@ -76,7 +75,6 @@ class EditNoteViewModel(
                     dispatchAction(UiAction.ShowToast(it.message ?: stringsProvider(R.string.unknown_error)))
                 }
             )
-            setState { copy(showDeleteNoteDialog = false) }
         }
     }
 

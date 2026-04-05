@@ -17,6 +17,7 @@ data class Note(
     val color: Long = 0L,
     val userId: String = "",
     val pendingSync: Boolean = false,
+    val deletedAt: Long? = null,
 ) : Parcelable
 
 fun Note.hasContentWithoutId(): Boolean = (title.isNotEmpty() || content.isNotEmpty()) && id.isBlank()
