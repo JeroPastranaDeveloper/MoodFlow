@@ -3,6 +3,8 @@ package com.jero.login
 import androidx.lifecycle.viewModelScope
 import com.example.domain.handler.AuthErrorHandler
 import com.example.domain.preferences.PreferencesHandler
+import com.example.domain.usecase.tags.interfaces.SeedDefaultTagsUseCase
+import com.example.domain.usecase.user.GetCurrentUserUseCase
 import com.example.domain.usecase.user.SignInWithEmailUseCase
 import com.example.domain.validator.EmailValidator
 import com.example.domain.validator.PasswordValidator
@@ -18,6 +20,8 @@ class LoginViewModel(
     private val emailValidator: EmailValidator,
     private val passwordValidator: PasswordValidator,
     private val authErrorHandler: AuthErrorHandler,
+    private val seedDefaultTagsUseCase: SeedDefaultTagsUseCase,
+    private val getCurrentUserUseCase: GetCurrentUserUseCase,
 ) : BaseViewModelWithActions<UiState, UiIntent, UiAction>() {
     override val initialViewState = UiState()
     override suspend fun manageIntent(intent: UiIntent) {
@@ -58,8 +62,9 @@ class LoginViewModel(
             val result = signInUseCase(state.value.email, state.value.password)
 
             result.fold(
-                onSuccess = { user ->
+                onSuccess = { _ ->
                     preferencesHandler.isLogged = true
+                    getCurrentUserUseCase()?.id?.let { seedDefaultTagsUseCase(it) }
                     dispatchAction(UiAction.GoHome)
                 },
                 onFailure = { error ->

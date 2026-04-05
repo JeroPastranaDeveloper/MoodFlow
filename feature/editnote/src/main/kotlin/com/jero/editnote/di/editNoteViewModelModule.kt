@@ -6,6 +6,6 @@ import org.koin.dsl.module
 
 val editNoteViewModelModule = module {
     viewModel {
-        EditNoteViewModel(get(), get(), get(), get(), get())
+        EditNoteViewModel(get(), get(), get(), get(), get(), get(), get())
     }
 }

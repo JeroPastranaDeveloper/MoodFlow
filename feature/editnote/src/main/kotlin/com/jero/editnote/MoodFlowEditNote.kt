@@ -25,14 +25,22 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Check
+import androidx.compose.material.icons.filled.Close
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -54,6 +62,8 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.jero.core.designsystem.R
+import com.jero.core.model.Tag
+import com.jero.core.model.UNTAGGED_TAG_ID
 import com.jero.core.screen.HandleActions
 import com.jero.core.screen.getTopSystemPadding
 import com.jero.designsystem.components.MoodFlowTransparentTextField
@@ -102,6 +112,8 @@ fun SharedTransitionScope.MoodFlowEditNote(
         onTitleChanged = { viewModel.sendIntent(UiIntent.OnTitleChanged(it)) },
         onDescriptionChanged = { viewModel.sendIntent(UiIntent.OnDescriptionChanged(it)) },
         onColorChanged = { viewModel.sendIntent(UiIntent.OnColorChanged(it)) },
+        onToggleTagSelector = { viewModel.sendIntent(UiIntent.OnToggleTagSelector) },
+        onToggleTag = { viewModel.sendIntent(UiIntent.OnToggleTag(it)) },
         onGoBack = { viewModel.sendIntent(UiIntent.OnGoBack) },
     )
 }
@@ -115,6 +127,8 @@ private fun SharedTransitionScope.Content(
     onTitleChanged: (String) -> Unit,
     onDescriptionChanged: (String) -> Unit,
     onColorChanged: (Long) -> Unit,
+    onToggleTagSelector: () -> Unit,
+    onToggleTag: (String) -> Unit,
     onGoBack: () -> Unit,
 ) {
     val focusManager = LocalFocusManager.current
@@ -168,11 +182,21 @@ private fun SharedTransitionScope.Content(
             }
         },
         bottomBar = {
-            NoteColorPicker(
-                selectedColor = state.editedNote.color,
-                backgroundColor = backgroundColor,
-                onColorSelected = onColorChanged,
-            )
+            Column {
+                TagsRow(
+                    assignedTagIds = state.editedNote.tagIds,
+                    allTags = state.allTags,
+                    backgroundColor = backgroundColor,
+                    showSelector = state.showTagSelector,
+                    onToggleSelector = onToggleTagSelector,
+                    onToggleTag = onToggleTag,
+                )
+                NoteColorPicker(
+                    selectedColor = state.editedNote.color,
+                    backgroundColor = backgroundColor,
+                    onColorSelected = onColorChanged,
+                )
+            }
         },
     ) { paddingValues ->
         Column(
@@ -229,7 +253,122 @@ private fun SharedTransitionScope.Content(
                 ),
             ) { onDescriptionChanged(it) }
         }
+    }
+}
 
+@Composable
+private fun TagsRow(
+    assignedTagIds: List<String>,
+    allTags: List<Tag>,
+    backgroundColor: Color,
+    showSelector: Boolean,
+    onToggleSelector: () -> Unit,
+    onToggleTag: (String) -> Unit,
+) {
+    val assignedTags = allTags.filter { it.id in assignedTagIds && it.id != UNTAGGED_TAG_ID }
+    val availableTags = allTags.filter { it.id != UNTAGGED_TAG_ID }
+    val listState = rememberLazyListState()
+
+    LazyRow(
+        state = listState,
+        modifier = Modifier
+            .fillMaxWidth()
+            .background(backgroundColor)
+            .padding(horizontal = 16.dp, vertical = 6.dp),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(8.dp),
+    ) {
+        items(assignedTags, key = { it.id }) { tag ->
+            TagChip(
+                modifier = Modifier.animateItem(),
+                label = tag.name,
+                onRemove = { onToggleTag(tag.id) },
+            )
+        }
+
+        item {
+            Box(modifier = Modifier.animateItem()) {
+                Box(
+                    modifier = Modifier
+                        .size(28.dp)
+                        .background(Color.Gray.copy(alpha = 0.2f), CircleShape)
+                        .clickable { onToggleSelector() },
+                    contentAlignment = Alignment.Center,
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.Add,
+                        contentDescription = null,
+                        modifier = Modifier.size(16.dp),
+                        tint = Color.DarkGray,
+                    )
+                }
+
+                DropdownMenu(
+                    expanded = showSelector,
+                    onDismissRequest = onToggleSelector,
+                ) {
+                    if (availableTags.isEmpty()) {
+                        DropdownMenuItem(
+                            text = { Text(stringResource(R.string.no_tags_available)) },
+                            onClick = {},
+                            enabled = false,
+                        )
+                    } else {
+                        availableTags.forEach { tag ->
+                            val isAssigned = tag.id in assignedTagIds
+                            DropdownMenuItem(
+                                text = {
+                                    Text(
+                                        tag.name,
+                                        style = MaterialTheme.typography.bodyMedium
+                                    )
+                                },
+                                onClick = { onToggleTag(tag.id) },
+                                trailingIcon = {
+                                    if (isAssigned) {
+                                        Icon(
+                                            imageVector = Icons.Default.Check,
+                                            contentDescription = null,
+                                            modifier = Modifier.size(16.dp),
+                                            tint = Color.DarkGray,
+                                        )
+                                    }
+                                }
+                            )
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun TagChip(
+    modifier: Modifier = Modifier,
+    label: String,
+    onRemove: () -> Unit,
+) {
+    Row(
+        modifier = modifier
+            .background(Color.Gray.copy(alpha = 0.2f), RoundedCornerShape(16.dp))
+            .padding(horizontal = 8.dp, vertical = 4.dp),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(4.dp),
+    ) {
+        Text(
+            text = label,
+            style = MaterialTheme.typography.labelSmall,
+            color = Color.DarkGray,
+        )
+        Icon(
+            imageVector = Icons.Default.Close,
+            contentDescription = null,
+            modifier = Modifier
+                .size(14.dp)
+                .clickable { onRemove() },
+            tint = Color.DarkGray,
+        )
     }
 }
 

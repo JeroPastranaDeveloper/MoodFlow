@@ -1,13 +1,12 @@
 package com.jero.home
 
 import com.jero.core.model.Note
+import com.jero.core.model.Tag
 import com.jero.core.utils.emptyString
-
-enum class SortOrder { DATE_DESC, DATE_ASC, TITLE_ASC }
 
 data class SearchFilter(
     val onlyPinned: Boolean = false,
-    val sortOrder: SortOrder = SortOrder.DATE_DESC,
+    val selectedTagId: String? = null,
 )
 
 class HomeViewContract {
@@ -21,6 +20,7 @@ class HomeViewContract {
         val showMoreMenu: Boolean = false,
         val notesCanBeSelected: Boolean = false,
         val selectedNotes: List<String> = emptyList(),
+        val allTags: List<Tag> = emptyList(),
     )
 
     sealed class UiIntent {
@@ -28,6 +28,8 @@ class HomeViewContract {
         data object OnGoSettingsScreen : UiIntent()
         data object OnChangeMultipleSelectorUIVisibility : UiIntent()
         data object OnPinOrUnpinSelectedNotes : UiIntent()
+        data object OnClearFocus : UiIntent()
+        data object OnGoBack : UiIntent()
 
         data object OnDeleteMultipleNotes : UiIntent()
         data object OnGoTrashScreen : UiIntent()
@@ -35,12 +37,15 @@ class HomeViewContract {
         data class OnSelectNote(val noteId: String, val isChecked: Boolean) : UiIntent()
         data class OnSearchQueryChanged(val query: String) : UiIntent()
         data class OnSearchFilterChanged(val filter: SearchFilter) : UiIntent()
+        data class OnTagFilterSelected(val tagId: String?) : UiIntent()
     }
 
     sealed class UiAction {
         data object GoLogin : UiAction()
         data object GoSettingsScreen : UiAction()
         data object GoTrashScreen : UiAction()
+        data object OnClearFocus : UiAction()
+        data object OnGoBack : UiAction()
 
         data class GoEditNoteScreen(val noteId: String) : UiAction()
         data class ShowToast(val message: String) : UiAction()

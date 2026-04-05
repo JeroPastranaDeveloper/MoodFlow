@@ -10,4 +10,6 @@ data class NoteDto(
     val userId: String = "",
     val pendingSync: Boolean = false,
     val deletedAt: Long? = null,
+    // Tag IDs stored as a Firebase set: { "tagId": true }
+    val tagIds: Map<String, Boolean> = emptyMap(),
 )

@@ -10,6 +10,7 @@ import com.jero.database.mapper.toDto
 import com.jero.database.mapper.toEntity
 import com.jero.database.sync.NotesSyncManager
 import com.jero.localdatabase.dao.NoteDao
+import com.jero.localdatabase.dao.TagDao
 import com.jero.localdatabase.model.PendingDeletionEntity
 import com.jero.network.NetworkMonitor
 import kotlinx.coroutines.flow.Flow
@@ -22,6 +23,7 @@ class NotesRepositoryImpl(
     private val notesDataSource: NotesDataSource,
     private val auth: FirebaseAuth,
     private val notesDao: NoteDao,
+    private val tagDao: TagDao,
     private val networkMonitor: NetworkMonitor,
     private val syncManager: NotesSyncManager,
 ) : NotesRepository {
@@ -30,8 +32,8 @@ class NotesRepositoryImpl(
 
     override suspend fun getAllNotes(userId: String) = channelFlow {
         launch {
-            notesDao.getNotesFlow(userId).collect { entities ->
-                send(entities.map { it.toDomain() })
+            notesDao.getNotesWithTagsFlow(userId).collect { notesWithTags ->
+                send(notesWithTags.map { it.toDomain() })
             }
         }
         launch {
@@ -45,7 +47,7 @@ class NotesRepositoryImpl(
     }
 
     override suspend fun getDeletedNotes(userId: String): Flow<List<Note>> =
-        notesDao.getDeletedNotesFlow(userId).map { entities -> entities.map { it.toDomain() } }
+        notesDao.getDeletedNotesWithTagsFlow(userId).map { list -> list.map { it.toDomain() } }
 
     override suspend fun createNote(note: Note): Result<Note> {
         return try {
@@ -127,7 +129,7 @@ class NotesRepositoryImpl(
 
     override suspend fun getNote(noteId: String): Result<Note> {
         return try {
-            val entity = notesDao.getNoteById(noteId)
+            val entity = notesDao.getNoteWithTagsById(noteId)
             if (entity != null) return Result.success(entity.toDomain())
 
             val userId = getCurrentUserId()
@@ -144,7 +146,8 @@ class NotesRepositoryImpl(
 
         try {
             notesDao.getPendingNotes(userId).forEach { noteEntity ->
-                notesDataSource.syncNote(userId, noteEntity.toDto())
+                val tagIds = tagDao.getTagIdsForNote(noteEntity.id)
+                notesDataSource.syncNote(userId, noteEntity.toDto(tagIds))
                     .onSuccess { notesDao.markAsSynced(noteEntity.id) }
                     .onFailure { Log.e("NotesRepository", "Failed to sync note ${noteEntity.id}", it) }
             }

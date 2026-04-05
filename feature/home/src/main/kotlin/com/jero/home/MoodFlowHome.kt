@@ -36,6 +36,8 @@ import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.lazy.LazyRow
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.staggeredgrid.LazyVerticalStaggeredGrid
 import androidx.compose.foundation.lazy.staggeredgrid.StaggeredGridCells
 import androidx.compose.foundation.lazy.staggeredgrid.StaggeredGridItemSpan
@@ -71,6 +73,7 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.jero.core.designsystem.R
 import com.jero.core.model.Note
+import com.jero.core.model.Tag
 import com.jero.core.screen.HandleActions
 import com.jero.core.screen.SetStatusBarIconsColor
 import com.jero.core.screen.getTopSystemPadding
@@ -107,25 +110,27 @@ fun SharedTransitionScope.MoodFlowHome(
 
     HandleActions(viewModel.actions) { action ->
         when (action) {
+            is UiAction.ShowToast -> Toast.makeText(context, action.message, Toast.LENGTH_SHORT).show()
+            is UiAction.GoEditNoteScreen -> onGoEditNote(action.noteId)
             UiAction.GoLogin -> onGoLogin()
             UiAction.GoSettingsScreen -> onGoSettings()
             UiAction.GoTrashScreen -> onGoTrash()
-            is UiAction.ShowToast -> Toast.makeText(context, action.message, Toast.LENGTH_SHORT).show()
-            is UiAction.GoEditNoteScreen -> onGoEditNote(action.noteId)
+            UiAction.OnClearFocus -> focusManager.clearFocus(force = true)
+            UiAction.OnGoBack -> when {
+                state.showMoreMenu -> viewModel.sendIntent(UiIntent.OnChangeMoreMenuVisibility)
+                isKeyboardOpen -> viewModel.sendIntent(UiIntent.OnClearFocus)
+                state.query.isNotBlank() -> {
+                    viewModel.sendIntent(UiIntent.OnSearchQueryChanged(emptyString()))
+                    viewModel.sendIntent(UiIntent.OnClearFocus)
+                }
+                state.notesCanBeSelected -> viewModel.sendIntent(UiIntent.OnChangeMultipleSelectorUIVisibility)
+                else -> (context as? Activity)?.finish()
+            }
         }
     }
 
     BackHandler {
-        when {
-            state.showMoreMenu -> viewModel.sendIntent(UiIntent.OnChangeMoreMenuVisibility)
-            isKeyboardOpen -> focusManager.clearFocus(force = true)
-            state.query.isNotBlank() -> {
-                viewModel.sendIntent(UiIntent.OnSearchQueryChanged(emptyString()))
-                focusManager.clearFocus(force = true)
-            }
-            state.notesCanBeSelected -> viewModel.sendIntent(UiIntent.OnChangeMultipleSelectorUIVisibility)
-            else -> (context as? Activity)?.finish()
-        }
+        viewModel.sendIntent(UiIntent.OnGoBack)
     }
 
     Content(
@@ -134,6 +139,7 @@ fun SharedTransitionScope.MoodFlowHome(
         isKeyboardOpen = isKeyboardOpen,
         onSearchQueryChanged = { viewModel.sendIntent(UiIntent.OnSearchQueryChanged(it)) },
         onSearchFilterChanged = { viewModel.sendIntent(UiIntent.OnSearchFilterChanged(it)) },
+        onTagFilterSelected = { viewModel.sendIntent(UiIntent.OnTagFilterSelected(it)) },
         onChangeMoreMenuVisibility = { viewModel.sendIntent(UiIntent.OnChangeMoreMenuVisibility) },
         onPinOrUnpinSelectedNotes = { viewModel.sendIntent(UiIntent.OnPinOrUnpinSelectedNotes) },
         onChangeMultipleSelectorUIVisibility = { viewModel.sendIntent(UiIntent.OnChangeMultipleSelectorUIVisibility) },
@@ -142,6 +148,7 @@ fun SharedTransitionScope.MoodFlowHome(
         onGoSettingsScreen = { viewModel.sendIntent(UiIntent.OnGoSettingsScreen) },
         onGoTrashScreen = { viewModel.sendIntent(UiIntent.OnGoTrashScreen) },
         onSelectNote = { noteId, isChecked -> viewModel.sendIntent(UiIntent.OnSelectNote(noteId, isChecked)) },
+        onClearFocus = { viewModel.sendIntent(UiIntent.OnClearFocus) }
     )
 }
 
@@ -152,6 +159,7 @@ private fun SharedTransitionScope.Content(
     isKeyboardOpen: Boolean,
     onSearchQueryChanged: (String) -> Unit,
     onSearchFilterChanged: (SearchFilter) -> Unit,
+    onTagFilterSelected: (String?) -> Unit,
     onChangeMoreMenuVisibility: () -> Unit,
     onPinOrUnpinSelectedNotes: () -> Unit,
     onChangeMultipleSelectorUIVisibility: () -> Unit,
@@ -160,6 +168,7 @@ private fun SharedTransitionScope.Content(
     onGoSettingsScreen: () -> Unit,
     onGoTrashScreen: () -> Unit,
     onSelectNote: (String, Boolean) -> Unit,
+    onClearFocus: () -> Unit,
 ) {
     val localInspectionMode = LocalInspectionMode.current
     val gridState = rememberLazyStaggeredGridState()
@@ -192,9 +201,12 @@ private fun SharedTransitionScope.Content(
                                 isKeyboardOpen = isKeyboardOpen,
                                 query = query,
                                 searchFilter = state.searchFilter,
+                                allTags = state.allTags,
                                 onQueryChanged = onSearchQueryChanged,
                                 onFilterChanged = onSearchFilterChanged,
+                                onTagFilterSelected = onTagFilterSelected,
                                 onChangeMoreMenuVisibility = onChangeMoreMenuVisibility,
+                                onClearFocus = onClearFocus,
                             )
                         } else {
                             MultipleUiSelector(
@@ -222,7 +234,10 @@ private fun SharedTransitionScope.Content(
                     verticalItemSpacing = 8.dp,
                     horizontalArrangement = Arrangement.spacedBy(8.dp),
                 ) {
-                    if (query.isNotBlank()) {
+                    val isFiltered = query.isNotBlank()
+                        || state.searchFilter.selectedTagId != null
+                        || state.searchFilter.onlyPinned
+                    if (isFiltered) {
                         items(items = state.filteredNotes, key = { it.id }) { note ->
                             NoteItem(
                                 modifier = Modifier.animateItem(),
@@ -508,12 +523,13 @@ private fun RowScope.SearchBar(
     isKeyboardOpen: Boolean,
     query: String,
     searchFilter: SearchFilter,
+    allTags: List<Tag>,
     onQueryChanged: (String) -> Unit = {},
     onFilterChanged: (SearchFilter) -> Unit = {},
+    onTagFilterSelected: (String?) -> Unit = {},
     onChangeMoreMenuVisibility: () -> Unit,
+    onClearFocus: () -> Unit,
 ) {
-    val showFilters = isKeyboardOpen || query.isNotBlank()
-
     Column(modifier = Modifier.weight(1f)) {
         Row(verticalAlignment = Alignment.CenterVertically) {
             AnimatedVisibility(visible = !isKeyboardOpen) {
@@ -544,7 +560,10 @@ private fun RowScope.SearchBar(
                         enter = fadeIn(tween(100)) + scaleIn(initialScale = 0.8f, animationSpec = tween(100)),
                         exit = fadeOut(tween(100)) + scaleOut(targetScale = 0.8f, animationSpec = tween(100))
                     ) {
-                        IconButton(onClick = { onQueryChanged(emptyString()) }) {
+                        IconButton(onClick = {
+                            onClearFocus()
+                            onQueryChanged(emptyString())
+                        }) {
                             Icon(imageVector = Icons.Default.Close, contentDescription = null)
                         }
                     }
@@ -552,52 +571,44 @@ private fun RowScope.SearchBar(
             ) { newQuery -> onQueryChanged(newQuery) }
         }
 
-        AnimatedVisibility(
-            visible = showFilters,
-            enter = fadeIn(tween(200)) + slideInVertically(initialOffsetY = { -it / 2 }),
-            exit = fadeOut(tween(150)) + slideOutVertically(targetOffsetY = { -it / 2 }),
-        ) {
-            SearchFilterChips(
-                filter = searchFilter,
-                onFilterChanged = onFilterChanged,
-            )
-        }
+        SearchFilterChips(
+            filter = searchFilter,
+            allTags = allTags,
+            onFilterChanged = onFilterChanged,
+            onTagFilterSelected = onTagFilterSelected,
+        )
     }
 }
 
 @Composable
 private fun SearchFilterChips(
     filter: SearchFilter,
+    allTags: List<Tag>,
     onFilterChanged: (SearchFilter) -> Unit,
+    onTagFilterSelected: (String?) -> Unit,
 ) {
-    Row(
+    LazyRow(
         modifier = Modifier
             .fillMaxWidth()
             .padding(top = 8.dp),
         horizontalArrangement = Arrangement.spacedBy(8.dp),
     ) {
-        FilterChip(
-            selected = filter.onlyPinned,
-            onClick = { onFilterChanged(filter.copy(onlyPinned = !filter.onlyPinned)) },
-            label = { Text(stringResource(R.string.only_pinned)) },
-        )
-        FilterChip(
-            selected = filter.sortOrder == SortOrder.DATE_ASC,
-            onClick = {
-                val newOrder = if (filter.sortOrder == SortOrder.DATE_ASC) SortOrder.DATE_DESC else SortOrder.DATE_ASC
-                onFilterChanged(filter.copy(sortOrder = newOrder))
-            },
-            label = {
-                Text(stringResource(if (filter.sortOrder == SortOrder.DATE_ASC) R.string.sort_oldest else R.string.sort_newest))
-            },
-        )
-        FilterChip(
-            selected = filter.sortOrder == SortOrder.TITLE_ASC,
-            onClick = {
-                val newOrder = if (filter.sortOrder == SortOrder.TITLE_ASC) SortOrder.DATE_DESC else SortOrder.TITLE_ASC
-                onFilterChanged(filter.copy(sortOrder = newOrder))
-            },
-            label = { Text(stringResource(R.string.sort_a_z)) },
-        )
+        item {
+            FilterChip(
+                selected = filter.onlyPinned,
+                onClick = { onFilterChanged(filter.copy(onlyPinned = !filter.onlyPinned)) },
+                label = { Text(stringResource(R.string.only_pinned)) },
+            )
+        }
+        items(allTags) { tag ->
+            FilterChip(
+                selected = filter.selectedTagId == tag.id,
+                onClick = {
+                    val newId = if (filter.selectedTagId == tag.id) null else tag.id
+                    onTagFilterSelected(newId)
+                },
+                label = { Text(tag.name) },
+            )
+        }
     }
 }

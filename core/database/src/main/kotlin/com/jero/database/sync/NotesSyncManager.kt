@@ -13,11 +13,13 @@ import com.jero.database.datasource.NotesDataSource
 import com.jero.database.mapper.toEntity
 import com.jero.database.model.NoteDto
 import com.jero.localdatabase.dao.NoteDao
+import com.jero.localdatabase.dao.TagDao
 import java.util.concurrent.TimeUnit
 
 class NotesSyncManager(
     private val notesDataSource: NotesDataSource,
     private val notesDao: NoteDao,
+    private val tagDao: TagDao,
     private val workManager: WorkManager,
 ) {
     suspend fun syncFromFirebase(userId: String) {
@@ -56,7 +58,18 @@ class NotesSyncManager(
                 dto.toEntity().copy(pendingSync = false, color = localColor)
             }
 
-        if (notesToInsert.isNotEmpty()) notesDao.insertNotes(notesToInsert)
+        if (notesToInsert.isNotEmpty()) {
+            notesDao.insertNotes(notesToInsert)
+            // Sync tag cross-refs for notes received from Firebase
+            notesDto
+                .filter { it.id !in pendingIds && it.id !in pendingDeletionIds }
+                .forEach { dto ->
+                    val tagIds = dto.tagIds.keys.toList()
+                    if (tagIds.isNotEmpty()) {
+                        tagDao.replaceTagsForNote(dto.id, tagIds)
+                    }
+                }
+        }
     }
 
     fun scheduleTrashClean() {

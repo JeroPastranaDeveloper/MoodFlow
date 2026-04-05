@@ -21,8 +21,9 @@ class SettingsViewModel(
     override suspend fun manageIntent(intent: UiIntent) {
         when(intent) {
             UiIntent.OnCloseSession -> closeSession()
-            UiIntent.OnGoBack -> dispatchAction(UiAction.GoBack)
             UiIntent.OnChangeCloseSessionDialogVisibility -> setState { copy(isCloseSessionDialogVisible = !isCloseSessionDialogVisible) }
+            UiIntent.OnGoTagsScreen -> dispatchAction(UiAction.GoTagsScreen)
+            UiIntent.OnGoBack -> dispatchAction(UiAction.GoBack)
         }
     }
 
