@@ -54,8 +54,8 @@ fun MoodFlowTrash(
 
     HandleActions(viewModel.actions) { action ->
         when (action) {
-            UiAction.GoBack -> onGoBack()
             is UiAction.ShowToast -> Toast.makeText(context, action.message, Toast.LENGTH_SHORT).show()
+            UiAction.GoBack -> onGoBack()
         }
     }
 

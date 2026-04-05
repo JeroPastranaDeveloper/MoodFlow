@@ -15,12 +15,12 @@ class TrashViewContract {
         data object OnConfirmDeletePermanently : UiIntent()
         data object OnCancelDeletePermanently : UiIntent()
         data object OnEmptyTrash : UiIntent()
-        data object OnGoBack : UiIntent()
         data object OnChangeEmptyTrashDialogVisibility : UiIntent()
+        data object OnGoBack : UiIntent()
     }
 
     sealed class UiAction {
-        data object GoBack : UiAction()
         data class ShowToast(val message: String) : UiAction()
+        data object GoBack : UiAction()
     }
 }
