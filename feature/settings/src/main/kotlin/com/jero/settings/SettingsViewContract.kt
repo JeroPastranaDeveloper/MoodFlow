@@ -7,14 +7,13 @@ class SettingsViewContract {
 
     sealed class UiIntent {
         data object OnCloseSession : UiIntent()
-        data object OnGoBack : UiIntent()
         data object OnChangeCloseSessionDialogVisibility : UiIntent()
+        data object OnGoBack : UiIntent()
     }
 
     sealed class UiAction {
         data object GoLogin : UiAction()
-        data object GoBack : UiAction()
-
         data class ShowToast(val message: String) : UiAction()
+        data object GoBack : UiAction()
     }
 }
