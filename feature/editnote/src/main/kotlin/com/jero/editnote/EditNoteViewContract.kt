@@ -11,17 +11,15 @@ class EditNoteViewContract {
     sealed class UiIntent {
         data object OnDeleteNote : UiIntent()
         data object OnPinChanged : UiIntent()
-        data object OnGoBack : UiIntent()
-
         data class OnFetchNoteDetails(val noteId: String) : UiIntent()
         data class OnTitleChanged(val title: String) : UiIntent()
         data class OnDescriptionChanged(val description: String) : UiIntent()
         data class OnColorChanged(val color: Long) : UiIntent()
+        data object OnGoBack : UiIntent()
     }
 
     sealed class UiAction {
-        data object GoBack : UiAction()
-
         data class ShowToast(val message: String) : UiAction()
+        data object GoBack : UiAction()
     }
 }
