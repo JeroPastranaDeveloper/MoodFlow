@@ -61,26 +61,26 @@ fun MoodFlowTrash(
 
     Content(
         state = state,
-        onGoBack = { viewModel.sendIntent(UiIntent.OnGoBack) },
         onRestoreNote = { viewModel.sendIntent(UiIntent.OnRestoreNote(it)) },
         onRequestDeletePermanently = { viewModel.sendIntent(UiIntent.OnRequestDeletePermanently(it)) },
         onConfirmDeletePermanently = { viewModel.sendIntent(UiIntent.OnConfirmDeletePermanently) },
         onCancelDeletePermanently = { viewModel.sendIntent(UiIntent.OnCancelDeletePermanently) },
         onChangeEmptyTrashDialogVisibility = { viewModel.sendIntent(UiIntent.OnChangeEmptyTrashDialogVisibility) },
         onEmptyTrash = { viewModel.sendIntent(UiIntent.OnEmptyTrash) },
+        onGoBack = { viewModel.sendIntent(UiIntent.OnGoBack) },
     )
 }
 
 @Composable
 private fun Content(
     state: UiState,
-    onGoBack: () -> Unit,
     onRestoreNote: (String) -> Unit,
     onRequestDeletePermanently: (String) -> Unit,
     onConfirmDeletePermanently: () -> Unit,
     onCancelDeletePermanently: () -> Unit,
     onChangeEmptyTrashDialogVisibility: () -> Unit,
     onEmptyTrash: () -> Unit,
+    onGoBack: () -> Unit,
 ) {
     Scaffold(
         topBar = {
