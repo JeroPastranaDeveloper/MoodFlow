@@ -6,7 +6,6 @@ import com.jero.core.utils.emptyString
 enum class SortOrder { DATE_DESC, DATE_ASC, TITLE_ASC }
 
 data class SearchFilter(
-    val inContent: Boolean = false,
     val onlyPinned: Boolean = false,
     val sortOrder: SortOrder = SortOrder.DATE_DESC,
 )

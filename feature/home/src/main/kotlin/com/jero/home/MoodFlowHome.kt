@@ -577,11 +577,6 @@ private fun SearchFilterChips(
         horizontalArrangement = Arrangement.spacedBy(8.dp),
     ) {
         FilterChip(
-            selected = filter.inContent,
-            onClick = { onFilterChanged(filter.copy(inContent = !filter.inContent)) },
-            label = { Text(stringResource(R.string.search_in_content)) },
-        )
-        FilterChip(
             selected = filter.onlyPinned,
             onClick = { onFilterChanged(filter.copy(onlyPinned = !filter.onlyPinned)) },
             label = { Text(stringResource(R.string.only_pinned)) },

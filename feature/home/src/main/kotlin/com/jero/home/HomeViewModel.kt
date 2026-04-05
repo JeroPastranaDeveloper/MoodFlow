@@ -161,7 +161,7 @@ class HomeViewModel(
             .filter { note ->
                 if (query.isBlank()) return@filter true
                 val matchesTitle = note.title.contains(query, ignoreCase = true)
-                val matchesContent = filter.inContent && note.content.contains(query, ignoreCase = true)
+                val matchesContent = note.content.contains(query, ignoreCase = true)
                 matchesTitle || matchesContent
             }
             .filter { note -> if (filter.onlyPinned) note.pinned else true }
