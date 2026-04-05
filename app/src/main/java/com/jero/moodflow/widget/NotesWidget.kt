@@ -15,7 +15,6 @@ import androidx.glance.action.clickable
 import androidx.glance.appwidget.GlanceAppWidget
 import androidx.glance.appwidget.action.actionStartActivity
 import androidx.glance.appwidget.lazy.LazyColumn
-import androidx.glance.appwidget.lazy.items
 import androidx.glance.appwidget.provideContent
 import androidx.glance.background
 import androidx.glance.currentState
@@ -33,9 +32,9 @@ import androidx.glance.state.PreferencesGlanceStateDefinition
 import androidx.glance.text.FontWeight
 import androidx.glance.text.Text
 import androidx.glance.text.TextStyle
-import com.google.firebase.auth.FirebaseAuth
-import com.jero.localdatabase.dao.NoteDao
-import com.jero.localdatabase.model.NoteEntity
+import com.example.domain.preferences.PreferencesHandler
+import com.example.domain.usecase.notes.interfaces.GetAllNotesUseCase
+import com.jero.core.model.Note
 import com.jero.moodflow.MainActivity
 import com.jero.moodflow.R
 import kotlinx.coroutines.flow.flowOf
@@ -46,12 +45,12 @@ class NotesWidget : GlanceAppWidget(), KoinComponent {
 
     override val stateDefinition: GlanceStateDefinition<*> = PreferencesGlanceStateDefinition
 
-    private val notesDao: NoteDao by inject()
-    private val auth: FirebaseAuth by inject()
+    private val getAllNotes: GetAllNotesUseCase by inject()
+    private val preferencesHandler: PreferencesHandler by inject()
 
     override suspend fun provideGlance(context: Context, id: GlanceId) {
-        val userId = auth.currentUser?.uid
-        val notesFlow = userId?.let { notesDao.getNotesFlow(it) } ?: flowOf(emptyList())
+        val isLoggedIn = preferencesHandler.isLogged
+        val notesFlow = if (isLoggedIn) getAllNotes() else flowOf(emptyList())
 
         provideContent {
             val prefs = currentState<Preferences>()
@@ -70,7 +69,7 @@ class NotesWidget : GlanceAppWidget(), KoinComponent {
                     context = context,
                     notes = notes,
                     filter = filter,
-                    isLoggedIn = userId != null,
+                    isLoggedIn = isLoggedIn,
                 )
             }
         }
@@ -80,7 +79,7 @@ class NotesWidget : GlanceAppWidget(), KoinComponent {
 @Composable
 private fun WidgetContent(
     context: Context,
-    notes: List<NoteEntity>,
+    notes: List<Note>,
     filter: NotesWidgetFilter,
     isLoggedIn: Boolean,
 ) {
@@ -107,8 +106,8 @@ private fun Header(context: Context, filter: NotesWidgetFilter) {
             .background(GlanceTheme.colors.primary)
             .padding(horizontal = 12.dp, vertical = 10.dp)
             .clickable(actionStartActivity(Intent(context, MainActivity::class.java).apply {
-    flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP
-})),
+                flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP
+            })),
         verticalAlignment = Alignment.CenterVertically,
     ) {
         Text(
@@ -131,32 +130,35 @@ private fun Header(context: Context, filter: NotesWidgetFilter) {
 }
 
 @Composable
-private fun NotesList(notes: List<NoteEntity>, context: Context) {
+private fun NotesList(notes: List<Note>, context: Context) {
     LazyColumn(modifier = GlanceModifier.fillMaxSize()) {
-        items(notes) { note ->
-            NoteItem(note = note, context = context)
-            Spacer(
-                modifier = GlanceModifier
-                    .fillMaxWidth()
-                    .height(1.dp)
-                    .background(GlanceTheme.colors.surfaceVariant),
-            )
+        notes.forEachIndexed { index, note ->
+            item { NoteItem(note = note, context = context) }
+            if (index < notes.lastIndex) {
+                item {
+                    Spacer(
+                        modifier = GlanceModifier
+                            .fillMaxWidth()
+                            .height(1.dp)
+                            .background(GlanceTheme.colors.surfaceVariant),
+                    )
+                }
+            }
         }
     }
 }
 
 @Composable
-private fun NoteItem(note: NoteEntity, context: Context) {
+private fun NoteItem(note: Note, context: Context) {
     Column(
         modifier = GlanceModifier
             .fillMaxWidth()
             .padding(horizontal = 12.dp, vertical = 8.dp)
             .clickable(actionStartActivity(Intent(context, MainActivity::class.java).apply {
-    flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP
-})),
+                flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP
+            })),
     ) {
         Text(
-            modifier = GlanceModifier.padding(bottom = 4.dp),
             text = note.title.ifBlank { context.getString(R.string.widget_untitled) },
             style = TextStyle(
                 color = GlanceTheme.colors.onSurface,

@@ -14,6 +14,7 @@ MoodFlow is an Android note-taking app with offline-first support, real-time Fir
 - Multi-select mode: pin or delete multiple notes at once
 - Offline-first: notes are saved locally and synced to Firebase when online
 - Pending deletions are queued and executed on next connection
+- Home screen widget: displays a scrollable list of notes with a configurable filter (all / pinned / normal)
 
 ---
 
@@ -29,6 +30,7 @@ MoodFlow is an Android note-taking app with offline-first support, real-time Fir
 | Remote database | Firebase Realtime Database |
 | Authentication | Firebase Auth |
 | Background sync | WorkManager (`SyncNotesWorker`) |
+| Home screen widget | Jetpack Glance |
 | Async | Kotlin Coroutines + Flow |
 | Build system | Gradle convention plugins (AGP 9.x) |
 
@@ -108,6 +110,19 @@ app
  ├── core:viewmodel
  └── authentication
 ```
+
+---
+
+## Home screen widget
+
+The app provides a Glance-based home screen widget that shows a scrollable list of notes.
+
+- **Filter selection** — shown at widget placement time via `NotesWidgetConfigActivity`; the chosen filter (`ALL`, `PINNED`, or `NORMAL`) is persisted in `GlanceStateDefinition` (DataStore Preferences) and displayed in the widget header
+- **Data** — fetched via `GetAllNotesUseCase`, which returns a `Flow<List<Note>>`; login state is checked via `PreferencesHandler.isLogged`
+- **Unauthenticated state** — shows a dedicated message instead of notes
+- **List layout** — each note and each divider are separate `LazyColumn` items; the divider after the last note is omitted
+- **Tap behaviour** — tapping the header or any note opens `MainActivity`
+- **Updates** — `NotesWidgetReceiver` triggers a re-render whenever the widget state changes; the widget is also updated programmatically after note edits
 
 ---
 
