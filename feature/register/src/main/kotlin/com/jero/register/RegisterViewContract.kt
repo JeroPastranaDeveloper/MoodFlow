@@ -28,8 +28,8 @@ class RegisterViewContract {
     }
 
     sealed class UiAction {
-        data object GoBack : UiAction()
         data object GoHome : UiAction()
         data class ShowToast(val message: String) : UiAction()
+        data object GoBack : UiAction()
     }
 }
