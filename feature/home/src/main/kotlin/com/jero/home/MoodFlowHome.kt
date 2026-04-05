@@ -488,7 +488,7 @@ private fun RowScope.MultipleUiSelector(
                 .size(22.dp)
                 .offset(y = 2.dp)
                 .clickable { onPinOrUnpinSelectedNotes() },
-            painter = painterResource(id = if (!allNotesArePinned) R.drawable.ic_pinned else R.drawable.ic_not_pinned),
+            painter = painterResource(id = if (allNotesArePinned) R.drawable.ic_pinned else R.drawable.ic_not_pinned),
             contentDescription = null
         )
 
