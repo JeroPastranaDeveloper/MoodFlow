@@ -5,6 +5,7 @@ import androidx.work.Configuration
 import com.example.domain.di.authErrorHandlerModule
 import com.example.domain.di.validatorModule
 import com.example.domain.usecase.di.notesUseCaseModule
+import com.example.domain.usecase.di.tagsUseCaseModule
 import com.jero.authentication.data.di.authDatasourceModule
 import com.jero.data.di.authUseCaseModule
 import com.jero.data.di.preferencesModule
@@ -45,6 +46,7 @@ class App : Application(), Configuration.Provider, KoinComponent {
                 networkMonitorModule,
                 localDatabaseModule,
                 notesUseCaseModule,
+                tagsUseCaseModule,
                 authDatasourceModule,
                 authUseCaseModule,
                 notesDatasourceModule,

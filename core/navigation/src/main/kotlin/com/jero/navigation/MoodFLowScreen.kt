@@ -21,4 +21,7 @@ sealed interface MoodFLowScreen : NavKey {
 
     @Serializable
     data object Trash : MoodFLowScreen
+
+    @Serializable
+    data object Tags : MoodFLowScreen
 }

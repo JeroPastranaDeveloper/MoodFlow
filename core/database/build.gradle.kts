@@ -12,6 +12,7 @@ dependencies {
     implementation(projects.core.domain)
     implementation(projects.core.localdatabase)
     implementation(projects.core.network)
+    implementation(projects.core.designsystem)
     implementation(libs.firebase.database)
     implementation(libs.firebase.auth)
     implementation(libs.androidx.work.manager)

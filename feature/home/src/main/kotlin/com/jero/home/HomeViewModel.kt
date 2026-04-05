@@ -5,6 +5,7 @@ import com.example.domain.providers.StringsProvider
 import com.example.domain.usecase.notes.interfaces.DeleteNoteUseCase
 import com.example.domain.usecase.notes.interfaces.GetAllNotesUseCase
 import com.example.domain.usecase.notes.interfaces.UpdateNoteUseCase
+import com.example.domain.usecase.tags.interfaces.GetTagsUseCase
 import com.jero.core.designsystem.R
 import com.jero.core.viewmodel.BaseViewModelWithActions
 import com.jero.home.HomeViewContract.UiAction
@@ -16,6 +17,7 @@ class HomeViewModel(
     private val getAllNotesUseCase: GetAllNotesUseCase,
     private val deleteNoteUseCase: DeleteNoteUseCase,
     private val updateNoteUseCase: UpdateNoteUseCase,
+    private val getTagsUseCase: GetTagsUseCase,
     private val stringsProvider: StringsProvider,
 ) : BaseViewModelWithActions<UiState, UiIntent, UiAction>() {
 
@@ -25,6 +27,10 @@ class HomeViewModel(
             is UiIntent.OnSearchQueryChanged -> searchNotes(intent.query)
             is UiIntent.OnSearchFilterChanged -> {
                 setState { copy(searchFilter = intent.filter) }
+                searchNotes(state.value.query)
+            }
+            is UiIntent.OnTagFilterSelected -> {
+                setState { copy(searchFilter = searchFilter.copy(selectedTagId = intent.tagId)) }
                 searchNotes(state.value.query)
             }
 
@@ -37,11 +43,14 @@ class HomeViewModel(
             UiIntent.OnDeleteMultipleNotes -> deleteMultipleNotes()
             UiIntent.OnPinOrUnpinSelectedNotes -> pinOrUnpinSelectedNotes()
             UiIntent.OnGoTrashScreen -> goTrash()
+            UiIntent.OnClearFocus -> dispatchAction(UiAction.OnClearFocus)
+            UiIntent.OnGoBack -> dispatchAction(UiAction.OnGoBack)
         }
     }
 
     init {
         observeNotes()
+        observeTags()
     }
 
     private fun pinOrUnpinSelectedNotes() {
@@ -136,6 +145,14 @@ class HomeViewModel(
         dispatchAction(UiAction.GoTrashScreen)
     }
 
+    private fun observeTags() {
+        viewModelScope.launch {
+            getTagsUseCase().collect { tags ->
+                setState { copy(allTags = tags) }
+            }
+        }
+    }
+
     private fun observeNotes() {
         viewModelScope.launch {
             getAllNotesUseCase().collect { allNotes ->
@@ -160,17 +177,12 @@ class HomeViewModel(
         val filtered = state.value.allNotes
             .filter { note ->
                 if (query.isBlank()) return@filter true
-                val matchesTitle = note.title.contains(query, ignoreCase = true)
-                val matchesContent = note.content.contains(query, ignoreCase = true)
-                matchesTitle || matchesContent
+                note.title.contains(query, ignoreCase = true) ||
+                        note.content.contains(query, ignoreCase = true)
             }
             .filter { note -> if (filter.onlyPinned) note.pinned else true }
-            .let { notes ->
-                when (filter.sortOrder) {
-                    SortOrder.DATE_DESC -> notes.sortedByDescending { it.date }
-                    SortOrder.DATE_ASC  -> notes.sortedBy { it.date }
-                    SortOrder.TITLE_ASC -> notes.sortedBy { it.title.lowercase() }
-                }
+            .filter { note ->
+                filter.selectedTagId == null || filter.selectedTagId in note.tagIds
             }
 
         setState { copy(query = query, filteredNotes = filtered) }

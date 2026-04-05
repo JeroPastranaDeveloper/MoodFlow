@@ -5,6 +5,7 @@ import com.jero.localdatabase.NoteDatabase
 import com.jero.localdatabase.migrations.MIGRATION_2_3
 import com.jero.localdatabase.migrations.MIGRATION_3_4
 import com.jero.localdatabase.migrations.MIGRATION_4_5
+import com.jero.localdatabase.migrations.MIGRATION_5_6
 import org.koin.android.ext.koin.androidApplication
 import org.koin.dsl.module
 
@@ -19,10 +20,12 @@ val localDatabaseModule = module {
                 MIGRATION_2_3,
                 MIGRATION_3_4,
                 MIGRATION_4_5,
+                MIGRATION_5_6,
             )
             .fallbackToDestructiveMigrationFrom(dropAllTables = true, 1)
             .build()
     }
 
     single { get<NoteDatabase>().noteDao() }
+    single { get<NoteDatabase>().tagDao() }
 }

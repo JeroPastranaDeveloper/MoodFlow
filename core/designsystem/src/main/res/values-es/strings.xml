@@ -46,7 +46,24 @@
 
     <string name="search_in_content">Contenido</string>
     <string name="only_pinned">Fijadas</string>
-    <string name="sort_newest">Más reciente</string>
-    <string name="sort_oldest">Más antiguo</string>
-    <string name="sort_a_z">A-Z</string>
+
+    <string name="tags">Etiquetas</string>
+    <string name="create_tag">Crear etiqueta</string>
+    <string name="edit_tag">Editar etiqueta</string>
+    <string name="delete_tag">Borrar etiqueta</string>
+    <string name="delete_tag_confirmation">¿Borrar la etiqueta \"%s\"? Las notas afectadas mantendrán sus otras etiquetas o pasarán a «Sin etiqueta».</string>
+    <string name="tag_name">Nombre</string>
+    <string name="no_tags_available">Sin etiquetas creadas</string>
+    <string name="error_tag_name_exists">Ya existe una etiqueta con ese nombre</string>
+    <string name="error_tag_not_editable">Esta etiqueta no se puede editar</string>
+    <string name="error_tag_not_deletable">Esta etiqueta no se puede borrar</string>
+
+    <string name="trash">Papelera</string>
+    <string name="trash_empty">Tu papelera está vacía</string>
+    <string name="restore">Restaurar</string>
+    <string name="delete_permanently">Eliminar definitivamente</string>
+    <string name="delete_permanently_question">Esta nota se eliminará definitivamente y no se podrá recuperar.</string>
+    <string name="empty_trash">Vaciar papelera</string>
+    <string name="empty_trash_question">¿Estás seguro de que quieres eliminar definitivamente todas las notas de la papelera?</string>
+    <string name="trash_auto_delete">Las notas se eliminan automáticamente después de 30 días</string>
 </resources>

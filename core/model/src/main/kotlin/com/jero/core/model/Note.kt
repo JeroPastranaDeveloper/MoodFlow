@@ -18,6 +18,7 @@ data class Note(
     val userId: String = "",
     val pendingSync: Boolean = false,
     val deletedAt: Long? = null,
+    val tagIds: List<String> = listOf(UNTAGGED_TAG_ID),
 ) : Parcelable
 
 fun Note.hasContentWithoutId(): Boolean = (title.isNotEmpty() || content.isNotEmpty()) && id.isBlank()

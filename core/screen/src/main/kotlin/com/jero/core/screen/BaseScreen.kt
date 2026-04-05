@@ -62,19 +62,8 @@ fun getTopSystemPadding(addExtraPadding: Boolean = false): Dp = when {
         )
     }
 
-    Build.VERSION.SDK_INT >= Build.VERSION_CODES.R -> {
+    else -> {
         // Android 11–14 - use systemBars
         WindowInsets.systemBars.asPaddingValues().calculateTopPadding()
-    }
-
-    else -> {
-        // Android 10 and below - use systemBars with fallback
-        val systemBarsPadding = WindowInsets.systemBars.asPaddingValues().calculateTopPadding()
-        if (systemBarsPadding > 0.dp) {
-            systemBarsPadding
-        } else {
-            // Conservative fallback for problematic devices
-            24.dp
-        }
     }
 } + if (addExtraPadding) 8.dp else 0.dp

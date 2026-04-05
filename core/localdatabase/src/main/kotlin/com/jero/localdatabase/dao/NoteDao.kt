@@ -4,7 +4,9 @@ import androidx.room.Dao
 import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
+import androidx.room.Transaction
 import com.jero.localdatabase.model.NoteEntity
+import com.jero.localdatabase.model.NoteWithTags
 import com.jero.localdatabase.model.PendingDeletionEntity
 import kotlinx.coroutines.flow.Flow
 
@@ -35,6 +37,18 @@ interface NoteDao {
     @Query("SELECT * FROM NoteEntity WHERE id = :id")
     suspend fun getNoteById(id: String): NoteEntity?
 
+    @Transaction
+    @Query("SELECT * FROM NoteEntity WHERE userId = :userId AND deletedAt IS NULL")
+    fun getNotesWithTagsFlow(userId: String): Flow<List<NoteWithTags>>
+
+    @Transaction
+    @Query("SELECT * FROM NoteEntity WHERE userId = :userId AND deletedAt IS NOT NULL")
+    fun getDeletedNotesWithTagsFlow(userId: String): Flow<List<NoteWithTags>>
+
+    @Transaction
+    @Query("SELECT * FROM NoteEntity WHERE id = :id")
+    suspend fun getNoteWithTagsById(id: String): NoteWithTags?
+
     @Query("DELETE FROM NoteEntity WHERE id = :id")
     suspend fun deleteNote(id: String)
 
@@ -49,6 +63,9 @@ interface NoteDao {
 
     @Query("UPDATE NoteEntity SET pendingSync = 0 WHERE id = :id")
     suspend fun markAsSynced(id: String)
+
+    @Query("UPDATE NoteEntity SET pendingSync = 1 WHERE id = :id")
+    suspend fun markAsPendingSync(id: String)
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertPendingDeletion(deletion: PendingDeletionEntity)

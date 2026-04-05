@@ -25,6 +25,7 @@ import com.jero.navigation.utils.clearAndNavigateTo
 import com.jero.navigation.utils.goBack
 import com.jero.register.MoodFlowRegister
 import com.jero.settings.MoodFlowSettings
+import com.jero.settings.MoodFlowTags
 import com.jero.trash.MoodFlowTrash
 import kotlinx.coroutines.launch
 
@@ -103,12 +104,15 @@ fun MoodFlowNavigation(isLogged: Boolean) {
 
                 entry<MoodFLowScreen.Settings> {
                     MoodFlowSettings(
-                        onGoLogin = {
-                            backStack.clearAndNavigateTo(MoodFLowScreen.Login)
-                        },
-                        onGoBack = {
-                            backStack.goBack()
-                        }
+                        onGoLogin = { backStack.clearAndNavigateTo(MoodFLowScreen.Login) },
+                        onGoBack = { backStack.goBack() },
+                        onGoTags = { backStack.add(MoodFLowScreen.Tags) },
+                    )
+                }
+
+                entry<MoodFLowScreen.Tags> {
+                    MoodFlowTags(
+                        onGoBack = { backStack.goBack() },
                     )
                 }
 
