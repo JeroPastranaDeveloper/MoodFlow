@@ -430,20 +430,31 @@ private fun applyListContinuation(newValue: TextFieldValue, oldValue: TextFieldV
 
     val insertPos = newText.indices.firstOrNull { i -> i >= oldText.length || newText[i] != oldText[i] }
         ?: return newValue
-    if (newText[insertPos] != '\n') return newValue
 
     val lineStart = newText.lastIndexOf('\n', insertPos - 1) + 1
+
+    if (newText[insertPos] == ' ' && newText.substring(lineStart, insertPos + 1) == "- ") {
+        val result = newText.substring(0, lineStart) + "• " + newText.substring(insertPos + 1)
+        return TextFieldValue(text = result, selection = TextRange(lineStart + 2))
+    }
+
+    if (newText[insertPos] != '\n') return newValue
+
     val currentLine = newText.substring(lineStart, insertPos)
+    val prefix = when {
+        currentLine.startsWith("• ") -> "• "
+        currentLine.startsWith("- ") -> "- "
+        else -> return newValue
+    }
 
     return when {
-        currentLine == "- " -> {
+        currentLine == prefix -> {
             val result = newText.substring(0, lineStart) + newText.substring(insertPos + 1)
             TextFieldValue(text = result, selection = TextRange(lineStart))
         }
-        currentLine.startsWith("- ") -> {
-            val result = newText.substring(0, insertPos + 1) + "- " + newText.substring(insertPos + 1)
-            TextFieldValue(text = result, selection = TextRange(insertPos + 3))
+        else -> {
+            val result = newText.substring(0, insertPos + 1) + prefix + newText.substring(insertPos + 1)
+            TextFieldValue(text = result, selection = TextRange(insertPos + 1 + prefix.length))
         }
-        else -> newValue
     }
 }
