@@ -15,9 +15,12 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.ime
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
@@ -28,40 +31,45 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Close
+import androidx.compose.material.icons.filled.FormatBold
+import androidx.compose.material.icons.filled.FormatItalic
+import androidx.compose.material.icons.filled.FormatStrikethrough
+import androidx.compose.material.icons.filled.FormatUnderlined
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.graphics.vector.rememberVectorPainter
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.platform.LocalInspectionMode
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.TextRange
+import androidx.compose.ui.text.SpanStyle
+import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
-import androidx.compose.ui.text.input.TextFieldValue
+import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -77,6 +85,10 @@ import com.jero.editnote.EditNoteViewContract.UiAction
 import com.jero.editnote.EditNoteViewContract.UiIntent
 import com.jero.editnote.EditNoteViewContract.UiState
 import com.jero.navigation.utils.boundsTransform
+import com.mohamedrejeb.richeditor.model.RichTextState
+import com.mohamedrejeb.richeditor.model.rememberRichTextState
+import com.mohamedrejeb.richeditor.ui.material3.RichTextEditor
+import com.mohamedrejeb.richeditor.ui.material3.RichTextEditorDefaults
 import org.koin.androidx.compose.koinViewModel
 
 @Composable
@@ -137,15 +149,14 @@ private fun SharedTransitionScope.Content(
 ) {
     val focusManager = LocalFocusManager.current
     val titleFocusRequester = remember { FocusRequester() }
-    val contentFocusRequester = remember { FocusRequester() }
-    var contentFieldValue by remember { mutableStateOf(TextFieldValue(state.editedNote.content)) }
+    val richTextState = rememberRichTextState()
 
-    // Sincronizar cuando se carga una nota distinta (nuevo id)
     LaunchedEffect(state.editedNote.id) {
-        contentFieldValue = TextFieldValue(
-            text = state.editedNote.content,
-            selection = TextRange(state.editedNote.content.length),
-        )
+        richTextState.setHtml(state.editedNote.content)
+    }
+
+    LaunchedEffect(richTextState.annotatedString) {
+        onDescriptionChanged(richTextState.toHtml())
     }
 
     val backgroundColor by animateColorAsState(
@@ -155,6 +166,7 @@ private fun SharedTransitionScope.Content(
     )
 
     Scaffold(
+        contentWindowInsets = WindowInsets(),
         topBar = {
             Row(
                 modifier = Modifier
@@ -212,56 +224,131 @@ private fun SharedTransitionScope.Content(
             }
         },
     ) { paddingValues ->
+        val imeBottomPadding = WindowInsets.ime.asPaddingValues().calculateBottomPadding()
         Column(
             modifier = Modifier
-                .padding(paddingValues)
+                .padding(
+                    top = paddingValues.calculateTopPadding(),
+                    bottom = maxOf(paddingValues.calculateBottomPadding(), imeBottomPadding),
+                )
                 .fillMaxSize()
                 .background(backgroundColor)
         ) {
-            Spacer(modifier = Modifier.height(16.dp))
-            MoodFlowTransparentTextField(
-                modifier = Modifier.moodFlowSharedElement(
-                    isLocalInspectionMode = LocalInspectionMode.current,
-                    state = rememberSharedContentState(key = "title-${state.originalNote.id}"),
-                    animatedVisibilityScope = animatedVisibilityScope,
-                    boundsTransform = boundsTransform,
-                ),
-                text = state.editedNote.title,
-                textFontSize = 22.sp,
-                textFontWeight = FontWeight.Bold,
-                placeholder = stringResource(R.string.title),
-                placeholderFontSize = 20.sp,
-                focusRequester = titleFocusRequester,
-                keyboardOptions = KeyboardOptions(
-                    keyboardType = KeyboardType.Unspecified,
-                    imeAction = ImeAction.Next
-                ),
-                keyboardActions = KeyboardActions(
-                    onNext = { contentFocusRequester.requestFocus() }
-                ),
-            ) { onTitleChanged(it) }
-
-            Spacer(modifier = Modifier.height(4.dp))
-
-            MoodFlowTransparentTextField(
+            Column(
                 modifier = Modifier
-                    .fillMaxSize()
-                    .moodFlowSharedElement(
+                    .weight(1f)
+                    .fillMaxWidth()
+            ) {
+                Spacer(modifier = Modifier.height(16.dp))
+                MoodFlowTransparentTextField(
+                    modifier = Modifier.moodFlowSharedElement(
                         isLocalInspectionMode = LocalInspectionMode.current,
-                        state = rememberSharedContentState(key = "content-${state.originalNote.id}"),
+                        state = rememberSharedContentState(key = "title-${state.originalNote.id}"),
                         animatedVisibilityScope = animatedVisibilityScope,
                         boundsTransform = boundsTransform,
                     ),
-                value = contentFieldValue,
-                textFontSize = 16.sp,
-                placeholder = stringResource(R.string.note),
-                placeholderFontSize = 16.sp,
-                focusRequester = contentFocusRequester,
-            ) { newValue ->
-                val result = applyListContinuation(newValue, contentFieldValue)
-                contentFieldValue = result
-                onDescriptionChanged(result.text)
+                    text = state.editedNote.title,
+                    textFontSize = 22.sp,
+                    textFontWeight = FontWeight.Bold,
+                    placeholder = stringResource(R.string.title),
+                    placeholderFontSize = 20.sp,
+                    focusRequester = titleFocusRequester,
+                    keyboardOptions = KeyboardOptions(
+                        keyboardType = KeyboardType.Unspecified,
+                        imeAction = ImeAction.Next
+                    ),
+                ) { onTitleChanged(it) }
+
+                Spacer(modifier = Modifier.height(4.dp))
+
+                RichTextEditor(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .moodFlowSharedElement(
+                            isLocalInspectionMode = LocalInspectionMode.current,
+                            state = rememberSharedContentState(key = "content-${state.originalNote.id}"),
+                            animatedVisibilityScope = animatedVisibilityScope,
+                            boundsTransform = boundsTransform,
+                        ),
+                    state = richTextState,
+                    textStyle = MaterialTheme.typography.bodyLarge.copy(fontSize = 16.sp),
+                    placeholder = {
+                        Text(
+                            text = stringResource(R.string.note),
+                            color = Color.Gray,
+                            fontSize = 16.sp,
+                        )
+                    },
+                    colors = RichTextEditorDefaults.richTextEditorColors(
+                        containerColor = Color.Transparent,
+                        focusedIndicatorColor = Color.Transparent,
+                        unfocusedIndicatorColor = Color.Transparent,
+                        cursorColor = Color.Gray,
+                    ),
+                )
             }
+            FormattingToolbar(
+                richTextState = richTextState,
+                backgroundColor = backgroundColor,
+            )
+        }
+    }
+}
+
+@Composable
+private fun FormattingToolbar(
+    richTextState: RichTextState,
+    backgroundColor: Color,
+) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .background(backgroundColor)
+            .padding(horizontal = 8.dp, vertical = 2.dp),
+        horizontalArrangement = Arrangement.spacedBy(0.dp),
+    ) {
+        FormatButton(
+            icon = Icons.Default.FormatBold,
+            active = richTextState.currentSpanStyle.fontWeight == FontWeight.Bold,
+            onClick = { richTextState.toggleSpanStyle(SpanStyle(fontWeight = FontWeight.Bold)) },
+        )
+        FormatButton(
+            icon = Icons.Default.FormatItalic,
+            active = richTextState.currentSpanStyle.fontStyle == FontStyle.Italic,
+            onClick = { richTextState.toggleSpanStyle(SpanStyle(fontStyle = FontStyle.Italic)) },
+        )
+        FormatButton(
+            icon = Icons.Default.FormatUnderlined,
+            active = richTextState.currentSpanStyle.textDecoration?.contains(TextDecoration.Underline) == true,
+            onClick = { richTextState.toggleSpanStyle(SpanStyle(textDecoration = TextDecoration.Underline)) },
+        )
+        FormatButton(
+            icon = Icons.Default.FormatStrikethrough,
+            active = richTextState.currentSpanStyle.textDecoration?.contains(TextDecoration.LineThrough) == true,
+            onClick = { richTextState.toggleSpanStyle(SpanStyle(textDecoration = TextDecoration.LineThrough)) },
+        )
+    }
+}
+
+@Composable
+private fun FormatButton(
+    icon: ImageVector,
+    active: Boolean,
+    onClick: () -> Unit,
+) {
+    IconButton(onClick = onClick) {
+        Box(
+            modifier = Modifier
+                .size(38.dp)
+                .clip(CircleShape)
+                .background(if (active) Color.Black.copy(alpha = 0.08f) else Color.Transparent),
+            contentAlignment = Alignment.Center,
+        ) {
+            Icon(
+                imageVector = icon,
+                contentDescription = null,
+                tint = if (active) Color.Black else Color.Gray,
+            )
         }
     }
 }
@@ -423,38 +510,3 @@ private fun NoteColorPicker(
     }
 }
 
-private fun applyListContinuation(newValue: TextFieldValue, oldValue: TextFieldValue): TextFieldValue {
-    val newText = newValue.text
-    val oldText = oldValue.text
-    if (newText.length != oldText.length + 1) return newValue
-
-    val insertPos = newText.indices.firstOrNull { i -> i >= oldText.length || newText[i] != oldText[i] }
-        ?: return newValue
-
-    val lineStart = newText.lastIndexOf('\n', insertPos - 1) + 1
-
-    if (newText[insertPos] == ' ' && newText.substring(lineStart, insertPos + 1) == "- ") {
-        val result = newText.substring(0, lineStart) + "• " + newText.substring(insertPos + 1)
-        return TextFieldValue(text = result, selection = TextRange(lineStart + 2))
-    }
-
-    if (newText[insertPos] != '\n') return newValue
-
-    val currentLine = newText.substring(lineStart, insertPos)
-    val prefix = when {
-        currentLine.startsWith("• ") -> "• "
-        currentLine.startsWith("- ") -> "- "
-        else -> return newValue
-    }
-
-    return when {
-        currentLine == prefix -> {
-            val result = newText.substring(0, lineStart) + newText.substring(insertPos + 1)
-            TextFieldValue(text = result, selection = TextRange(lineStart))
-        }
-        else -> {
-            val result = newText.substring(0, insertPos + 1) + prefix + newText.substring(insertPos + 1)
-            TextFieldValue(text = result, selection = TextRange(insertPos + 1 + prefix.length))
-        }
-    }
-}

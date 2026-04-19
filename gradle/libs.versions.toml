@@ -34,6 +34,7 @@ firebaseAuthKtx = "24.0.1"
 androidxRoom = "2.8.4"
 workManager = "2.11.2"
 glance = "1.1.1"
+composeRichEditor = "1.0.0-rc12"
 nav3Core = "1.0.1"
 material3AdaptiveNav3 = "1.3.0-alpha09"
 
@@ -95,6 +96,7 @@ androidx-room-compiler = { module = "androidx.room:room-compiler", version.ref =
 androidx-work-manager = { module = "androidx.work:work-runtime-ktx", version.ref = "workManager" }
 
 androidx-glance-appwidget = { group = "androidx.glance", name = "glance-appwidget", version.ref = "glance" }
+compose-rich-editor = { group = "com.mohamedrejeb.richeditor", name = "richeditor-compose", version.ref = "composeRichEditor" }
 androidx-glance-material3 = { group = "androidx.glance", name = "glance-material3", version.ref = "glance" }
 
 # Navigation 3

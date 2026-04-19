@@ -17,5 +17,6 @@ dependencies {
     api(libs.androidx.compose.foundation)
     api(libs.androidx.compose.foundation.layout)
     implementation(projects.core.model)
+    implementation(projects.core.utils)
     implementation(libs.androidx.material.icons.extended)
 }
