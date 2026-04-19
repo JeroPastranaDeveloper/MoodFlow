@@ -44,7 +44,9 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
@@ -55,9 +57,11 @@ import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.platform.LocalInspectionMode
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.TextRange
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -134,6 +138,15 @@ private fun SharedTransitionScope.Content(
     val focusManager = LocalFocusManager.current
     val titleFocusRequester = remember { FocusRequester() }
     val contentFocusRequester = remember { FocusRequester() }
+    var contentFieldValue by remember { mutableStateOf(TextFieldValue(state.editedNote.content)) }
+
+    // Sincronizar cuando se carga una nota distinta (nuevo id)
+    LaunchedEffect(state.editedNote.id) {
+        contentFieldValue = TextFieldValue(
+            text = state.editedNote.content,
+            selection = TextRange(state.editedNote.content.length),
+        )
+    }
 
     val backgroundColor by animateColorAsState(
         targetValue = NoteColors.toComposeColor(state.editedNote.color),
@@ -239,19 +252,16 @@ private fun SharedTransitionScope.Content(
                         animatedVisibilityScope = animatedVisibilityScope,
                         boundsTransform = boundsTransform,
                     ),
-                text = state.editedNote.content,
+                value = contentFieldValue,
                 textFontSize = 16.sp,
                 placeholder = stringResource(R.string.note),
                 placeholderFontSize = 16.sp,
                 focusRequester = contentFocusRequester,
-                keyboardOptions = KeyboardOptions(
-                    keyboardType = KeyboardType.Unspecified,
-                    imeAction = ImeAction.Done
-                ),
-                keyboardActions = KeyboardActions(
-                    onDone = { focusManager.clearFocus(force = true) }
-                ),
-            ) { onDescriptionChanged(it) }
+            ) { newValue ->
+                val result = applyListContinuation(newValue, contentFieldValue)
+                contentFieldValue = result
+                onDescriptionChanged(result.text)
+            }
         }
     }
 }
@@ -410,5 +420,30 @@ private fun NoteColorPicker(
                 }
             }
         }
+    }
+}
+
+private fun applyListContinuation(newValue: TextFieldValue, oldValue: TextFieldValue): TextFieldValue {
+    val newText = newValue.text
+    val oldText = oldValue.text
+    if (newText.length != oldText.length + 1) return newValue
+
+    val insertPos = newText.indices.firstOrNull { i -> i >= oldText.length || newText[i] != oldText[i] }
+        ?: return newValue
+    if (newText[insertPos] != '\n') return newValue
+
+    val lineStart = newText.lastIndexOf('\n', insertPos - 1) + 1
+    val currentLine = newText.substring(lineStart, insertPos)
+
+    return when {
+        currentLine == "- " -> {
+            val result = newText.substring(0, lineStart) + newText.substring(insertPos + 1)
+            TextFieldValue(text = result, selection = TextRange(lineStart))
+        }
+        currentLine.startsWith("- ") -> {
+            val result = newText.substring(0, insertPos + 1) + "- " + newText.substring(insertPos + 1)
+            TextFieldValue(text = result, selection = TextRange(insertPos + 3))
+        }
+        else -> newValue
     }
 }
