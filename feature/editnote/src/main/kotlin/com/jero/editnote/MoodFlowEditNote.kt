@@ -15,9 +15,12 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.ime
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
@@ -28,16 +31,20 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Close
+import androidx.compose.material.icons.filled.FormatBold
+import androidx.compose.material.icons.filled.FormatItalic
+import androidx.compose.material.icons.filled.FormatStrikethrough
+import androidx.compose.material.icons.filled.FormatUnderlined
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
@@ -47,17 +54,22 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.graphics.vector.rememberVectorPainter
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.platform.LocalInspectionMode
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.SpanStyle
+import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -73,6 +85,10 @@ import com.jero.editnote.EditNoteViewContract.UiAction
 import com.jero.editnote.EditNoteViewContract.UiIntent
 import com.jero.editnote.EditNoteViewContract.UiState
 import com.jero.navigation.utils.boundsTransform
+import com.mohamedrejeb.richeditor.model.RichTextState
+import com.mohamedrejeb.richeditor.model.rememberRichTextState
+import com.mohamedrejeb.richeditor.ui.material3.RichTextEditor
+import com.mohamedrejeb.richeditor.ui.material3.RichTextEditorDefaults
 import org.koin.androidx.compose.koinViewModel
 
 @Composable
@@ -133,7 +149,16 @@ private fun SharedTransitionScope.Content(
 ) {
     val focusManager = LocalFocusManager.current
     val titleFocusRequester = remember { FocusRequester() }
-    val contentFocusRequester = remember { FocusRequester() }
+    val richTextState = rememberRichTextState()
+    richTextState.config.listIndent = 20
+
+    LaunchedEffect(state.editedNote.id) {
+        richTextState.setHtml(state.editedNote.content)
+    }
+
+    LaunchedEffect(richTextState.annotatedString) {
+        onDescriptionChanged(richTextState.toHtml())
+    }
 
     val backgroundColor by animateColorAsState(
         targetValue = NoteColors.toComposeColor(state.editedNote.color),
@@ -142,6 +167,7 @@ private fun SharedTransitionScope.Content(
     )
 
     Scaffold(
+        contentWindowInsets = WindowInsets(),
         topBar = {
             Row(
                 modifier = Modifier
@@ -199,59 +225,131 @@ private fun SharedTransitionScope.Content(
             }
         },
     ) { paddingValues ->
+        val imeBottomPadding = WindowInsets.ime.asPaddingValues().calculateBottomPadding()
         Column(
             modifier = Modifier
-                .padding(paddingValues)
+                .padding(
+                    top = paddingValues.calculateTopPadding(),
+                    bottom = maxOf(paddingValues.calculateBottomPadding(), imeBottomPadding),
+                )
                 .fillMaxSize()
                 .background(backgroundColor)
         ) {
-            Spacer(modifier = Modifier.height(16.dp))
-            MoodFlowTransparentTextField(
-                modifier = Modifier.moodFlowSharedElement(
-                    isLocalInspectionMode = LocalInspectionMode.current,
-                    state = rememberSharedContentState(key = "title-${state.originalNote.id}"),
-                    animatedVisibilityScope = animatedVisibilityScope,
-                    boundsTransform = boundsTransform,
-                ),
-                text = state.editedNote.title,
-                textFontSize = 22.sp,
-                textFontWeight = FontWeight.Bold,
-                placeholder = stringResource(R.string.title),
-                placeholderFontSize = 20.sp,
-                focusRequester = titleFocusRequester,
-                keyboardOptions = KeyboardOptions(
-                    keyboardType = KeyboardType.Unspecified,
-                    imeAction = ImeAction.Next
-                ),
-                keyboardActions = KeyboardActions(
-                    onNext = { contentFocusRequester.requestFocus() }
-                ),
-            ) { onTitleChanged(it) }
-
-            Spacer(modifier = Modifier.height(4.dp))
-
-            MoodFlowTransparentTextField(
+            Column(
                 modifier = Modifier
-                    .fillMaxSize()
-                    .moodFlowSharedElement(
+                    .weight(1f)
+                    .fillMaxWidth()
+            ) {
+                Spacer(modifier = Modifier.height(16.dp))
+                MoodFlowTransparentTextField(
+                    modifier = Modifier.moodFlowSharedElement(
                         isLocalInspectionMode = LocalInspectionMode.current,
-                        state = rememberSharedContentState(key = "content-${state.originalNote.id}"),
+                        state = rememberSharedContentState(key = "title-${state.originalNote.id}"),
                         animatedVisibilityScope = animatedVisibilityScope,
                         boundsTransform = boundsTransform,
                     ),
-                text = state.editedNote.content,
-                textFontSize = 16.sp,
-                placeholder = stringResource(R.string.note),
-                placeholderFontSize = 16.sp,
-                focusRequester = contentFocusRequester,
-                keyboardOptions = KeyboardOptions(
-                    keyboardType = KeyboardType.Unspecified,
-                    imeAction = ImeAction.Done
-                ),
-                keyboardActions = KeyboardActions(
-                    onDone = { focusManager.clearFocus(force = true) }
-                ),
-            ) { onDescriptionChanged(it) }
+                    text = state.editedNote.title,
+                    textFontSize = 22.sp,
+                    textFontWeight = FontWeight.Bold,
+                    placeholder = stringResource(R.string.title),
+                    placeholderFontSize = 20.sp,
+                    focusRequester = titleFocusRequester,
+                    keyboardOptions = KeyboardOptions(
+                        keyboardType = KeyboardType.Unspecified,
+                        imeAction = ImeAction.Next
+                    ),
+                ) { onTitleChanged(it) }
+
+                Spacer(modifier = Modifier.height(4.dp))
+
+                RichTextEditor(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .moodFlowSharedElement(
+                            isLocalInspectionMode = LocalInspectionMode.current,
+                            state = rememberSharedContentState(key = "content-${state.originalNote.id}"),
+                            animatedVisibilityScope = animatedVisibilityScope,
+                            boundsTransform = boundsTransform,
+                        ),
+                    state = richTextState,
+                    textStyle = MaterialTheme.typography.bodyLarge.copy(fontSize = 16.sp),
+                    placeholder = {
+                        Text(
+                            text = stringResource(R.string.note),
+                            color = Color.Gray,
+                            fontSize = 16.sp,
+                        )
+                    },
+                    colors = RichTextEditorDefaults.richTextEditorColors(
+                        containerColor = Color.Transparent,
+                        focusedIndicatorColor = Color.Transparent,
+                        unfocusedIndicatorColor = Color.Transparent,
+                        cursorColor = Color.Gray,
+                    ),
+                )
+            }
+            FormattingToolbar(
+                richTextState = richTextState,
+                backgroundColor = backgroundColor,
+            )
+        }
+    }
+}
+
+@Composable
+private fun FormattingToolbar(
+    richTextState: RichTextState,
+    backgroundColor: Color,
+) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .background(backgroundColor)
+            .padding(horizontal = 8.dp, vertical = 2.dp),
+        horizontalArrangement = Arrangement.spacedBy(0.dp),
+    ) {
+        FormatButton(
+            icon = Icons.Default.FormatBold,
+            active = richTextState.currentSpanStyle.fontWeight == FontWeight.Bold,
+            onClick = { richTextState.toggleSpanStyle(SpanStyle(fontWeight = FontWeight.Bold)) },
+        )
+        FormatButton(
+            icon = Icons.Default.FormatItalic,
+            active = richTextState.currentSpanStyle.fontStyle == FontStyle.Italic,
+            onClick = { richTextState.toggleSpanStyle(SpanStyle(fontStyle = FontStyle.Italic)) },
+        )
+        FormatButton(
+            icon = Icons.Default.FormatUnderlined,
+            active = richTextState.currentSpanStyle.textDecoration?.contains(TextDecoration.Underline) == true,
+            onClick = { richTextState.toggleSpanStyle(SpanStyle(textDecoration = TextDecoration.Underline)) },
+        )
+        FormatButton(
+            icon = Icons.Default.FormatStrikethrough,
+            active = richTextState.currentSpanStyle.textDecoration?.contains(TextDecoration.LineThrough) == true,
+            onClick = { richTextState.toggleSpanStyle(SpanStyle(textDecoration = TextDecoration.LineThrough)) },
+        )
+    }
+}
+
+@Composable
+private fun FormatButton(
+    icon: ImageVector,
+    active: Boolean,
+    onClick: () -> Unit,
+) {
+    IconButton(onClick = onClick) {
+        Box(
+            modifier = Modifier
+                .size(38.dp)
+                .clip(CircleShape)
+                .background(if (active) Color.Black.copy(alpha = 0.08f) else Color.Transparent),
+            contentAlignment = Alignment.Center,
+        ) {
+            Icon(
+                imageVector = icon,
+                contentDescription = null,
+                tint = if (active) Color.Black else Color.Gray,
+            )
         }
     }
 }

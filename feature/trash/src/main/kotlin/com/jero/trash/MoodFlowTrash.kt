@@ -37,6 +37,7 @@ import com.jero.core.model.Note
 import com.jero.core.screen.HandleActions
 import com.jero.core.screen.SetStatusBarIconsColor
 import com.jero.core.screen.getTopSystemPadding
+import com.jero.core.utils.htmlToPlainText
 import com.jero.designsystem.components.MoodFlowTwoOptionsDialog
 import com.jero.trash.TrashViewContract.UiAction
 import com.jero.trash.TrashViewContract.UiIntent
@@ -194,7 +195,7 @@ private fun TrashNoteItem(
             )
             if (note.content.isNotBlank()) {
                 Text(
-                    text = note.content,
+                    text = note.content.htmlToPlainText(),
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                     maxLines = 2,

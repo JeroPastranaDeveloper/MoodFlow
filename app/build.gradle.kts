@@ -11,7 +11,7 @@ configurations.all {
 
 android {
     namespace = "com.jero.moodflow"
-    compileSdk = 36
+    compileSdk = 37
 
     defaultConfig {
         applicationId = "com.jero.moodflow"
@@ -66,6 +66,7 @@ dependencies {
     // Core
     implementation(projects.core.navigation)
     implementation(projects.core.designsystem)
+    implementation(projects.core.utils)
     implementation(projects.core.data)
     implementation(projects.core.localdatabase)
     implementation(projects.core.viewmodel)

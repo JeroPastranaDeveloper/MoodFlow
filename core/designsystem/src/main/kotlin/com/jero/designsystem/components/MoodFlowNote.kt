@@ -27,6 +27,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.jero.core.model.Note
+import com.jero.core.utils.htmlToPlainText
 import com.jero.designsystem.theme.MoodFlowColors
 import com.jero.designsystem.theme.NoteColors
 
@@ -47,7 +48,7 @@ fun MoodFlowNote(
     onCheck: (String, Boolean) -> Unit,
 ) {
     val noteTitle = remember(note.id) { note.title }
-    val noteContent = remember(note.id) { note.content }
+    val noteContent = remember(note.content) { note.content.htmlToPlainText() }
 
     val borderWidth by animateDpAsState(
         targetValue = if (isSelected) 3.dp else 1.dp,
@@ -97,7 +98,7 @@ fun MoodFlowNote(
                     ),
                     text = noteContent,
                     color = Color.Gray,
-                    maxLines = 10,
+                    maxLines = 6,
                     overflow = TextOverflow.Ellipsis
                 )
             }
