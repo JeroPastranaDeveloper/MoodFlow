@@ -41,7 +41,7 @@ fun MoodFlowNavigation(isLogged: Boolean) {
     SharedTransitionLayout {
         NavDisplay(
             backStack = backStack,
-            sceneStrategy = listDetailStrategy,
+            sceneStrategies = listOf(listDetailStrategy),
             entryProvider = entryProvider {
                 entry<MoodFLowScreen.Login> {
                     MoodFlowLogin(

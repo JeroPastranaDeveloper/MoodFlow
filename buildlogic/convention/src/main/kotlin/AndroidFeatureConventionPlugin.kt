@@ -24,7 +24,7 @@ class AndroidFeatureConventionPlugin : Plugin<Project> {
             }
 
             extensions.configure<LibraryExtension> {
-                compileSdk = 35
+                compileSdk = 37
                 defaultConfig {
                     minSdk = 30
                 }

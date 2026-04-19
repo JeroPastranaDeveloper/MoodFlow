@@ -11,7 +11,7 @@ configurations.all {
 
 android {
     namespace = "com.jero.moodflow"
-    compileSdk = 36
+    compileSdk = 37
 
     defaultConfig {
         applicationId = "com.jero.moodflow"
