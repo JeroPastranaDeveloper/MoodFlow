@@ -98,7 +98,7 @@ fun MoodFlowNote(
                     ),
                     text = noteContent,
                     color = Color.Gray,
-                    maxLines = 10,
+                    maxLines = 6,
                     overflow = TextOverflow.Ellipsis
                 )
             }

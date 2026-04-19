@@ -150,6 +150,7 @@ private fun SharedTransitionScope.Content(
     val focusManager = LocalFocusManager.current
     val titleFocusRequester = remember { FocusRequester() }
     val richTextState = rememberRichTextState()
+    richTextState.config.listIndent = 20
 
     LaunchedEffect(state.editedNote.id) {
         richTextState.setHtml(state.editedNote.content)
@@ -509,4 +510,3 @@ private fun NoteColorPicker(
         }
     }
 }
-
