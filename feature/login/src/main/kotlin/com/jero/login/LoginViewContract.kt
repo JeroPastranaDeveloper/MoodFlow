@@ -19,14 +19,12 @@ class LoginViewContract {
         data class OnChangePasswordVisibility(val visible: Boolean) : UiIntent()
         data object OnEmailLoginClicked : UiIntent()
         data object OnLoginWithGoogleClicked : UiIntent()
-        data class OnGoogleIdTokenReceived(val idToken: String) : UiIntent()
         data object OnSignUpClicked : UiIntent()
     }
 
     sealed class UiAction {
         data object GoHome : UiAction()
         data object GoRegister : UiAction()
-        data object LaunchGoogleSignIn : UiAction()
         data class ShowToast(val message: String) : UiAction()
     }
 }

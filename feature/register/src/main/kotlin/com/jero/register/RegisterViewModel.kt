@@ -6,11 +6,13 @@ import com.example.domain.preferences.PreferencesHandler
 import com.example.domain.providers.StringsProvider
 import com.example.domain.usecase.tags.interfaces.SeedDefaultTagsUseCase
 import com.example.domain.usecase.user.GetCurrentUserUseCase
+import com.example.domain.usecase.user.GetGoogleIdTokenUseCase
 import com.example.domain.usecase.user.SignInWithGoogleUseCase
 import com.example.domain.usecase.user.SignUpWithEmailUseCase
 import com.example.domain.validator.EmailValidator
 import com.example.domain.validator.PasswordValidator
 import com.jero.core.designsystem.R
+import com.jero.core.model.AuthError
 import com.jero.core.viewmodel.BaseViewModelWithActions
 import com.jero.register.RegisterViewContract.UiAction
 import com.jero.register.RegisterViewContract.UiIntent
@@ -25,6 +27,7 @@ class RegisterViewModel(
     private val authErrorHandler: AuthErrorHandler,
     private val stringsProvider: StringsProvider,
     private val signInWithGoogleUseCase: SignInWithGoogleUseCase,
+    private val getGoogleIdTokenUseCase: GetGoogleIdTokenUseCase,
     private val seedDefaultTagsUseCase: SeedDefaultTagsUseCase,
     private val getCurrentUserUseCase: GetCurrentUserUseCase,
 ) : BaseViewModelWithActions<UiState, UiIntent, UiAction>() {
@@ -36,8 +39,7 @@ class RegisterViewModel(
             is UiIntent.OnRepeatPasswordChanged -> setRepeatPassword(intent.repeatPassword)
             is UiIntent.OnChangePasswordVisibility -> changePasswordVisibility(intent.visible)
             is UiIntent.OnChangeRepeatPasswordVisibility -> changeRepeatPasswordVisibility(intent.visible)
-            UiIntent.OnLoginWithGoogleClicked -> dispatchAction(UiAction.LaunchGoogleSignIn)
-            is UiIntent.OnGoogleIdTokenReceived -> signInWithGoogle(intent.idToken)
+            UiIntent.OnLoginWithGoogleClicked -> signInWithGoogle()
             UiIntent.OnSignUpClicked -> validateParams()
             UiIntent.OnGoBack -> goBack()
         }
@@ -77,12 +79,17 @@ class RegisterViewModel(
         }
     }
 
-    private fun signInWithGoogle(idToken: String) {
+    private fun signInWithGoogle() {
         viewModelScope.launch {
-            signInWithGoogleUseCase(idToken).fold(
-                onSuccess = { onAuthSuccess() },
-                onFailure = { dispatchAction(UiAction.ShowToast(authErrorHandler(it))) }
-            )
+            try {
+                val idToken = getGoogleIdTokenUseCase() ?: return@launch
+                signInWithGoogleUseCase(idToken).fold(
+                    onSuccess = { onAuthSuccess() },
+                    onFailure = { dispatchAction(UiAction.ShowToast(authErrorHandler(it))) }
+                )
+            } catch (e: Exception) {
+                dispatchAction(UiAction.ShowToast(authErrorHandler(AuthError.Unknown(e.message.orEmpty()))))
+            }
         }
     }
 

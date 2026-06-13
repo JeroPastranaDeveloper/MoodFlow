@@ -11,7 +11,6 @@
   <string name="sign_up">Sign up</string>
   <string name="sign_in">Sign in</string>
   <string name="login_with_google">Login with Google</string>
-  <string name="default_web_client_id" translatable="false"></string>
   <string name="invalid_credentials">Invalid email or passwords</string>
   <string name="user_not_found">User not found</string>
   <string name="used_email">This email is already in use</string>

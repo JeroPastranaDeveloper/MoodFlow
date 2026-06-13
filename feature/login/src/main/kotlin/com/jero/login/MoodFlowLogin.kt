@@ -1,6 +1,5 @@
 package com.jero.login
 
-import android.content.Context
 import android.widget.Toast
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -20,7 +19,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
@@ -33,13 +31,7 @@ import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.credentials.CredentialManager
-import androidx.credentials.CustomCredential
-import androidx.credentials.GetCredentialRequest
-import androidx.credentials.exceptions.GetCredentialCancellationException
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import com.google.android.libraries.identity.googleid.GetSignInWithGoogleOption
-import com.google.android.libraries.identity.googleid.GoogleIdTokenCredential
 import com.jero.core.designsystem.R
 import com.jero.core.screen.HandleActions
 import com.jero.core.screen.SetStatusBarIconsColor
@@ -51,7 +43,6 @@ import com.jero.designsystem.utils.rememberKeyboardAsState
 import com.jero.login.LoginViewContract.UiAction
 import com.jero.login.LoginViewContract.UiIntent
 import com.jero.login.LoginViewContract.UiState
-import kotlinx.coroutines.launch
 import org.koin.androidx.compose.koinViewModel
 
 @Composable
@@ -63,22 +54,11 @@ fun MoodFlowLogin(
     SetStatusBarIconsColor()
     val context = LocalContext.current
     val state by viewModel.state.collectAsStateWithLifecycle()
-    val coroutineScope = rememberCoroutineScope()
 
     HandleActions(viewModel.actions) { action ->
         when (action) {
             UiAction.GoHome -> onGoHome()
             UiAction.GoRegister -> onGoRegister()
-            UiAction.LaunchGoogleSignIn -> coroutineScope.launch {
-                try {
-                    val idToken = getGoogleIdToken(context) ?: return@launch
-                    viewModel.sendIntent(UiIntent.OnGoogleIdTokenReceived(idToken))
-                } catch (_: GetCredentialCancellationException) {
-                    // user dismissed the picker
-                } catch (e: Exception) {
-                    Toast.makeText(context, e.message, Toast.LENGTH_SHORT).show()
-                }
-            }
             is UiAction.ShowToast -> Toast.makeText(context, action.message, Toast.LENGTH_SHORT).show()
         }
     }
@@ -225,20 +205,4 @@ private fun LoginWithGoogleButton(onClick: () -> Unit) {
         leadingIconRes = R.drawable.ic_google_logo,
         addBorder = true,
     ) { onClick() }
-}
-
-private suspend fun getGoogleIdToken(context: Context): String? {
-    val webClientId = context.getString(R.string.default_web_client_id)
-    if (webClientId.isBlank()) return null
-
-    val credentialManager = CredentialManager.create(context)
-    val googleSignInOption = GetSignInWithGoogleOption.Builder(webClientId).build()
-    val request = GetCredentialRequest(listOf(googleSignInOption))
-    val result = credentialManager.getCredential(context, request)
-    val credential = result.credential
-    return if (credential is CustomCredential &&
-        credential.type == GoogleIdTokenCredential.TYPE_GOOGLE_ID_TOKEN_CREDENTIAL
-    ) {
-        GoogleIdTokenCredential.createFrom(credential.data).idToken
-    } else null
 }
