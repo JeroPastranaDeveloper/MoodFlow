@@ -65,8 +65,7 @@ fun MoodFlowRegister(
         when (action) {
             UiAction.GoBack -> onGoBack()
             UiAction.GoHome -> onGoHome()
-            is UiAction.ShowToast -> Toast.makeText(context, action.message, Toast.LENGTH_SHORT)
-                .show()
+            is UiAction.ShowToast -> Toast.makeText(context, action.message, Toast.LENGTH_SHORT).show()
         }
     }
 
@@ -76,14 +75,9 @@ fun MoodFlowRegister(
         onPasswordChanged = { viewModel.sendIntent(UiIntent.OnPasswordChanged(it)) },
         onChangePasswordVisibility = { viewModel.sendIntent(UiIntent.OnChangePasswordVisibility(it)) },
         onRepeatPasswordChanged = { viewModel.sendIntent(UiIntent.OnRepeatPasswordChanged(it)) },
-        onChangeRepeatPasswordVisibility = {
-            viewModel.sendIntent(
-                UiIntent.OnChangeRepeatPasswordVisibility(
-                    it
-                )
-            )
-        },
+        onChangeRepeatPasswordVisibility = { viewModel.sendIntent(UiIntent.OnChangeRepeatPasswordVisibility(it)) },
         onSignUpClicked = { viewModel.sendIntent(UiIntent.OnSignUpClicked) },
+        onLoginWithGoogleClicked = { viewModel.sendIntent(UiIntent.OnLoginWithGoogleClicked) },
         onGoBack = { viewModel.sendIntent(UiIntent.OnGoBack) },
     )
 }
@@ -97,6 +91,7 @@ private fun Content(
     onRepeatPasswordChanged: (String) -> Unit,
     onChangeRepeatPasswordVisibility: (Boolean) -> Unit,
     onSignUpClicked: () -> Unit,
+    onLoginWithGoogleClicked: () -> Unit,
     onGoBack: () -> Unit,
 ) {
     val focusManager = LocalFocusManager.current
@@ -203,11 +198,12 @@ private fun Content(
                 onSignUpClicked()
             }
 
-            /*Spacer(modifier = Modifier.height(16.dp))
+            Spacer(modifier = Modifier.height(16.dp))
 
             LoginWithGoogleButton {
-                viewModel.sendIntent(UiIntent.OnLoginWithGoogleClicked)
-            }*/
+                focusManager.clearFocus(force = true)
+                onLoginWithGoogleClicked()
+            }
 
             Spacer(modifier = Modifier.height(16.dp))
 

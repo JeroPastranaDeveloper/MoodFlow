@@ -3,6 +3,7 @@ package com.jero.authentication.data.datasource
 import com.google.firebase.Firebase
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.FirebaseUser
+import com.google.firebase.auth.GoogleAuthProvider
 import com.google.firebase.auth.auth
 import kotlinx.coroutines.tasks.await
 
@@ -15,7 +16,12 @@ class FirebaseAuthDataSourceImpl(
     
     override suspend fun signUpWithEmail(email: String, password: String): FirebaseUser? =
         auth.createUserWithEmailAndPassword(email, password).await().user
-    
+
+    override suspend fun signInWithGoogle(idToken: String): FirebaseUser? {
+        val credential = GoogleAuthProvider.getCredential(idToken, null)
+        return auth.signInWithCredential(credential).await().user
+    }
+
     override suspend fun signOut() {
         auth.signOut()
     }

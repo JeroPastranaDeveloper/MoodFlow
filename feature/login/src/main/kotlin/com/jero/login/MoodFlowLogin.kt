@@ -59,8 +59,7 @@ fun MoodFlowLogin(
         when (action) {
             UiAction.GoHome -> onGoHome()
             UiAction.GoRegister -> onGoRegister()
-            is UiAction.ShowToast -> Toast.makeText(context, action.message, Toast.LENGTH_SHORT)
-                .show()
+            is UiAction.ShowToast -> Toast.makeText(context, action.message, Toast.LENGTH_SHORT).show()
         }
     }
 
@@ -70,6 +69,7 @@ fun MoodFlowLogin(
         onPasswordChanged = { viewModel.sendIntent(UiIntent.OnPasswordChanged(it)) },
         onChangePasswordVisibility = { viewModel.sendIntent(UiIntent.OnChangePasswordVisibility(it)) },
         onEmailLoginClicked = { viewModel.sendIntent(UiIntent.OnEmailLoginClicked) },
+        onLoginWithGoogleClicked = { viewModel.sendIntent(UiIntent.OnLoginWithGoogleClicked) },
         onSignUpClicked = { viewModel.sendIntent(UiIntent.OnSignUpClicked) },
     )
 }
@@ -81,6 +81,7 @@ private fun Content(
     onPasswordChanged: (String) -> Unit,
     onChangePasswordVisibility: (Boolean) -> Unit,
     onEmailLoginClicked: () -> Unit,
+    onLoginWithGoogleClicked: () -> Unit,
     onSignUpClicked: () -> Unit,
 ) {
     val focusManager = LocalFocusManager.current
@@ -153,12 +154,12 @@ private fun Content(
             onEmailLoginClicked()
         }
 
-        /*Spacer(modifier = Modifier.height(16.dp))
+        Spacer(modifier = Modifier.height(16.dp))
 
         LoginWithGoogleButton {
             focusManager.clearFocus(force = true)
-            viewModel.sendIntent(UiIntent.OnLoginWithGoogleClicked)
-        }*/
+            onLoginWithGoogleClicked()
+        }
 
         Spacer(modifier = Modifier.height(16.dp))
 

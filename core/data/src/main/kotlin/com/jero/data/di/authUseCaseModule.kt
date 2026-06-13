@@ -3,6 +3,7 @@ package com.jero.data.di
 import com.example.domain.usecase.user.GetCurrentUserUseCase
 import com.example.domain.usecase.user.SendPasswordResetEmailUseCase
 import com.example.domain.usecase.user.SignInWithEmailUseCase
+import com.example.domain.usecase.user.SignInWithGoogleUseCase
 import com.example.domain.usecase.user.SignOutUseCase
 import com.example.domain.usecase.user.SignUpWithEmailUseCase
 import com.jero.data.usecase.GetCurrentUserUseCaseImpl
@@ -10,6 +11,7 @@ import com.jero.data.usecase.SendPasswordResetEmailUseCaseImpl
 import com.jero.data.usecase.SignInWithEmailUseCaseImpl
 import com.jero.data.usecase.SignOutUseCaseImpl
 import com.jero.data.usecase.SignUpWithEmailUseCaseImpl
+import com.jero.data.usecase.SignInWithGoogleUseCaseImpl
 import org.koin.dsl.module
 
 val authUseCaseModule = module {
@@ -31,5 +33,9 @@ val authUseCaseModule = module {
 
     factory<SendPasswordResetEmailUseCase> {
         SendPasswordResetEmailUseCaseImpl(get())
+    }
+
+    factory<SignInWithGoogleUseCase> {
+        SignInWithGoogleUseCaseImpl(get())
     }
 }

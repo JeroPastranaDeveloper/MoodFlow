@@ -6,10 +6,13 @@ import com.example.domain.preferences.PreferencesHandler
 import com.example.domain.providers.StringsProvider
 import com.example.domain.usecase.tags.interfaces.SeedDefaultTagsUseCase
 import com.example.domain.usecase.user.GetCurrentUserUseCase
+import com.example.domain.usecase.user.GetGoogleIdTokenUseCase
+import com.example.domain.usecase.user.SignInWithGoogleUseCase
 import com.example.domain.usecase.user.SignUpWithEmailUseCase
 import com.example.domain.validator.EmailValidator
 import com.example.domain.validator.PasswordValidator
 import com.jero.core.designsystem.R
+import com.jero.core.model.AuthError
 import com.jero.core.viewmodel.BaseViewModelWithActions
 import com.jero.register.RegisterViewContract.UiAction
 import com.jero.register.RegisterViewContract.UiIntent
@@ -23,6 +26,8 @@ class RegisterViewModel(
     private val passwordValidator: PasswordValidator,
     private val authErrorHandler: AuthErrorHandler,
     private val stringsProvider: StringsProvider,
+    private val signInWithGoogleUseCase: SignInWithGoogleUseCase,
+    private val getGoogleIdTokenUseCase: GetGoogleIdTokenUseCase,
     private val seedDefaultTagsUseCase: SeedDefaultTagsUseCase,
     private val getCurrentUserUseCase: GetCurrentUserUseCase,
 ) : BaseViewModelWithActions<UiState, UiIntent, UiAction>() {
@@ -34,7 +39,7 @@ class RegisterViewModel(
             is UiIntent.OnRepeatPasswordChanged -> setRepeatPassword(intent.repeatPassword)
             is UiIntent.OnChangePasswordVisibility -> changePasswordVisibility(intent.visible)
             is UiIntent.OnChangeRepeatPasswordVisibility -> changeRepeatPasswordVisibility(intent.visible)
-            UiIntent.OnLoginWithGoogleClicked -> {}
+            UiIntent.OnLoginWithGoogleClicked -> signInWithGoogle()
             UiIntent.OnSignUpClicked -> validateParams()
             UiIntent.OnGoBack -> goBack()
         }
@@ -48,8 +53,8 @@ class RegisterViewModel(
     private fun validateParams() {
         val emailError = emailValidator.validate(state.value.email)
         val passwordError = passwordValidator.validate(state.value.password)
-        val repeatPasswordError = if (state.value.password != state.value.repeatPassword) stringsProvider(R.string.validation_error_password_do_not_match)
-        else null
+        val repeatPasswordError = if (state.value.password != state.value.repeatPassword)
+            stringsProvider(R.string.validation_error_password_do_not_match) else null
 
         when {
             emailError == null && passwordError == null && repeatPasswordError == null -> signUp()
@@ -67,30 +72,38 @@ class RegisterViewModel(
 
     private fun signUp() {
         viewModelScope.launch {
-            val result = signUpUseCase(state.value.email, state.value.password)
-
-            result.fold(
-                onSuccess = { _ ->
-                    preferencesHandler.isLogged = true
-                    getCurrentUserUseCase()?.id?.let { seedDefaultTagsUseCase(it) }
-                    dispatchAction(UiAction.GoHome)
-                },
-                onFailure = { error ->
-                    val message = authErrorHandler(error)
-                    dispatchAction(UiAction.ShowToast(message))
-                }
+            signUpUseCase(state.value.email, state.value.password).fold(
+                onSuccess = { onAuthSuccess() },
+                onFailure = { dispatchAction(UiAction.ShowToast(authErrorHandler(it))) }
             )
         }
+    }
+
+    private fun signInWithGoogle() {
+        viewModelScope.launch {
+            try {
+                val idToken = getGoogleIdTokenUseCase() ?: return@launch
+                signInWithGoogleUseCase(idToken).fold(
+                    onSuccess = { onAuthSuccess() },
+                    onFailure = { dispatchAction(UiAction.ShowToast(authErrorHandler(it))) }
+                )
+            } catch (e: Exception) {
+                dispatchAction(UiAction.ShowToast(authErrorHandler(AuthError.Unknown(e.message.orEmpty()))))
+            }
+        }
+    }
+
+    private suspend fun onAuthSuccess() {
+        preferencesHandler.isLogged = true
+        getCurrentUserUseCase()?.id?.let { seedDefaultTagsUseCase(it) }
+        dispatchAction(UiAction.GoHome)
     }
 
     private fun setEmail(email: String) {
         if (state.value.hasToValidateEmail) {
             val validator = emailValidator.validate(email)
-
-            validator?.let {
-                val errorMessage = emailValidator.getErrorMessage(it)
-                setState { copy(emailError = errorMessage) }
-            } ?: setState { copy(emailError = null) }
+            validator?.let { setState { copy(emailError = emailValidator.getErrorMessage(it)) } }
+                ?: setState { copy(emailError = null) }
         }
         setState { copy(email = email) }
     }
@@ -98,26 +111,21 @@ class RegisterViewModel(
     private fun setPassword(password: String) {
         if (state.value.hasToValidatePassword) {
             val validator = passwordValidator.validate(password)
-
-            validator?.let {
-                val errorMessage = passwordValidator.getErrorMessage(it)
-                setState { copy(passwordError = errorMessage) }
-            } ?: setState { copy(passwordError = null) }
+            validator?.let { setState { copy(passwordError = passwordValidator.getErrorMessage(it)) } }
+                ?: setState { copy(passwordError = null) }
         }
         setState { copy(password = password) }
         setRepeatPassword(state.value.repeatPassword)
     }
 
     private fun setRepeatPassword(repeatPassword: String) {
-        setRepeatPasswordError(repeatPassword = repeatPassword)
+        setRepeatPasswordError(repeatPassword)
         setState { copy(repeatPassword = repeatPassword) }
     }
 
     private fun setRepeatPasswordError(repeatPassword: String) {
-        val password = state.value.password
-        val errorMessage = if (repeatPassword != password) stringsProvider(R.string.validation_error_password_do_not_match)
-        else null
-
+        val errorMessage = if (repeatPassword != state.value.password)
+            stringsProvider(R.string.validation_error_password_do_not_match) else null
         setState { copy(repeatPasswordError = errorMessage) }
     }
 
