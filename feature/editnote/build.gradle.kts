@@ -16,5 +16,4 @@ dependencies {
     implementation(projects.core.screen)
     implementation(projects.core.utils)
     implementation(libs.androidx.material.icons.extended)
-    implementation(libs.compose.rich.editor)
 }
