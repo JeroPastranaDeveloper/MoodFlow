@@ -45,6 +45,17 @@ class AuthRepositoryImpl(
         Result.failure(mapFirebaseException(e))
     }
 
+    override suspend fun signInWithGoogle(idToken: String): Result<User> = try {
+        val firebaseUser = firebaseDataSource.signInWithGoogle(idToken)
+        if (firebaseUser != null) {
+            Result.success(firebaseUser.toDomain())
+        } else {
+            Result.failure(AuthError.Unknown("Google Sign-In failed"))
+        }
+    } catch (e: Exception) {
+        Result.failure(mapFirebaseException(e))
+    }
+
     override suspend fun signOut(): Result<Unit> = try {
         firebaseDataSource.signOut()
         Result.success(Unit)

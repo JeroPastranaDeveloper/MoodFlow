@@ -15,4 +15,8 @@ dependencies {
     implementation(projects.core.viewmodel)
     implementation(projects.core.screen)
     implementation(libs.androidx.material.icons.extended)
+
+    implementation(libs.androidx.credentials)
+    implementation(libs.androidx.credentials.play.services.auth)
+    implementation(libs.googleid)
 }

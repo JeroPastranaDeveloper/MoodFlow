@@ -23,12 +23,14 @@ class RegisterViewContract {
         data class OnChangePasswordVisibility(val visible: Boolean) : UiIntent()
         data class OnChangeRepeatPasswordVisibility(val visible: Boolean) : UiIntent()
         data object OnLoginWithGoogleClicked : UiIntent()
+        data class OnGoogleIdTokenReceived(val idToken: String) : UiIntent()
         data object OnSignUpClicked : UiIntent()
         data object OnGoBack : UiIntent()
     }
 
     sealed class UiAction {
         data object GoHome : UiAction()
+        data object LaunchGoogleSignIn : UiAction()
         data class ShowToast(val message: String) : UiAction()
         data object GoBack : UiAction()
     }

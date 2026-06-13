@@ -14,4 +14,8 @@ dependencies {
     implementation(projects.core.domain)
     implementation(projects.core.utils)
     implementation(projects.core.viewmodel)
+
+    implementation(libs.androidx.credentials)
+    implementation(libs.androidx.credentials.play.services.auth)
+    implementation(libs.googleid)
 }

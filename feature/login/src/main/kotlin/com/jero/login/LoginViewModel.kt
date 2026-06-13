@@ -6,6 +6,7 @@ import com.example.domain.preferences.PreferencesHandler
 import com.example.domain.usecase.tags.interfaces.SeedDefaultTagsUseCase
 import com.example.domain.usecase.user.GetCurrentUserUseCase
 import com.example.domain.usecase.user.SignInWithEmailUseCase
+import com.example.domain.usecase.user.SignInWithGoogleUseCase
 import com.example.domain.validator.EmailValidator
 import com.example.domain.validator.PasswordValidator
 import com.jero.core.viewmodel.BaseViewModelWithActions
@@ -17,6 +18,7 @@ import kotlinx.coroutines.launch
 class LoginViewModel(
     private val preferencesHandler: PreferencesHandler,
     private val signInUseCase: SignInWithEmailUseCase,
+    private val signInWithGoogleUseCase: SignInWithGoogleUseCase,
     private val emailValidator: EmailValidator,
     private val passwordValidator: PasswordValidator,
     private val authErrorHandler: AuthErrorHandler,
@@ -29,7 +31,8 @@ class LoginViewModel(
             is UiIntent.OnEmailChanged -> setEmail(intent.email)
             is UiIntent.OnPasswordChanged -> setPassword(intent.password)
             is UiIntent.OnChangePasswordVisibility -> changePasswordVisibility(intent.visible)
-            UiIntent.OnLoginWithGoogleClicked -> {}
+            UiIntent.OnLoginWithGoogleClicked -> dispatchAction(UiAction.LaunchGoogleSignIn)
+            is UiIntent.OnGoogleIdTokenReceived -> signInWithGoogle(intent.idToken)
             UiIntent.OnSignUpClicked -> goRegister()
             UiIntent.OnEmailLoginClicked -> validateParams()
         }
@@ -59,30 +62,33 @@ class LoginViewModel(
 
     private fun signIn() {
         viewModelScope.launch {
-            val result = signInUseCase(state.value.email, state.value.password)
-
-            result.fold(
-                onSuccess = { _ ->
-                    preferencesHandler.isLogged = true
-                    getCurrentUserUseCase()?.id?.let { seedDefaultTagsUseCase(it) }
-                    dispatchAction(UiAction.GoHome)
-                },
-                onFailure = { error ->
-                    val message = authErrorHandler(error)
-                    dispatchAction(UiAction.ShowToast(message))
-                }
+            signInUseCase(state.value.email, state.value.password).fold(
+                onSuccess = { onAuthSuccess() },
+                onFailure = { dispatchAction(UiAction.ShowToast(authErrorHandler(it))) }
             )
         }
+    }
+
+    private fun signInWithGoogle(idToken: String) {
+        viewModelScope.launch {
+            signInWithGoogleUseCase(idToken).fold(
+                onSuccess = { onAuthSuccess() },
+                onFailure = { dispatchAction(UiAction.ShowToast(authErrorHandler(it))) }
+            )
+        }
+    }
+
+    private suspend fun onAuthSuccess() {
+        preferencesHandler.isLogged = true
+        getCurrentUserUseCase()?.id?.let { seedDefaultTagsUseCase(it) }
+        dispatchAction(UiAction.GoHome)
     }
 
     private fun setEmail(email: String) {
         if (state.value.hasToValidateEmail) {
             val validator = emailValidator.validate(email)
-
-            validator?.let {
-                val errorMessage = emailValidator.getErrorMessage(it)
-                setState { copy(emailError = errorMessage) }
-            } ?: setState { copy(emailError = null) }
+            validator?.let { setState { copy(emailError = emailValidator.getErrorMessage(it)) } }
+                ?: setState { copy(emailError = null) }
         }
         setState { copy(email = email) }
     }
@@ -90,11 +96,8 @@ class LoginViewModel(
     private fun setPassword(password: String) {
         if (state.value.hasToValidatePassword) {
             val validator = passwordValidator.validate(password)
-
-            validator?.let {
-                val errorMessage = passwordValidator.getErrorMessage(it)
-                setState { copy(passwordError = errorMessage) }
-            } ?: setState { copy(passwordError = null) }
+            validator?.let { setState { copy(passwordError = passwordValidator.getErrorMessage(it)) } }
+                ?: setState { copy(passwordError = null) }
         }
         setState { copy(password = password) }
     }
