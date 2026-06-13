@@ -7,7 +7,6 @@ import com.example.domain.usecase.notes.interfaces.GetAllNotesUseCase
 import com.example.domain.usecase.notes.interfaces.UpdateNoteUseCase
 import com.example.domain.usecase.tags.interfaces.GetTagsUseCase
 import com.jero.core.designsystem.R
-import com.jero.core.utils.htmlToPlainText
 import com.jero.core.viewmodel.BaseViewModelWithActions
 import com.jero.home.HomeViewContract.UiAction
 import com.jero.home.HomeViewContract.UiIntent
@@ -179,7 +178,7 @@ class HomeViewModel(
             .filter { note ->
                 if (query.isBlank()) return@filter true
                 note.title.contains(query, ignoreCase = true) ||
-                        note.content.htmlToPlainText().contains(query, ignoreCase = true)
+                        note.content.contains(query, ignoreCase = true)
             }
             .filter { note -> if (filter.onlyPinned) note.pinned else true }
             .filter { note ->

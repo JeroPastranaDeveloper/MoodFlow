@@ -35,7 +35,6 @@ import androidx.glance.text.TextStyle
 import com.example.domain.preferences.PreferencesHandler
 import com.example.domain.usecase.notes.interfaces.GetAllNotesUseCase
 import com.jero.core.model.Note
-import com.jero.core.utils.htmlToPlainText
 import com.jero.moodflow.MainActivity
 import com.jero.moodflow.R
 import kotlinx.coroutines.flow.flowOf
@@ -170,7 +169,7 @@ private fun NoteItem(note: Note, context: Context) {
         )
         if (note.content.isNotBlank()) {
             Text(
-                text = note.content.htmlToPlainText(),
+                text = note.content,
                 style = TextStyle(
                     color = GlanceTheme.colors.secondary,
                     fontSize = 11.sp,

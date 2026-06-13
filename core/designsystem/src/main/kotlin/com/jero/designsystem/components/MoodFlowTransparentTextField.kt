@@ -14,7 +14,6 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardCapitalization
-import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.unit.TextUnit
 
 @Composable
@@ -36,56 +35,6 @@ fun MoodFlowTransparentTextField(
             .focusRequester(focusRequester),
         value = text,
         onValueChange = onTextChange,
-        textStyle = TextStyle(
-            fontSize = textFontSize,
-            fontWeight = textFontWeight,
-        ),
-        placeholder = {
-            Text(
-                text = placeholder,
-                color = Color.Gray,
-                fontSize = placeholderFontSize,
-                fontWeight = FontWeight.Normal
-            )
-        },
-        keyboardOptions = keyboardOptions.copy(
-            capitalization = KeyboardCapitalization.Sentences
-        ),
-        keyboardActions = keyboardActions,
-        colors = TextFieldDefaults.colors(
-            focusedTextColor = Color.Black,
-            unfocusedTextColor = Color.Black,
-            focusedContainerColor = Color.Transparent,
-            unfocusedContainerColor = Color.Transparent,
-            disabledContainerColor = Color.Transparent,
-            errorContainerColor = Color.Transparent,
-            focusedIndicatorColor = Color.Transparent,
-            unfocusedIndicatorColor = Color.Transparent,
-            disabledIndicatorColor = Color.Transparent,
-            cursorColor = Color.Gray
-        )
-    )
-}
-
-@Composable
-fun MoodFlowTransparentTextField(
-    modifier: Modifier = Modifier,
-    value: TextFieldValue,
-    textFontSize: TextUnit = TextUnit.Unspecified,
-    textFontWeight: FontWeight = FontWeight.Normal,
-    placeholder: String,
-    placeholderFontSize: TextUnit = TextUnit.Unspecified,
-    keyboardOptions: KeyboardOptions = KeyboardOptions.Default,
-    keyboardActions: KeyboardActions = KeyboardActions.Default,
-    focusRequester: FocusRequester = FocusRequester(),
-    onValueChange: (TextFieldValue) -> Unit,
-) {
-    TextField(
-        modifier = modifier
-            .fillMaxWidth()
-            .focusRequester(focusRequester),
-        value = value,
-        onValueChange = onValueChange,
         textStyle = TextStyle(
             fontSize = textFontSize,
             fontWeight = textFontWeight,

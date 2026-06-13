@@ -16,7 +16,7 @@ android {
     defaultConfig {
         applicationId = "com.jero.moodflow"
         minSdk = 30
-        targetSdk = 36
+        targetSdk = 37
         versionCode = 1
         versionName = "1.0"
 
@@ -44,7 +44,8 @@ android {
             freeCompilerArgs.addAll(
                 "-Xno-param-assertions",
                 "-Xno-call-assertions",
-                "-Xno-receiver-assertions"
+                "-Xno-receiver-assertions",
+                "-Xcollection-literals"
             )
         }
     }

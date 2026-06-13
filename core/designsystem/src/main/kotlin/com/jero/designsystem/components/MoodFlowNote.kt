@@ -20,14 +20,12 @@ import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.jero.core.model.Note
-import com.jero.core.utils.htmlToPlainText
 import com.jero.designsystem.theme.MoodFlowColors
 import com.jero.designsystem.theme.NoteColors
 
@@ -47,8 +45,8 @@ fun MoodFlowNote(
     onClick: (String) -> Unit,
     onCheck: (String, Boolean) -> Unit,
 ) {
-    val noteTitle = remember(note.id) { note.title }
-    val noteContent = remember(note.content) { note.content.htmlToPlainText() }
+    val noteTitle = note.title
+    val noteContent = note.content
 
     val borderWidth by animateDpAsState(
         targetValue = if (isSelected) 3.dp else 1.dp,
@@ -87,7 +85,7 @@ fun MoodFlowNote(
                 overflow = TextOverflow.Ellipsis
             )
 
-            if (note.content.isNotEmpty()) {
+            if (noteContent.isNotEmpty()) {
                 Spacer(modifier = Modifier.height(8.dp))
                 Text(
                     modifier = Modifier.moodFlowSharedElement(

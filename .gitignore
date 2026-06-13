@@ -1,6 +1,14 @@
 *.iml
 .gradle
 /local.properties
+.DS_Store
+/build
+/captures
+.externalNativeBuild
+.cxx
+local.properties
+
+# IntelliJ / Android Studio — archivos generados por el IDE o específicos de máquina
 /.idea/caches
 /.idea/libraries
 /.idea/modules.xml
@@ -10,16 +18,13 @@
 /.idea/deviceManager.xml
 /.idea/deploymentTargetSelector.xml
 /.idea/inspectionProfiles/Project_Default.xml
-.DS_Store
-/build
-/captures
-.externalNativeBuild
-.cxx
-local.properties
+/.idea/misc.xml
+/.idea/kotlinc.xml
+
+# Kotlin build tooling
+.kotlin/
 
 /core/localdatabase/schemas/com.jero.localdatabase.NoteDatabase
-
-.idea/misc.xml
 
 # Project exclude paths
 /core/designsystem/build/
