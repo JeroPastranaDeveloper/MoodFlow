@@ -9,7 +9,7 @@ internal fun Project.configureAndroidCompose() {
     pluginManager.apply("org.jetbrains.kotlin.plugin.compose")
 
     extensions.configure<ComposeCompilerGradlePluginExtension> {
-        enableStrongSkippingMode = true
-        reportsDestination = layout.buildDirectory.dir("compose_compiler")
+        // enableStrongSkippingMode = true
+        // reportsDestination = layout.buildDirectory.dir("compose_compiler")
     }
 }

@@ -19,7 +19,7 @@ class AndroidApplicationConventionPlugin : Plugin<Project> {
                 compileSdk = 37
                 defaultConfig {
                     minSdk = 30
-                    targetSdk = 35
+                    targetSdk = 37
                 }
                 compileOptions {
                     sourceCompatibility = JavaVersion.VERSION_17
