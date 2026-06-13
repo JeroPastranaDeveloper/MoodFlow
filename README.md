@@ -6,7 +6,7 @@ MoodFlow is an Android note-taking app with offline-first support, real-time Fir
 
 ## Features
 
-- Email and password authentication (register / login / logout)
+- Email/password and Google Sign-In authentication (register / login / logout)
 - Create, edit, delete, and pin notes
 - Per-note background color selection with animated transition
 - Staggered grid layout with shared element transitions between home and edit screens
@@ -28,7 +28,7 @@ MoodFlow is an Android note-taking app with offline-first support, real-time Fir
 | Dependency injection | Koin |
 | Local database | Room (with migrations) |
 | Remote database | Firebase Realtime Database |
-| Authentication | Firebase Auth |
+| Authentication | Firebase Auth (email/password + Google Sign-In via CredentialManager) |
 | Background sync | WorkManager (`SyncNotesWorker`, `CleanTrashWorker`) |
 | Home screen widget | Jetpack Glance |
 | Async | Kotlin Coroutines + Flow |
@@ -140,9 +140,10 @@ The app provides a Glance-based home screen widget that shows a scrollable list 
 
 1. Clone the repository
 2. Add your `google-services.json` to the `app/` directory
-3. Enable **Email/Password** authentication in your Firebase project
-4. Create a Firebase Realtime Database and set the rules to require authentication
-5. Open the project in Android Studio Ladybug or later and run on a device with API 30+
+3. In the Firebase console, enable **Email/Password** and **Google** under Authentication → Sign-in methods
+4. Under Authentication → Settings, add your app's SHA-1 fingerprint (obtain it with `./gradlew signingReport`)
+5. Create a Firebase Realtime Database and set the rules to require authentication
+6. Open the project in Android Studio Ladybug or later and run on a device with API 30+
 
 ### Requirements
 

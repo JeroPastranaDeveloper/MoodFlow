@@ -6,7 +6,7 @@ This file gives you everything you need to work on this project without asking t
 
 ## What the app does
 
-Android note-taking app. Users register/login with Firebase Auth, then create, edit, delete, and pin notes. Notes have a color (Long ARGB), are stored locally in Room, and synced to Firebase Realtime Database. Offline writes are queued and flushed by WorkManager when connectivity returns.
+Android note-taking app. Users register/login with Firebase Auth (email/password or Google Sign-In), then create, edit, delete, and pin notes. Notes have a color (Long ARGB), are stored locally in Room, and synced to Firebase Realtime Database. Offline writes are queued and flushed by WorkManager when connectivity returns.
 
 ---
 
@@ -36,7 +36,7 @@ Android note-taking app. Users register/login with Firebase Auth, then create, e
 core:model          → Note, User (Parcelable domain models, shared everywhere)
 core:domain         → Repository interfaces, use case interfaces/impls, validators
 core:data           → Auth use case impls, PreferencesHandlerImpl, StringsProviderImpl, DI modules
-authentication      → FirebaseAuthDataSourceImpl, AuthRepositoryImpl
+authentication      → FirebaseAuthDataSourceImpl, AuthRepositoryImpl, GetGoogleIdTokenUseCaseImpl
 core:database       → NotesDataSourceImpl (Firebase), NotesRepositoryImpl, SyncNotesWorker
 core:localdatabase  → Room: NoteDatabase, NoteDao, NoteEntity, PendingDeletionEntity, migrations
 core:network        → NetworkMonitor (connectivity)
@@ -166,7 +166,8 @@ Color is stored as `Long` in Room and Firebase. Conversion uses `colorLong.toInt
 ## Firebase
 
 - **Realtime Database** — notes stored at `users/{userId}/notes/{noteId}`
-- **Auth** — email/password only (Google login is commented out, not implemented)
+- **Auth** — email/password and Google Sign-In (via CredentialManager + `GetSignInWithGoogleOption`)
+- Google Sign-In requires enabling the provider in Firebase Console → Authentication → Sign-in methods, and adding the app's SHA-1 fingerprint under Authentication → Settings
 - `NotesDataSourceImpl` uses `getValue(NoteDto::class.java)` for deserialization — Firebase maps fields by name, so field names in `NoteDto` must match the database keys
 - `NotesRepositoryImpl.getAllNotes` runs three concurrent coroutines:
   1. Room flow → emit to UI immediately
@@ -293,6 +294,10 @@ Koin. Modules are registered in `App.kt`. Each feature/core module has its own `
 
 `StringsProvider` is a `(Int) -> String` function alias injected into use cases and ViewModels to provide localized error strings without a Context reference in the domain layer.
 
+### Context in use case implementations
+
+When a use case implementation needs `Context` (e.g. for system APIs like `CredentialManager`), inject it in the constructor via Koin's `androidContext()` — **never** pass it through the interface, through intents, or into the ViewModel. The interface stays Android-free. See `GetGoogleIdTokenUseCaseImpl` as the canonical example.
+
 ---
 
 ## Conventions to follow
@@ -338,3 +343,6 @@ Koin. Modules are registered in `App.kt`. Each feature/core module has its own `
 | Widget receiver | `app/.../widget/NotesWidgetReceiver.kt` |
 | Widget config activity | `app/.../widget/NotesWidgetConfigActivity.kt` |
 | Widget filter + state key | `app/.../widget/NotesWidgetFilter.kt` |
+| Google Sign-In use case interface | `core/domain/.../usecase/user/GetGoogleIdTokenUseCase.kt` |
+| Google Sign-In use case impl | `authentication/.../data/usecase/GetGoogleIdTokenUseCaseImpl.kt` |
+| Auth strings placeholder | `authentication/src/main/res/values/strings.xml` |
