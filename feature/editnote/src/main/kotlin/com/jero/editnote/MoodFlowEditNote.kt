@@ -244,13 +244,7 @@ private fun SharedTransitionScope.Content(
                 placeholder = stringResource(R.string.note),
                 placeholderFontSize = 16.sp,
                 focusRequester = contentFocusRequester,
-                keyboardOptions = KeyboardOptions(
-                    keyboardType = KeyboardType.Unspecified,
-                    imeAction = ImeAction.Done
-                ),
-                keyboardActions = KeyboardActions(
-                    onDone = { focusManager.clearFocus(force = true) }
-                ),
+                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Unspecified),
             ) { onDescriptionChanged(it) }
         }
     }
